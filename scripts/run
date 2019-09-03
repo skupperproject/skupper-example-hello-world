@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+
+import requests
+
+from plano import *
+
+ENV["BACKEND_SERVICE_PORT"] = str(get_random_port())
+ENV["FRONTEND_SERVICE_PORT"] = str(get_random_port())
+
+with start_process("python3 backend/app.py") as backend:
+    with start_process("python3 frontend/app.py") as frontend:
+        sleep(0.5)
+
+        backend_url = f"http://localhost:{ENV['BACKEND_SERVICE_PORT']}/api/hello"
+
+        print(requests.get(backend_url).text)
+        print(requests.get(backend_url).text)
+        print(requests.get(backend_url).text)
+
+        frontend_url = f"http://localhost:{ENV['FRONTEND_SERVICE_PORT']}/"
+
+        print(requests.get(frontend_url).text)
+        print(requests.get(frontend_url).text)
+        print(requests.get(frontend_url).text)
+
+        print("SUCCESS")
