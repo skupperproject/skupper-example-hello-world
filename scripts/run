@@ -4,20 +4,22 @@ import requests
 
 from plano import *
 
-ENV["BACKEND_SERVICE_PORT"] = str(get_random_port())
-ENV["FRONTEND_SERVICE_PORT"] = str(get_random_port())
+ENV["BACKEND_SERVICE_PORT"] = backend_port = str(get_random_port())
+ENV["FRONTEND_SERVICE_PORT"] = frontend_port = str(get_random_port())
+
+backend_url = f"http://localhost:{backend_port}/api/hello"
+frontend_url = f"http://localhost:{frontend_port}/"
+
+#backend = start_process(f"podman run --net host --name backend --rm -it -p {backend_port}:8080 quay.io/skupper/hello-world-backend")
+#frontend = start_process(f"podman run --net host --name frontend --rm -it -e BACKEND_SERVICE_PORT={backend_port} -p {frontend_port}:8080 quay.io/skupper/hello-world-frontend")
 
 with start_process("python3 backend/app.py") as backend:
     with start_process("python3 frontend/app.py") as frontend:
         sleep(0.5)
 
-        backend_url = f"http://localhost:{ENV['BACKEND_SERVICE_PORT']}/api/hello"
-
         print(requests.get(backend_url).text)
         print(requests.get(backend_url).text)
         print(requests.get(backend_url).text)
-
-        frontend_url = f"http://localhost:{ENV['FRONTEND_SERVICE_PORT']}/"
 
         print(requests.get(frontend_url).text)
         print(requests.get(frontend_url).text)

@@ -1,6 +1,11 @@
 .phony: run
-run:
+run: build
 	scripts/run
+
+.phony: build
+build:
+	cd backend && make build
+	cd frontend && make build
 
 .phony: clean
 clean:
