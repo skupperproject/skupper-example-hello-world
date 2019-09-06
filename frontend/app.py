@@ -27,8 +27,8 @@ app = Flask(__name__)
 host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
 port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
 
-backend_host = os.environ.get("BACKEND_SERVICE_HOST", "localhost")
-backend_port = os.environ["BACKEND_SERVICE_PORT"]
+backend_host = os.environ.get("BACKEND_SERVICE_HOST", "hello-world-backend")
+backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 
 @app.route('/')
 def root():
