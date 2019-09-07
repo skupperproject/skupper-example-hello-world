@@ -9,7 +9,6 @@ run: build
 	podman run -p 8080:8080 ${IMAGE}
 
 # Prerequisite: podman login quay.io
-
 .PHONY: push
 push: build
 	podman push -q ${IMAGE}

@@ -19,6 +19,7 @@
 
 import os
 import requests
+import traceback
 
 from flask import Flask, Response
 
@@ -32,7 +33,12 @@ backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 
 @app.route('/')
 def message():
-    result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
+    try:
+        result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
+    except:
+        traceback.print_exc()
+        return Response("Trouble!  My request to the backend failed.  See the logs.", mimetype="text/plain")
+
     text = f"I am the frontend.  The backend says '{result.text}'.\n"
 
     return Response(text, mimetype="text/plain")
