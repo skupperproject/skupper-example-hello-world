@@ -31,10 +31,11 @@ backend_host = os.environ.get("BACKEND_SERVICE_HOST", "hello-world-backend")
 backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 
 @app.route('/')
-def root():
+def message():
     result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
+    text = f"I am the frontend.  The backend says '{result.text}'.\n"
 
-    return Response(f"The backend says '{result.text}'", mimetype="text/plain")
+    return Response(text, mimetype="text/plain")
 
 if __name__ == '__main__':
     app.run(host=host, port=port)
