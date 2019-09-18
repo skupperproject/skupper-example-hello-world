@@ -31,17 +31,16 @@ port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
 backend_host = os.environ.get("BACKEND_SERVICE_HOST", "hello-world-backend")
 backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 
-@app.route('/')
-def message():
-    try:
-        result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
-    except:
-        traceback.print_exc()
-        return Response("Trouble!  My request to the backend failed.  See the logs.", mimetype="text/plain")
+@app.errorhandler(Exception)
+def error(e):
+    app.logger.error(e)
+    return Response(f"Trouble! {e}\n", status=500, mimetype="text/plain")
 
+def message():
+    result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
     text = f"I am the frontend.  The backend says '{result.text}'.\n"
 
     return Response(text, mimetype="text/plain")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host=host, port=port)
