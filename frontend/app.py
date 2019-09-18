@@ -36,6 +36,7 @@ def error(e):
     app.logger.error(e)
     return Response(f"Trouble! {e}\n", status=500, mimetype="text/plain")
 
+@app.route("/")
 def message():
     result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
     text = f"I am the frontend.  The backend says '{result.text}'.\n"
