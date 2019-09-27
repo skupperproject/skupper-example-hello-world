@@ -10,6 +10,10 @@ build:
 .phony: clean
 clean:
 	rm -rf scripts/__pycache__
+	rm README.html
+
+README.html: README.md
+	pandoc -o $@ $<
 
 .phony: update-%
 update-%:
