@@ -11,6 +11,7 @@ A minimal HTTP application using [Skupper](https://skupper.io/)
 * [Step 3: Connect your namespaces](#step-3-connect-your-namespaces)
 * [Step 4: Expose the backend service on the Skupper network](#step-4-expose-the-backend-service-on-the-skupper-network)
 * [Step 5: Test the application](#step-5-test-the-application)
+* [What just happened?](#what-just-happened)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
 
@@ -167,6 +168,12 @@ Namespace 2:
 Sample output:
 
     I am the frontend.  The backend says 'Hello 1'.
+
+## What just happened?
+
+In the form of a sequence diagram:
+
+<img style="width: 40em;" src="images/sequence.svg" alt="Sequence diagram"/>
 
 ## Cleaning up
 
