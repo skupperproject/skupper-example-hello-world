@@ -33,7 +33,7 @@ internet.
 ## Prerequisites
 
 * The `kubectl` command-line tool, version 1.15 or later ([installation guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/))
-* The `skupper` command-line tool, the latest version ([installation guide](file:///home/jross/code/skupper-website/output/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment))
+* The `skupper` command-line tool, the latest version ([installation guide](https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment)
 * Two Kubernetes namespaces, from any providers you choose, on any clusters you choose
 
 ## Step 1: Set up your namespaces
