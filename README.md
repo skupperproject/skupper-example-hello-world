@@ -26,7 +26,9 @@ It contains two services:
   greeting.
 
 To process a request, the frontend calls the backend to fetch a new
-greeting.
+greeting.  With Skupper, we can place the backend in one cluster and
+the frontend in another, without exposing the backend on the public
+internet.
 
 ## Prerequisites
 
