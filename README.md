@@ -187,7 +187,7 @@ frontend sends a request to the backend, Skupper forwards the request
 to the service where the backend is running and routes the response
 back to the frontend.
 
-<img style="width: 40em;" src="images/sequence.svg" alt="Sequence diagram"/>
+<img style="width: 80%;" src="images/sequence.svg" alt="Sequence diagram"/>
 
 ## Cleaning up
 
