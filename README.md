@@ -171,7 +171,21 @@ Sample output:
 
 ## What just happened?
 
-In the form of a sequence diagram:
+This example locates the frontend and backend services in different
+namespaces, on different clusters.  Ordinarily, this means that they
+have no way to communicate unless they are exposed to the public
+internet.
+
+Introducing Skupper into each namespace allows us to create a virtual
+application network that can connect services in different clusters.
+Any service exposed on the application network is represented as a
+local service in all of the connected namespaces.
+
+The backend service is located in namespace 1, but the frontend
+service in namespace 2 can "see" it as if it were local.  When the
+frontend sends a request to the backend, Skupper forwards the request
+to the service where the backend is running and routes the response
+back to the frontend.
 
 <img style="width: 40em;" src="images/sequence.svg" alt="Sequence diagram"/>
 
