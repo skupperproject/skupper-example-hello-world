@@ -21,14 +21,15 @@ be deployed across multiple Kubernetes clusters using Skupper.
 
 It contains two services:
 
-* A backend service that exposes an `/api/hello` endpoint.
-* A frontend service that accepts HTTP requests and returns a
-  greeting.
+* A backend service that exposes an `/api/hello` endpoint.  It returns
+  greetings of the form `Hello <count>`.
 
-To process a request, the frontend calls the backend to fetch a new
-greeting.  With Skupper, we can place the backend in one cluster and
-the frontend in another, without exposing the backend on the public
-internet.
+* A frontend service that accepts HTTP requests, calls the backend to
+  fetch new greetings, and serves them to the user.
+
+With Skupper, we can place the backend in one cluster and the frontend
+in another and maintain connectivity between the two services without
+exposing the backend to the public internet.
 
 ## Prerequisites
 
