@@ -7,8 +7,8 @@ A minimal HTTP application using [Skupper](https://skupper.io/)
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Set up your namespaces](#step-1-set-up-your-namespaces)
-* [Step 2: Connect your namespaces](#step-2-connect-your-namespaces)
-* [Step 3: Deploy the backend and frontend services](#step-3-deploy-the-backend-and-frontend-services)
+* [Step 2: Deploy the backend and frontend services](#step-2-deploy-the-backend-and-frontend-services)
+* [Step 3: Connect your namespaces](#step-3-connect-your-namespaces)
 * [Step 4: Expose the backend service on the Skupper network](#step-4-expose-the-backend-service-on-the-skupper-network)
 * [Step 5: Test the application](#step-5-test-the-application)
 * [Cleaning up](#cleaning-up)
@@ -34,10 +34,14 @@ exposing the backend to the public internet.
 ## Prerequisites
 
 * The `kubectl` command-line tool, version 1.15 or later ([installation guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/))
-* The `skupper` command-line tool, the latest version ([installation guide](https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment)
+* The `skupper` command-line tool, the latest version ([installation guide](https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment))
 * Two Kubernetes namespaces, from any providers you choose, on any clusters you choose
 
 ## Step 1: Set up your namespaces
+
+Since we are dealing with two namespaces, we need to set up isolated
+`kubectl` configurations, one for each namespace.  In this example, we
+will do that with distinct kubeconfigs on separate consoles.
 
 Console for namespace 1:
 
@@ -58,17 +62,19 @@ Console for namespace 2:
 See [Getting started with Skupper](https://skupper.io/start/) for more
 information about setting up namespaces.
 
-## Step 2: Connect your namespaces
+Use `skupper status` in each console to check that Skupper is
+installed.
 
-Namespace 1:
+    $ skupper status
+    Namespace '<ns>' is ready.  It is connected to 0 other namespaces.
 
-    skupper connection-token $HOME/secret.yaml
+As you move through the steps that follow, you can continue to use `skupper
+status` at any time to check your progress.
 
-Namespace 2:
+## Step 2: Deploy the backend and frontend services
 
-    skupper connect $HOME/secret.yaml
-
-## Step 3: Deploy the backend and frontend services
+Use `kubectl create deployment` and `kubectl expose` to deploy the
+services:
 
 Namespace 1:
 
@@ -80,11 +86,61 @@ Namespace 2:
     kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend
     kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
 
+At this point, the frontend is exposed externally (from the `kubectl
+expose` with `--type LoadBalancer`), but if you send a request to it,
+you will see that the frontend has no connectivity to the backend:
+
+Namespace 2:
+
+    $ curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}/')
+    Trouble! HTTPConnectionPool(host='hello-world-backend', port=8080):
+      Max retries exceeded with url: /api/hello
+        (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fe411ea7990>:
+          Failed to establish a new connection: [Errno -2] Name or service not known'))
+
+The backend service is currently available only inside namespace 1, so
+when the frontend service in namespace 2 attempts to contact it, it
+fails.  In the next steps, we will establish connectivity between the
+two services and make the backend available to the frontend in
+namespace 2.
+
+## Step 3: Connect your namespaces
+
+To connect namespaces, Skupper requires a token representing
+permission to form a connection.  This connection token contains a
+secret (only share it with those you trust) and the logistical details
+of making a connection.
+
+Use `skupper connection-token` to generate the token.
+
+Namespace 1:
+
+    skupper connection-token $HOME/secret.yaml
+
+Use `skupper connect` to use the generated token to form a connection.
+
+Namespace 2:
+
+    skupper connect $HOME/secret.yaml
+
+If your consoles sessions are on different machines, you may need to
+use `scp` or a similar tool to transfer the token.
+
 ## Step 4: Expose the backend service on the Skupper network
+
+We now have connected namespaces, but there is one more step.  To
+expose a service from one namespace on all the connected namespaces,
+Skupper uses an annotation on Kubernetes services.
+
+Use `kubectl annotate` with the annotation `skupper.io/proxy=http` to
+expose the backend service:
 
 Namespace 1:
 
     kubectl annotate service/hello-world-backend skupper.io/proxy=http
+
+Use `kubectl get services` on namespace 2 to look for the
+`hello-world-backend` service to appear.
 
 Namespace 2:
 
