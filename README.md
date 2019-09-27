@@ -6,8 +6,11 @@ A minimal HTTP application using [Skupper](https://skupper.io/)
 
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
-* [Step 1: Procedure title](#step-1-procedure-title)
-* [Step 2: Another procedure](#step-2-another-procedure)
+* [Step 1: Set up your namespaces](#step-1-set-up-your-namespaces)
+* [Step 2: Connect your namespaces](#step-2-connect-your-namespaces)
+* [Step 3: Deploy the backend and frontend services](#step-3-deploy-the-backend-and-frontend-services)
+* [Step 4: Expose the backend service on the Skupper network](#step-4-expose-the-backend-service-on-the-skupper-network)
+* [Step 5: Test the application](#step-5-test-the-application)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
 
@@ -62,7 +65,7 @@ Namespace 2:
 
     skupper connect $HOME/secret.yaml
 
-## Step 3: Deploy your services
+## Step 3: Deploy the backend and frontend services
 
 Namespace 1:
 
