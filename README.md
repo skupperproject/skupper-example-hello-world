@@ -46,11 +46,13 @@ will use distinct kubeconfigs on separate consoles.
 
 Console for namespace 1:
 
-    export KUBECONFIG=$HOME/.kube/config-ns1
-    <login-command-for-your-provider>
-    kubectl create namespace ns1
-    kubectl config set-context --current --namespace ns1
-    skupper init
+```bash
+export KUBECONFIG=$HOME/.kube/config-ns1
+<login-command-for-your-provider>
+kubectl create namespace ns1
+kubectl config set-context --current --namespace ns1
+skupper init
+```
 
 Console for namespace 2:
 
