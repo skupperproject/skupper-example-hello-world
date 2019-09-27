@@ -41,7 +41,7 @@ exposing the backend to the public internet.
 
 Since we are dealing with two namespaces, we need to set up isolated
 `kubectl` configurations, one for each namespace.  In this example, we
-will do that with distinct kubeconfigs on separate consoles.
+will use distinct kubeconfigs on separate consoles.
 
 Console for namespace 1:
 
@@ -100,37 +100,40 @@ Namespace 2:
 
 The backend service is currently available only inside namespace 1, so
 when the frontend service in namespace 2 attempts to contact it, it
-fails.  In the next steps, we will establish connectivity between the
-two services and make the backend available to the frontend in
-namespace 2.
+fails.
+
+In the next steps, we will establish connectivity between the two
+namespaces and make the backend available to the frontend in namespace
+2.
 
 ## Step 3: Connect your namespaces
 
 To connect namespaces, Skupper requires a token representing
-permission to form a connection.  This connection token contains a
-secret (only share it with those you trust) and the logistical details
-of making a connection.
+permission to form a connection.  This token contains a secret (only
+share it with those you trust) and the logistical details of making a
+connection.
 
-Use `skupper connection-token` to generate the token.
+Use `skupper connection-token` in namespace 1 to generate the token.
 
 Namespace 1:
 
     skupper connection-token $HOME/secret.yaml
 
-Use `skupper connect` to use the generated token to form a connection.
+Use `skupper connect` in namespace 2 to use the generated token to
+form a connection.
 
 Namespace 2:
 
     skupper connect $HOME/secret.yaml
 
-If your consoles sessions are on different machines, you may need to
+If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
 
 ## Step 4: Expose the backend service on the Skupper network
 
 We now have connected namespaces, but there is one more step.  To
-expose a service from one namespace on all the connected namespaces,
-Skupper uses an annotation on Kubernetes services.
+select a service from one namespace for exposure on all the connected
+namespaces, Skupper uses an annotation on Kubernetes services.
 
 Use `kubectl annotate` with the annotation `skupper.io/proxy=http` to
 expose the backend service:
@@ -139,8 +142,9 @@ Namespace 1:
 
     kubectl annotate service/hello-world-backend skupper.io/proxy=http
 
-Use `kubectl get services` on namespace 2 to look for the
-`hello-world-backend` service to appear.
+Once the service is annotated, Skupper creates matching services on
+all the connected namespaces.  Use `kubectl get services` on namespace
+2 to look for the `hello-world-backend` service to appear.
 
 Namespace 2:
 
@@ -152,6 +156,9 @@ Namespace 2:
     [...]
 
 ## Step 5: Test the application
+
+Now we can send a request to the frontend again to see if it has full
+connectivity to the backend.
 
 Namespace 2:
 
