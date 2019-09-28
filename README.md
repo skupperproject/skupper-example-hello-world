@@ -183,11 +183,11 @@ application network that can connect services in different clusters.
 Any service exposed on the application network is represented as a
 local service in all of the connected namespaces.
 
-The backend service is located in namespace 1, but the frontend
-service in namespace 2 can "see" it as if it were local.  When the
-frontend sends a request to the backend, Skupper forwards the request
-to the service where the backend is running and routes the response
-back to the frontend.
+The backend service is located in `us-east`, but the frontend service
+in `eu-north` can "see" it as if it were local.  When the frontend
+sends a request to the backend, Skupper forwards the request to the
+service where the backend is running and routes the response back to
+the frontend.
 
 <img src="images/sequence.svg" width="640"/>
 
