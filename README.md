@@ -32,7 +32,9 @@ With Skupper, we can place the backend in one cluster and the frontend
 in another and maintain connectivity between the two services without
 exposing the backend to the public internet.
 
-![Entity diagram](images/entities.svg){:width="80%"}
+<blockquote>
+  <img src="images/entities.svg" width="640"/>
+</blockquote>
 
 ## Prerequisites
 
@@ -189,7 +191,9 @@ frontend sends a request to the backend, Skupper forwards the request
 to the service where the backend is running and routes the response
 back to the frontend.
 
-![Sequence diagram](images/sequence.svg){:width="80%"}
+<blockquote>
+  <img src="images/sequence.svg" width="640"/>
+</blockquote>
 
 ## Cleaning up
 
