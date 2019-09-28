@@ -32,6 +32,8 @@ With Skupper, we can place the backend in one cluster and the frontend
 in another and maintain connectivity between the two services without
 exposing the backend to the public internet.
 
+![Entity diagram](images/entities.svg){:width="80%"}
+
 ## Prerequisites
 
 * The `kubectl` command-line tool, version 1.15 or later ([installation guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/))
@@ -44,20 +46,20 @@ Since we are dealing with two namespaces, we need to set up isolated
 `kubectl` configurations, one for each namespace.  In this example, we
 will use distinct kubeconfigs on separate consoles.
 
-Console for namespace 1:
+Console for namespace `us-east`:
 
-    export KUBECONFIG=$HOME/.kube/config-ns1
+    export KUBECONFIG=$HOME/.kube/config-us-east
     <login-command-for-your-provider>
-    kubectl create namespace ns1
-    kubectl config set-context --current --namespace ns1
+    kubectl create namespace us-east
+    kubectl config set-context --current --namespace us-east
     skupper init
 
-Console for namespace 2:
+Console for namespace `eu-north`:
 
-    export KUBECONFIG=$HOME/.kube/config-ns2
+    export KUBECONFIG=$HOME/.kube/config-eu-north
     <login-command-for-your-provider>
-    kubectl create namespace ns2
-    kubectl config set-context --current --namespace ns2
+    kubectl create namespace eu-north
+    kubectl config set-context --current --namespace eu-north
     skupper init
 
 See [Getting started with Skupper](https://skupper.io/start/) for more
@@ -77,12 +79,12 @@ status` at any time to check your progress.
 Use `kubectl create deployment` and `kubectl expose` to deploy the
 services:
 
-Namespace 1:
+Namespace `us-east`:
 
     kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
     kubectl expose deployment/hello-world-backend --port 8080
 
-Namespace 2:
+Namespace `eu-north`:
 
     kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend
     kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
@@ -91,7 +93,7 @@ At this point, the frontend is exposed externally (from the `kubectl
 expose` with `--type LoadBalancer`), but if you send a request to it,
 you will see that the frontend has no connectivity to the backend:
 
-Namespace 2:
+Namespace `eu-north`:
 
     $ curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}/')
     Trouble! HTTPConnectionPool(host='hello-world-backend', port=8080):
@@ -99,13 +101,13 @@ Namespace 2:
         (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fe411ea7990>:
           Failed to establish a new connection: [Errno -2] Name or service not known'))
 
-The backend service is currently available only inside namespace 1, so
-when the frontend service in namespace 2 attempts to contact it, it
-fails.
+The backend service is currently available only inside namespace
+`us-east`, so when the frontend service in namespace `eu-north`
+attempts to contact it, it fails.
 
 In the next steps, we will establish connectivity between the two
-namespaces and make the backend available to the frontend in namespace
-2.
+namespaces and make the backend available to the frontend in
+`eu-north`.
 
 ## Step 3: Connect your namespaces
 
@@ -114,16 +116,16 @@ permission to form a connection.  This token contains a secret (only
 share it with those you trust) and the logistical details of making a
 connection.
 
-Use `skupper connection-token` in namespace 1 to generate the token.
+Use `skupper connection-token` in `us-east` to generate the token.
 
-Namespace 1:
+Namespace `us-east`:
 
     skupper connection-token $HOME/secret.yaml
 
-Use `skupper connect` in namespace 2 to use the generated token to
+Use `skupper connect` in `eu-north` to use the generated token to
 form a connection.
 
-Namespace 2:
+Namespace `eu-north`:
 
     skupper connect $HOME/secret.yaml
 
@@ -139,7 +141,7 @@ namespaces, Skupper uses an annotation on Kubernetes services.
 Use `kubectl annotate` with the annotation `skupper.io/proxy=http` to
 expose the backend service:
 
-Namespace 1:
+Namespace `us-east`:
 
     kubectl annotate service/hello-world-backend skupper.io/proxy=http
 
@@ -147,7 +149,7 @@ Once the service is annotated, Skupper creates matching services on
 all the connected namespaces.  Use `kubectl get services` on namespace
 2 to look for the `hello-world-backend` service to appear.
 
-Namespace 2:
+Namespace `eu-north`:
 
     $ kubectl get services
     NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
@@ -161,7 +163,7 @@ Namespace 2:
 Now we can send a request to the frontend again to see if it has full
 connectivity to the backend.
 
-Namespace 2:
+Namespace `eu-north`:
 
     curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}/')
 
@@ -187,17 +189,17 @@ frontend sends a request to the backend, Skupper forwards the request
 to the service where the backend is running and routes the response
 back to the frontend.
 
-<img style="width: 80%;" src="images/sequence.svg" alt="Sequence diagram"/>
+![Sequence diagram](images/sequence.svg){:width="80%"}
 
 ## Cleaning up
 
-Namespace 1:
+Namespace `us-east`:
 
     skupper delete
     kubectl delete service/hello-world-backend
     kubectl delete deployment/hello-world-backend
 
-Namespace 2:
+Namespace `eu-north`:
 
     skupper delete
     kubectl delete service/hello-world-frontend
