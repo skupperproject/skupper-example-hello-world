@@ -136,7 +136,7 @@ use `scp` or a similar tool to transfer the token.
 
 We now have connected namespaces, but there is one more step.  To
 select a service from one namespace for exposure on all the connected
-namespaces, Skupper uses an annotation on Kubernetes services.
+namespaces, Skupper uses an annotation the Kubernetes service.
 
 Use `kubectl annotate` with the annotation `skupper.io/proxy=http` to
 expose the backend service:
