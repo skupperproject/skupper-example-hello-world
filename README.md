@@ -71,7 +71,7 @@ installed.
     $ skupper status
     Namespace '<ns>' is ready.  It is connected to 0 other namespaces.
 
-As you move through the steps that follow, you can continue to use `skupper
+As you move through the steps that follow, you can use `skupper
 status` at any time to check your progress.
 
 ## Step 2: Deploy the backend and frontend services
