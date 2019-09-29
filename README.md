@@ -186,12 +186,15 @@ local service in all of the connected namespaces.
 The backend service is located in `us-east`, but the frontend service
 in `eu-north` can "see" it as if it were local.  When the frontend
 sends a request to the backend, Skupper forwards the request to the
-service where the backend is running and routes the response back to
+namespace where the backend is running and routes the response back to
 the frontend.
 
 <img src="images/sequence.svg" width="640"/>
 
 ## Cleaning up
+
+To remove Skupper and the other resources from this exercise, use the
+following commands:
 
 Namespace `us-east`:
 
