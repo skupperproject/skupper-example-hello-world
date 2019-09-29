@@ -146,8 +146,8 @@ Namespace `us-east`:
     kubectl annotate service/hello-world-backend skupper.io/proxy=http
 
 Once the service is annotated, Skupper creates matching services on
-all the connected namespaces.  Use `kubectl get services` on namespace
-2 to look for the `hello-world-backend` service to appear.
+all the connected namespaces.  Use `kubectl get services` on
+`eu-north` to look for the `hello-world-backend` service to appear.
 
 Namespace `eu-north`:
 
