@@ -27,8 +27,7 @@ app = Flask(__name__)
 host = os.environ.get("BACKEND_SERVICE_HOST", "0.0.0.0")
 port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 
-lock = Lock()
-count = 0
+podname = os.environ.get("HOSTNAME", "hello-world-backend")
 
 @app.errorhandler(Exception)
 def error(e):
@@ -37,12 +36,7 @@ def error(e):
 
 @app.route("/api/hello")
 def hello():
-    global count
-
-    with lock:
-        count += 1
-
-    return Response(f"Hello {count}", mimetype="text/plain")
+    return Response(f"Hello from {podname}", mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(host=host, port=port)
