@@ -1,3 +1,5 @@
+# The run script requires that python3-flask and -requests are installed
+
 .phony: run
 run: build
 	scripts/run
@@ -10,7 +12,7 @@ build:
 .phony: clean
 clean:
 	rm -rf scripts/__pycache__
-	rm README.html
+	rm -f README.html
 
 README.html: README.md
 	pandoc -o $@ $<
