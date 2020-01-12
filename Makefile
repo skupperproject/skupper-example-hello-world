@@ -9,6 +9,12 @@ build:
 	cd backend && make build
 	cd frontend && make build
 
+# Prerequisite: podman login quay.io
+.PHONY: push
+push: build
+	cd backend && make push
+	cd frontend && make push
+
 .phony: clean
 clean:
 	rm -rf scripts/__pycache__
