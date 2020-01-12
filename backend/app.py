@@ -26,6 +26,7 @@ app = Flask(__name__)
 
 host = os.environ.get("BACKEND_SERVICE_HOST", "0.0.0.0")
 port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
+
 pod = os.environ.get("HOSTNAME", "hello-world-backend")
 
 lock = Lock()

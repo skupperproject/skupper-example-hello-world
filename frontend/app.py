@@ -19,7 +19,6 @@
 
 import os
 import requests
-import traceback
 
 from flask import Flask, Response
 
