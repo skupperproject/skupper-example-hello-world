@@ -796,7 +796,9 @@ _signal.signal(_signal.SIGTERM, default_sigterm_handler)
 def _command_string(command, args):
     elems = ["\"{0}\"".format(x) if " " in x else x for x in command]
     string = " ".join(elems)
-    string = string.format(*args)
+
+    if args:
+        string = string.format(*args)
 
     return string
 
@@ -812,7 +814,9 @@ if _sys.platform == "linux2":
 # quiet - No output unless there is an error
 def start_process(command, *args, **kwargs):
     if _is_string(command):
-        command = command.format(*args)
+        if args:
+            command = command.format(*args)
+
         command_args = _shlex.split(command)
         command_string = command
     elif isinstance(command, _collections.Iterable):

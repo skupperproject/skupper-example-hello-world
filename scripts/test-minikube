@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import requests
-import threading
 
 from plano import *
 
@@ -41,7 +40,8 @@ with working_env(KUBECONFIG=test_kubeconfig):
             call(f"skupper connection-token {connection_token}")
 
         with working_env(KUBECONFIG=east_kubeconfig):
-            call(f"skupper connect {connection_token}")
+            call(f"skupper connect {connection_token} --connection-name east-west")
+            call("skupper check-connection --wait 30 east-west")
             call("skupper expose deployment hello-world-backend")
 
         with working_env(KUBECONFIG=west_kubeconfig):
