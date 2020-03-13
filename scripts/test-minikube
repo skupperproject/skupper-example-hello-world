@@ -1,0 +1,49 @@
+#!/usr/bin/python3
+
+import requests
+import threading
+
+from plano import *
+
+test_profile = "skupper-example-hello-world-test"
+test_kubeconfig = make_temp_file()
+east_kubeconfig = make_temp_file()
+west_kubeconfig = make_temp_file()
+connection_token = make_temp_file()
+
+tunnel_output_file = open("/tmp/minikube-tunnel-output", "w")
+
+with working_env(KUBECONFIG=test_kubeconfig):
+    call(f"minikube delete -p {test_profile}")
+    call(f"minikube start -p {test_profile}")
+    call(f"minikube tunnel -p {test_profile} --cleanup")
+
+    with start_process(f"minikube tunnel -p {test_profile}", output=tunnel_output_file):
+        copy(test_kubeconfig, east_kubeconfig)
+        copy(test_kubeconfig, west_kubeconfig)
+
+        with working_env(KUBECONFIG=east_kubeconfig):
+            call("kubectl create namespace east")
+            call("kubectl config set-context --current --namespace east")
+            call("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
+
+            call("skupper init --edge")
+            call("skupper status")
+
+        with working_env(KUBECONFIG=west_kubeconfig):
+            call("kubectl create namespace west")
+            call("kubectl config set-context --current --namespace west")
+            call("kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend")
+
+            call("skupper init")
+            call("skupper status")
+
+            call(f"skupper connection-token {connection_token}")
+
+        with working_env(KUBECONFIG=east_kubeconfig):
+            call(f"skupper connect {connection_token}")
+            call("skupper expose deployment hello-world-backend")
+
+        with working_env(KUBECONFIG=west_kubeconfig):
+            url = call_for_stdout("kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}/'")
+            call(f"curl {url}")

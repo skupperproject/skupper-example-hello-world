@@ -9,6 +9,10 @@ build:
 	cd backend && make build
 	cd frontend && make build
 
+.phony: test
+test:
+	scripts/test-minikube
+
 # Prerequisite: podman login quay.io
 .PHONY: push
 push: build
