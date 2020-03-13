@@ -26,7 +26,7 @@ with working_env(KUBECONFIG=test_kubeconfig):
             call("kubectl config set-context --current --namespace east")
             call("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
 
-            call("skupper init --edge")
+            call("skupper init") # --edge
             call("skupper status")
 
         with working_env(KUBECONFIG=west_kubeconfig):
@@ -42,7 +42,7 @@ with working_env(KUBECONFIG=test_kubeconfig):
         with working_env(KUBECONFIG=east_kubeconfig):
             call(f"skupper connect {connection_token} --connection-name east-west")
             call("skupper check-connection --wait 30 east-west")
-            call("skupper expose deployment hello-world-backend")
+            call("skupper expose deployment hello-world-backend --port 8080")
 
         with working_env(KUBECONFIG=west_kubeconfig):
             url = call_for_stdout("kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}/'")
