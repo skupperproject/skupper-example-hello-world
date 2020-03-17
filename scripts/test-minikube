@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-import requests
-
 from plano import *
 
 test_profile = "skupper-example-hello-world-test"
@@ -10,40 +8,127 @@ east_kubeconfig = make_temp_file()
 west_kubeconfig = make_temp_file()
 connection_token = make_temp_file()
 
-tunnel_output_file = open("/tmp/minikube-tunnel-output", "w")
+def check_environment():
+    def check_program(program):
+        if which(program) is None:
+            raise PlanoException(f"Required program {program} is not available")
 
-with working_env(KUBECONFIG=test_kubeconfig):
-    call(f"minikube delete -p {test_profile}")
-    call(f"minikube start -p {test_profile}")
-    call(f"minikube tunnel -p {test_profile} --cleanup")
+    check_program("minikube")
+    check_program("kubectl")
+    check_program("skupper")
+    check_program("curl")
 
-    with start_process(f"minikube tunnel -p {test_profile}", output=tunnel_output_file):
-        copy(test_kubeconfig, east_kubeconfig)
-        copy(test_kubeconfig, west_kubeconfig)
+def run_test():
+    with working_env(KUBECONFIG=east_kubeconfig):
+        call("kubectl create namespace east")
+        call("kubectl config set-context --current --namespace east")
+        call("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
 
+        call("skupper init --edge")
+        call("skupper status")
+
+        call("kubectl wait --for condition=available --timeout 60s deployment/skupper-proxy-controller")
+        call("kubectl wait --for condition=available --timeout 60s deployment/skupper-router")
+        call("kubectl wait --for condition=available --timeout 60s deployment/hello-world-backend")
+
+        call("skupper status")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("kubectl create namespace west")
+        call("kubectl config set-context --current --namespace west")
+        call("kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend")
+
+        call("skupper init")
+        call("skupper status")
+
+        call("kubectl wait --for condition=available --timeout 60s deployment/skupper-proxy-controller")
+        call("kubectl wait --for condition=available --timeout 60s deployment/skupper-router")
+        call("kubectl wait --for condition=available --timeout 60s deployment/hello-world-frontend")
+
+        call("skupper status")
+        call(f"skupper connection-token {connection_token}")
+
+    with working_env(KUBECONFIG=east_kubeconfig):
+        call(f"skupper connect {connection_token} --connection-name east-west")
+        call("skupper check-connection --wait 30 east-west")
+        call("skupper expose deployment hello-world-backend --port 8080 --protocol http")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("kubectl expose deployment hello-world-frontend --port 8080 --type LoadBalancer")
+
+        wait_for_service("hello-world-backend")
+
+        host, port = get_ingress("hello-world-frontend")
+        url = f"http://{host}:{port}/"
+
+    try:
+        call(f"curl -f {url}")
+    except:
         with working_env(KUBECONFIG=east_kubeconfig):
-            call("kubectl create namespace east")
-            call("kubectl config set-context --current --namespace east")
-            call("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
-
-            call("skupper init") # --edge
-            call("skupper status")
+            call("kubectl logs deployment/hello-world-backend")
 
         with working_env(KUBECONFIG=west_kubeconfig):
-            call("kubectl create namespace west")
-            call("kubectl config set-context --current --namespace west")
-            call("kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend")
+            call("kubectl logs deployment/hello-world-frontend")
 
-            call("skupper init")
-            call("skupper status")
+        raise
 
-            call(f"skupper connection-token {connection_token}")
+# Eventually Kubernetes will make this nicer:
+# https://github.com/kubernetes/kubernetes/pull/87399
+# https://github.com/kubernetes/kubernetes/issues/80828
+# https://github.com/kubernetes/kubernetes/issues/83094
+def wait_for_service(service):
+    notice(f"Waiting for service {service} to come up")
 
-        with working_env(KUBECONFIG=east_kubeconfig):
-            call(f"skupper connect {connection_token} --connection-name east-west")
-            call("skupper check-connection --wait 30 east-west")
-            call("skupper expose deployment hello-world-backend --port 8080")
+    for i in range(60):
+        sleep(1)
 
-        with working_env(KUBECONFIG=west_kubeconfig):
-            url = call_for_stdout("kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}/'")
-            call(f"curl {url}")
+        if call_for_exit_code(f"kubectl get service {service}") == 0:
+            break
+    else:
+        fail(f"Timed out waiting for service {service}")
+
+def get_ingress(service):
+    wait_for_service(service)
+
+    for i in range(60):
+        sleep(1)
+
+        if call_for_stdout(f"kubectl get service {service} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
+            break
+    else:
+        fail(f"Timed out waiting for ingress for {service}")
+
+    host_port = call_for_stdout(f"kubectl get service {service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}:{{.spec.ports[0].port}}'")
+
+    return host_port.split(":", 1)
+
+def main():
+    check_environment()
+
+    with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
+        try:
+            with working_env(KUBECONFIG=test_kubeconfig):
+                call(f"minikube start -p {test_profile}")
+
+                with start_process(f"minikube tunnel -p {test_profile}", output=tunnel_output_file):
+                    copy(test_kubeconfig, east_kubeconfig)
+                    copy(test_kubeconfig, west_kubeconfig)
+
+                    run_test()
+
+                notice("Test PASSED")
+        except:
+            error("Test FAILED")
+            raise
+        finally:
+            call(f"minikube tunnel -p {test_profile} --cleanup")
+            call(f"minikube delete -p {test_profile}")
+
+            # At one point it felt like this was helping:
+            # call("sudo virsh net-destroy default")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

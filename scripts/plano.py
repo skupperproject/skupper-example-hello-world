@@ -724,10 +724,18 @@ def call_for_exit_code(command, *args, **kwargs):
     return wait_for_process(proc)
 
 def call_for_stdout(command, *args, **kwargs):
+    if "quiet" in kwargs or "output" in kwargs or "stdout" in kwargs:
+        raise PlanoException("Illegal output options")
+
     kwargs["stdout"] = _subprocess.PIPE
 
     proc = start_process(command, *args, **kwargs)
-    output = proc.communicate()[0].decode("utf-8")
+    output = proc.communicate()[0]
+
+    if output is None:
+        output = b""
+
+    output = output.decode("utf-8")
     exit_code = proc.poll()
 
     if exit_code != 0:
@@ -739,10 +747,18 @@ def call_for_stdout(command, *args, **kwargs):
     return output
 
 def call_for_stderr(command, *args, **kwargs):
+    if "quiet" in kwargs or "output" in kwargs or "stdout" in kwargs:
+        raise PlanoException("Illegal output options")
+
     kwargs["stderr"] = _subprocess.PIPE
 
     proc = start_process(command, *args, **kwargs)
-    output = proc.communicate()[1].decode("utf-8")
+    output = proc.communicate()[1]
+
+    if output is None:
+        output = b""
+
+    output = output.decode("utf-8")
     exit_code = proc.poll()
 
     if exit_code != 0:
@@ -832,14 +848,23 @@ def start_process(command, *args, **kwargs):
 
     name = kwargs.get("name", command_args[0])
 
-    kwargs["stdout"] = kwargs.get("stdout", _sys.stdout)
-    kwargs["stderr"] = kwargs.get("stderr", _sys.stderr)
+    stdout = kwargs.get("stdout", _sys.stdout)
+    stderr = kwargs.get("stderr", _sys.stderr)
 
     if "output" in kwargs:
         out = kwargs.pop("output")
 
-        kwargs["stdout"] = out
-        kwargs["stderr"] = out
+        stdout = out
+        stderr = out
+
+    if _is_string(stdout):
+        stdout = open(stdout, "w")
+
+    if _is_string(stderr):
+        stderr = open(stderr, "w")
+
+    kwargs["stdout"] = stdout
+    kwargs["stderr"] = stderr
 
     temp_output_file = None
 
