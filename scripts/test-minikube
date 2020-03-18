@@ -64,14 +64,10 @@ def run_test():
     except:
         with working_env(KUBECONFIG=east_kubeconfig):
             call("kubectl logs deployment/hello-world-backend")
-
-        with working_env(KUBECONFIG=west_kubeconfig):
-            call("kubectl logs deployment/hello-world-frontend")
-
-        with working_env(KUBECONFIG=east_kubeconfig):
             call("kubectl logs deployment/hello-world-backend-proxy")
 
         with working_env(KUBECONFIG=west_kubeconfig):
+            call("kubectl logs deployment/hello-world-frontend")
             call("kubectl logs deployment/hello-world-backend-proxy")
 
         raise
