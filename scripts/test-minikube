@@ -49,13 +49,12 @@ def run_test():
         call("skupper status")
         call(f"skupper connect {connection_token} --connection-name east-west")
         call("skupper check-connection --wait 30 east-west")
-        call("skupper expose deployment hello-world-backend --port 8080")
+        call("skupper expose deployment hello-world-backend --port 8080 --protocol http")
 
     with working_env(KUBECONFIG=west_kubeconfig):
         call("kubectl expose deployment hello-world-frontend --port 8080 --type LoadBalancer")
 
         wait_for_resource("service", "hello-world-backend")
-        # wait_for_resource("deployment", "hello-world-backend-proxy")
 
         host, port = get_ingress("hello-world-frontend")
         url = f"http://{host}:{port}/"
@@ -141,9 +140,6 @@ def main():
         finally:
             call(f"minikube tunnel -p {test_profile} --cleanup")
             call(f"minikube delete -p {test_profile}")
-
-            # At one point it felt like this was helping:
-            # call("sudo virsh net-destroy default")
 
 if __name__ == "__main__":
     try:
