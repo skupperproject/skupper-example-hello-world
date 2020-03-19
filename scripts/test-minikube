@@ -52,7 +52,7 @@ def run_test():
         call("skupper expose deployment hello-world-backend --port 8080 --protocol http")
 
     with working_env(KUBECONFIG=west_kubeconfig):
-        call("kubectl expose deployment hello-world-frontend --port 8080 --type LoadBalancer")
+        call("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
 
         wait_for_resource("service", "hello-world-backend")
 
@@ -106,12 +106,12 @@ def get_ingress(service):
     for i in range(60):
         sleep(1)
 
-        if call_for_stdout(f"kubectl get service {service} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
+        if call_for_stdout(f"kubectl get service/{service} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
     else:
         fail(f"Timed out waiting for ingress for {service}")
 
-    host_port = call_for_stdout(f"kubectl get service {service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}:{{.spec.ports[0].port}}'")
+    host_port = call_for_stdout(f"kubectl get service/{service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}:{{.spec.ports[0].port}}'")
 
     return host_port.split(":", 1)
 
