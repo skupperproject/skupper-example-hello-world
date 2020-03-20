@@ -7,8 +7,8 @@ A minimal HTTP application deployed with [Skupper](https://skupper.io/)
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Set up your namespaces](#step-1-set-up-your-namespaces)
-* [Step 2: Deploy the backend and frontend services](#step-2-deploy-the-backend-and-frontend-services)
-* [Step 3: Connect your namespaces](#step-3-connect-your-namespaces)
+* [Step 2: Connect your namespaces](#step-2-connect-your-namespaces)
+* [Step 3: Deploy the backend and frontend services](#step-3-deploy-the-backend-and-frontend-services)
 * [Step 4: Expose the backend service on the Skupper network](#step-4-expose-the-backend-service-on-the-skupper-network)
 * [Step 5: Test the application](#step-5-test-the-application)
 * [What just happened?](#what-just-happened)
@@ -79,19 +79,7 @@ installed.
 As you move through the steps below, you can use `skupper status` at
 any time to check your progress.
 
-## Step 2: Deploy the backend and frontend services
-
-Use `kubectl create deployment` to deploy the services:
-
-Namespace `west`:
-
-    kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend
-
-Namespace `east`:
-
-    kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
-
-## Step 3: Connect your namespaces
+## Step 2: Connect your namespaces
 
 To connect namespaces, Skupper requires a token representing
 permission to form a connection.  This token contains a secret (only
@@ -113,6 +101,18 @@ Namespace `east`:
 
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
+
+## Step 3: Deploy the backend and frontend services
+
+Use `kubectl create deployment` to deploy the services:
+
+Namespace `west`:
+
+    kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend
+
+Namespace `east`:
+
+    kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
 
 ## Step 4: Expose the backend service on the Skupper network
 
