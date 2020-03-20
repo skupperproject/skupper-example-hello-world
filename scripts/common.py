@@ -32,15 +32,15 @@ def wait_for_resource(group, name):
             call(f"kubectl logs {group}/{name}")
             raise
 
-def get_ingress_ip(service):
-    wait_for_resource("service", service)
+def get_ingress_ip(service_name):
+    wait_for_resource("service", service_name)
 
     for i in range(60):
         sleep(1)
 
-        if call_for_stdout(f"kubectl get service/{service} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
+        if call_for_stdout(f"kubectl get service/{service_name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
     else:
-        fail(f"Timed out waiting for ingress for {service}")
+        fail(f"Timed out waiting for ingress for {service_name}")
 
-    return call_for_stdout(f"kubectl get service/{service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
+    return call_for_stdout(f"kubectl get service/{service_name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
