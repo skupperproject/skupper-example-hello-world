@@ -1,0 +1,99 @@
+#!/usr/bin/python3
+
+from common import *
+
+test_profile = "skupper-example-hello-world"
+test_kubeconfig = make_temp_file()
+west_kubeconfig = make_temp_file()
+east_kubeconfig = make_temp_file()
+connection_token = make_temp_file()
+
+def run_test():
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("kubectl create namespace west")
+        call("kubectl config set-context --current --namespace west")
+        call("kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend")
+
+        call("skupper init")
+
+    with working_env(KUBECONFIG=east_kubeconfig):
+        call("kubectl create namespace east")
+        call("kubectl config set-context --current --namespace east")
+        call("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
+
+        call("skupper init --edge")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        wait_for_resource("deployment", "skupper-proxy-controller")
+        wait_for_resource("deployment", "skupper-router")
+        wait_for_resource("deployment", "hello-world-frontend")
+
+        call("skupper status")
+        call(f"skupper connection-token {connection_token}")
+
+    with working_env(KUBECONFIG=east_kubeconfig):
+        wait_for_resource("deployment", "skupper-proxy-controller")
+        wait_for_resource("deployment", "skupper-router")
+        wait_for_resource("deployment", "hello-world-backend")
+
+        call("skupper status")
+        call(f"skupper connect {connection_token} --connection-name east-west")
+        call("skupper check-connection --wait 30 east-west")
+        call("skupper expose deployment hello-world-backend --port 8080 --protocol http")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
+
+        wait_for_resource("service", "hello-world-backend")
+
+        url = "http://{}:8080/".format(get_ingress_ip("hello-world-frontend"))
+
+    try:
+        call(f"curl -f {url}")
+    except:
+        with working_env(KUBECONFIG=east_kubeconfig):
+            call("kubectl logs deployment/hello-world-backend")
+            call("kubectl logs deployment/hello-world-backend-proxy")
+
+        with working_env(KUBECONFIG=west_kubeconfig):
+            call("kubectl logs deployment/hello-world-frontend")
+            call("kubectl logs deployment/hello-world-backend-proxy")
+
+        raise
+
+    with working_env(KUBECONFIG=east_kubeconfig):
+        call("skupper delete")
+        call("kubectl delete service/hello-world-backend")
+        call("kubectl delete deployment/hello-world-backend")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("skupper delete")
+        call("kubectl delete deployment/hello-world-frontend")
+
+def main():
+    check_environment()
+
+    with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
+        try:
+            with working_env(KUBECONFIG=test_kubeconfig):
+                call(f"minikube start -p {test_profile}")
+
+                with start_process(f"minikube tunnel -p {test_profile}", output=tunnel_output_file):
+                    copy(test_kubeconfig, east_kubeconfig)
+                    copy(test_kubeconfig, west_kubeconfig)
+
+                    run_test()
+
+                notice("Test PASSED")
+        except:
+            error("Test FAILED")
+            raise
+        finally:
+            call(f"minikube tunnel -p {test_profile} --cleanup")
+            call(f"minikube delete -p {test_profile}")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

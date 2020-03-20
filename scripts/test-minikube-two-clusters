@@ -1,22 +1,12 @@
 #!/usr/bin/python3
 
-from plano import *
+from common import *
 
-test_profile = "skupper-example-hello-world-test"
-test_kubeconfig = make_temp_file()
-east_kubeconfig = make_temp_file()
 west_kubeconfig = make_temp_file()
+west_profile = "skupper-example-hello-world-west"
+east_kubeconfig = make_temp_file()
+east_profile = "skupper-example-hello-world-east"
 connection_token = make_temp_file()
-
-def check_environment():
-    def check_program(program):
-        if which(program) is None:
-            raise PlanoException(f"Required program {program} is not available")
-
-    check_program("minikube")
-    check_program("kubectl")
-    check_program("skupper")
-    check_program("curl")
 
 def run_test():
     with working_env(KUBECONFIG=west_kubeconfig):
@@ -80,58 +70,29 @@ def run_test():
         call("skupper delete")
         call("kubectl delete deployment/hello-world-frontend")
 
-# Eventually Kubernetes will make this nicer:
-# https://github.com/kubernetes/kubernetes/pull/87399
-# https://github.com/kubernetes/kubernetes/issues/80828
-# https://github.com/kubernetes/kubernetes/issues/83094
-def wait_for_resource(group, name):
-    notice(f"Waiting for {group}/{name} to be available")
-
-    for i in range(60):
-        sleep(1)
-
-        if call_for_exit_code(f"kubectl get {group}/{name}") == 0:
-            break
-    else:
-        fail(f"Timed out waiting for {group}/{name}")
-
-    if group == "deployment":
-        call(f"kubectl wait --for condition=available --timeout 60s {group}/{name}")
-
-def get_ingress_ip(service):
-    wait_for_resource("service", service)
-
-    for i in range(60):
-        sleep(1)
-
-        if call_for_stdout(f"kubectl get service/{service} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
-            break
-    else:
-        fail(f"Timed out waiting for ingress for {service}")
-
-    return call_for_stdout(f"kubectl get service/{service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
-
 def main():
     check_environment()
 
     with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
         try:
-            with working_env(KUBECONFIG=test_kubeconfig):
-                call(f"minikube start -p {test_profile}")
+            with working_env(KUBECONFIG=west_kubeconfig):
+                call(f"minikube start -p {west_profile}")
 
-                with start_process(f"minikube tunnel -p {test_profile}", output=tunnel_output_file):
-                    copy(test_kubeconfig, east_kubeconfig)
-                    copy(test_kubeconfig, west_kubeconfig)
+            with working_env(KUBECONFIG=east_kubeconfig):
+                call(f"minikube start -p {east_profile}")
 
+            with working_env(KUBECONFIG=west_kubeconfig):
+                with start_process(f"minikube tunnel -p {west_profile}", output=tunnel_output_file):
                     run_test()
 
-                notice("Test PASSED")
+            notice("Test PASSED")
         except:
             error("Test FAILED")
             raise
         finally:
-            call(f"minikube tunnel -p {test_profile} --cleanup")
-            call(f"minikube delete -p {test_profile}")
+            call(f"minikube tunnel -p {west_profile} --cleanup")
+            call(f"minikube delete -p {west_profile}")
+            call(f"minikube delete -p {east_profile}")
 
 if __name__ == "__main__":
     try:
