@@ -62,10 +62,10 @@ Console for namespace `east`:
     kubectl config set-context --current --namespace east
     skupper init --edge
 
-Using the `--edge` argument in `east` disables network ingress.  In
-our scenario, `east` needs to establish one outbound connection to
-`west`, but it doesn't need to accept any incoming connections.  As a
-result, no network ingress is required in `east`.
+Using the `--edge` argument in `east` disables network ingress at the
+Skupper router layer.  In our scenario, `east` needs to establish one
+outbound connection to `west`.  It does not need to accept any incoming
+connections.  As a result, no network ingress is required in `east`.
 
 See [Getting started with Skupper](https://skupper.io/start/) for more
 information about setting up namespaces.
@@ -159,7 +159,7 @@ Look up the external URL and use `curl` to send a request:
 
 Namespace `west`:
 
-    curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:{.spec.ports[0].port}/')
+    curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
 
 **Note:** If the embedded `kubectl get` command fails to get the IP,
 you can find it manually by running `kubectl get services` and looking
@@ -203,7 +203,6 @@ Namespace `west`:
 Namespace `east`:
 
     skupper delete
-    kubectl delete service/hello-world-backend
     kubectl delete deployment/hello-world-backend
 
 ## Next steps
