@@ -1,14 +1,85 @@
 from plano import *
 
-def check_environment():
-    def check_program(program):
-        if which(program) is None:
-            raise PlanoException(f"Required program {program} is not available")
+def run_test(west_kubeconfig, east_kubeconfig):
+    connection_token = make_temp_file()
 
-    check_program("minikube")
-    check_program("kubectl")
-    check_program("skupper")
-    check_program("curl")
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("kubectl create namespace west")
+        call("kubectl config set-context --current --namespace west")
+        call("kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend")
+
+        call("skupper init")
+
+    with working_env(KUBECONFIG=east_kubeconfig):
+        call("kubectl create namespace east")
+        call("kubectl config set-context --current --namespace east")
+        call("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
+
+        call("skupper init --edge")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        wait_for_resource("deployment", "skupper-proxy-controller")
+        wait_for_resource("deployment", "skupper-router")
+        wait_for_resource("deployment", "hello-world-frontend")
+
+        call("skupper status")
+        call(f"skupper connection-token {connection_token}")
+
+    with working_env(KUBECONFIG=east_kubeconfig):
+        wait_for_resource("deployment", "skupper-proxy-controller")
+        wait_for_resource("deployment", "skupper-router")
+        wait_for_resource("deployment", "hello-world-backend")
+
+        call("skupper status")
+        call(f"skupper connect {connection_token} --connection-name east-west")
+
+        try:
+            call("skupper check-connection --wait 60 east-west")
+        except:
+            with working_env(KUBECONFIG=east_kubeconfig):
+                call("kubectl logs deployment/skupper-router")
+
+            with working_env(KUBECONFIG=west_kubeconfig):
+                call("kubectl logs deployment/skupper-router")
+
+            raise
+
+        call("skupper expose deployment hello-world-backend --port 8080 --protocol http")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
+
+        wait_for_resource("service", "hello-world-backend")
+
+        ip = get_ingress_ip("hello-world-frontend")
+        url = f"http://{ip}:8080/"
+
+    try:
+        call(f"curl -f {url}")
+    except:
+        with working_env(KUBECONFIG=east_kubeconfig):
+            call("kubectl logs deployment/hello-world-backend")
+            call("kubectl logs deployment/hello-world-backend-proxy")
+
+        with working_env(KUBECONFIG=west_kubeconfig):
+            call("kubectl logs deployment/hello-world-frontend")
+            call("kubectl logs deployment/hello-world-backend-proxy")
+
+        raise
+
+    with working_env(KUBECONFIG=east_kubeconfig):
+        call("skupper delete")
+        call("kubectl delete service/hello-world-backend")
+        call("kubectl delete deployment/hello-world-backend")
+
+    with working_env(KUBECONFIG=west_kubeconfig):
+        call("skupper delete")
+        call("kubectl delete deployment/hello-world-frontend")
+
+def check_environment():
+    call("kubectl version")
+    call("skupper version")
+    call("curl --version")
 
 # Eventually Kubernetes will make this nicer:
 # https://github.com/kubernetes/kubernetes/pull/87399
