@@ -2,12 +2,7 @@
 
 from common import *
 
-test_profile = "skupper-example-hello-world"
-test_kubeconfig = make_temp_file()
-west_kubeconfig = make_temp_file()
-east_kubeconfig = make_temp_file()
-
-def run_test():
+def run_test(west_kubeconfig, east_kubeconfig):
     connection_token = make_temp_file()
 
     with working_env(KUBECONFIG=west_kubeconfig):
@@ -83,26 +78,15 @@ def run_test():
         call("kubectl delete deployment/hello-world-frontend")
 
 def main():
-    check_environment()
+    west_kubeconfig = ARGS[1]
+    east_kubeconfig = ARGS[2]
 
-    with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
-        try:
-            with working_env(KUBECONFIG=test_kubeconfig):
-                call(f"minikube start -p {test_profile}")
-
-                with start_process(f"minikube tunnel -p {test_profile}", output=tunnel_output_file):
-                    copy(test_kubeconfig, east_kubeconfig)
-                    copy(test_kubeconfig, west_kubeconfig)
-
-                    run_test()
-
-                notice("Test PASSED")
-        except:
-            error("Test FAILED")
-            raise
-        finally:
-            call(f"minikube tunnel -p {test_profile} --cleanup")
-            call(f"minikube delete -p {test_profile}")
+    try:
+        run_test(west_kubeconfig, east_kubeconfig)
+        notice("Test PASSED")
+    except:
+        error("Test FAILED")
+        raise
 
 if __name__ == "__main__":
     try:
