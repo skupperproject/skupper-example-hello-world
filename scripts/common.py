@@ -50,6 +50,7 @@ def run_test(west_kubeconfig, east_kubeconfig):
         call("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
 
         wait_for_resource("service", "hello-world-backend")
+        wait_for_resource("deployment", "hello-world-backend-proxy")
 
         ip = get_ingress_ip("hello-world-frontend")
         url = f"http://{ip}:8080/"
