@@ -2,7 +2,7 @@
 
 <!-- [![Build Status](https://travis-ci.org/skupperproject/skupper-example-xxx.svg?branch=master)](https://travis-ci.org/skupperproject/skupper-example-xxx) -->
 
-A minimal HTTP application deployed with [Skupper](https://skupper.io/)
+A minimal HTTP application deployed across Kubernetes clusters using [Skupper](https://skupper.io/)
 
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
