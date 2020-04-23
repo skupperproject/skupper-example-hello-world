@@ -68,6 +68,9 @@ def run_test(west_kubeconfig, east_kubeconfig):
 
         raise
 
+    # while input("Are you done (yes)? ") != "yes":
+    #     pass
+
     with working_env(KUBECONFIG=east_kubeconfig):
         call("skupper delete")
         call("kubectl delete service/hello-world-backend")
@@ -78,8 +81,8 @@ def run_test(west_kubeconfig, east_kubeconfig):
         call("kubectl delete deployment/hello-world-frontend")
 
 def check_environment():
-    call("kubectl version")
-    call("skupper version")
+    call("kubectl version --client --short")
+    call("skupper --version")
     call("curl --version")
 
 # Eventually Kubernetes will make this nicer:
