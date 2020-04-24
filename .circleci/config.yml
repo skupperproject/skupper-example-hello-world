@@ -1,0 +1,91 @@
+version: 2.1
+orbs:
+    docker: circleci/docker@1.0.1
+    kube-orb: circleci/kubernetes@0.11.0
+
+executors:
+  e2e_tets_executor:
+    machine:
+      image: circleci/classic:latest
+
+commands:
+  minikube-install:
+    description: Installs the minikube executable onto the system.
+    parameters:
+      version:
+        default: v0.30.0
+        type: string
+    steps:
+      - run:
+          command: >-
+            curl -Lo minikube
+            https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && 
+            chmod +x minikube && sudo
+            mv minikube /usr/local/bin/
+          name: Install Minikube Executable
+
+  minikube-start:
+    description: Starts the minikube service.
+    steps:
+      - run:
+          command: >-
+            minikube start --vm-driver=docker --cpus 2 --memory 2048
+          name: Start Minikube Cluster
+
+  minikube-start-load-balancer:
+    description: Starts the minikube tunnel
+    steps:
+      - run:
+          command: >-
+            sudo minikube tunnel &
+          name: Start Minikube Tunnel
+
+  prepare_for_local_cluster_e2e:
+    description: install right versions of go, docker, kubectl, and also build
+    steps:
+      - run:
+          #TODO add a comment saying why is this needed.
+          name: Export environment variables persistent in execution shell
+          command: |
+            echo 'export KUBECONFIG=/home/circleci/.kube/config' >> $BASH_ENV
+            echo 'export GOROOT=/usr/local/go' >> $BASH_ENV
+            echo 'export GOPATH=$HOME/go' >> $BASH_ENV
+            echo 'export PATH=$GOPATH/bin:$GOROOT/bin:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+      - checkout
+      - run:
+          name: cleanup previous go installation
+          command: sudo rm -rf /usr/local/go
+      - docker/install-docker
+      - kube-orb/install-kubectl
+
+  run_e2e_tests:
+    description: run all e2e tests inside the current KUBECONFIG configured cluster
+    parameters:
+      args:
+        default: ""
+        type: string
+    steps:
+      - run:
+          name: Run Tests
+          command: kubectl cluster-info
+
+workflows:
+  version: 2.1
+  build-workflow:
+    jobs:
+      - minikube_local_cluster_e2e_tests:
+          pre-steps:
+            - prepare_for_local_cluster_e2e
+
+
+jobs:
+  minikube_local_cluster_e2e_tests:
+    executor: e2e_tets_executor
+    steps:
+      - minikube-install
+      - minikube-start
+      - minikube-start-load-balancer
+      - run: kubectl cluster-info
+      - run_e2e_tests:
+          args: "" #no cluster local since minikube has load balancer
