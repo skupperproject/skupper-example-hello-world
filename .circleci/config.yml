@@ -15,8 +15,9 @@ jobs:
       - kube-orb/install-kubectl
       - run:
           name: Install Minikube
-          command: >-
+          command: |
             curl -Lo ~/bin/minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+            chmod +x ~/bin/minikube
       - run:
           name: Install Skupper
           command: >-
