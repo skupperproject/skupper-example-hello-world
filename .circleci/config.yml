@@ -2,8 +2,13 @@ version: 2.1
 orbs:
   docker: circleci/docker@1.0.1
   kube-orb: circleci/kubernetes@0.11.0
-commands:
-  setup:
+executors:
+  main:
+    machine:
+      image: circleci/classic:latest
+jobs:
+  build:
+    executor: main
     steps:
       - checkout
       - docker/install-docker
@@ -20,12 +25,5 @@ commands:
           sudo mv minikube /usr/local/bin/
           minikube start --vm-driver=docker --cpus 2 --memory 2048
           sudo minikube tunnel &
-  run-tests:
-    steps:
       - run: >-
           kubectl cluster-info
-jobs:
-  test:
-    steps:
-      - setup
-      - run-tests
