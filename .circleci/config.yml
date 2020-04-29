@@ -26,4 +26,4 @@ jobs:
           minikube start --vm-driver=docker --cpus 2 --memory 2048
           sudo minikube tunnel &
       - run: >-
-          kubectl cluster-info
+          make test
