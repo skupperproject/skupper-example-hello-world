@@ -11,7 +11,7 @@ build:
 
 .phony: test
 test:
-	scripts/test-minikube-one-cluster
+	python3 scripts/test-minikube-one-cluster
 
 # Prerequisite: podman login quay.io
 .PHONY: push

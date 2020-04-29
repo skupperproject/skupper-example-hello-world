@@ -26,4 +26,6 @@ jobs:
           minikube start --vm-driver=docker --cpus 2 --memory 2048
           sudo minikube tunnel &
       - run: >-
+          curl -fL https://github.com/skupperproject/skupper-cli/releases/download/0.2.0/skupper-cli-0.2.0-linux-amd64.tgz | tar -C ~/bin -xzf -
+      - run: >-
           make test
