@@ -1,6 +1,6 @@
 # Skupper Hello World
 
-<!-- [![Build Status](https://travis-ci.org/skupperproject/skupper-example-xxx.svg?branch=master)](https://travis-ci.org/skupperproject/skupper-example-xxx) -->
+[![CircleCI](https://circleci.com/gh/skupperproject/skupper-example-hello-world/tree/master.svg?style=svg)](https://circleci.com/gh/skupperproject/skupper-example-hello-world/tree/master)
 
 A minimal HTTP application deployed across Kubernetes clusters using [Skupper](https://skupper.io/)
 
