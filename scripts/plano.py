@@ -20,6 +20,7 @@
 from __future__ import print_function
 
 import atexit as _atexit
+import base64 as _base64
 import binascii as _binascii
 import codecs as _codecs
 import collections as _collections
@@ -475,6 +476,12 @@ def get_unique_id(length=16):
 def unique_id(length=16):
     warn("Deprecated! Use get_unique_id() instead")
     return get_unique_id(length=length)
+
+def base64_encode(string):
+    return _base64.b64encode(string)
+
+def base64_decode(string):
+    return _base64.b64decode(string)
 
 def copy(from_path, to_path):
     notice("Copying '{0}' to '{1}'", from_path, to_path)

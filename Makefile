@@ -1,21 +1,19 @@
-# The run script requires that python3-flask and -requests are installed
+.phony: test
+test:
+	python3 scripts/test-minikube
 
-.phony: run
-run: build
-	scripts/run
+.phony: demo
+demo:
+	SKUPPER_DEMO=1 scripts/test-minikube
 
-.phony: build
-build:
+.phony: build-images
+build-images:
 	cd backend && make build
 	cd frontend && make build
 
-.phony: test
-test:
-	python3 scripts/test-minikube-one-cluster
-
 # Prerequisite: podman login quay.io
-.PHONY: push
-push: build
+.PHONY: push-images
+push-images: build-images
 	cd backend && make push
 	cd frontend && make push
 

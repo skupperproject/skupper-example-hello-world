@@ -33,16 +33,7 @@ def run_test(west_kubeconfig, east_kubeconfig):
         call("skupper status")
         call(f"skupper connect {connection_token} --connection-name east-west")
 
-        try:
-            call("skupper check-connection --wait 60 east-west")
-        except:
-            with working_env(KUBECONFIG=east_kubeconfig):
-                call("kubectl logs deployment/skupper-router")
-
-            with working_env(KUBECONFIG=west_kubeconfig):
-                call("kubectl logs deployment/skupper-router")
-
-            raise
+        wait_for_connection("east-west")
 
         call("skupper expose deployment hello-world-backend --port 8080 --protocol http")
 
@@ -52,11 +43,12 @@ def run_test(west_kubeconfig, east_kubeconfig):
         wait_for_resource("service", "hello-world-backend")
         wait_for_resource("deployment", "hello-world-backend-proxy")
 
-        ip = get_ingress_ip("hello-world-frontend")
-        url = f"http://{ip}:8080/"
+        frontend_ip = get_ingress_ip("service", "hello-world-frontend")
+        frontend_url = f"http://{frontend_ip}:8080/"
 
     try:
-        call(f"curl -f {url}")
+        for i in range(10):
+            call(f"curl -f {frontend_url}")
     except:
         with working_env(KUBECONFIG=east_kubeconfig):
             call("kubectl logs deployment/hello-world-backend")
@@ -68,8 +60,26 @@ def run_test(west_kubeconfig, east_kubeconfig):
 
         raise
 
-    # while input("Are you done (yes)? ") != "yes":
-    #     pass
+    if "SKUPPER_DEMO" in ENV:
+        with working_env(KUBECONFIG=west_kubeconfig):
+            console_ip = get_ingress_ip('service', 'skupper-controller')
+            console_url = f"http://{console_ip}:8080/"
+            password_data = call_for_stdout("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'")
+            password = base64_decode(password_data).decode("ascii")
+
+        print()
+        print("Demo time!")
+        print()
+        print(f"West kubeconfig: {west_kubeconfig}")
+        print(f"East kubeconfig: {east_kubeconfig}")
+        print(f"Frontend URL: {frontend_url}")
+        print(f"Console URL: {console_url}")
+        print("User: admin")
+        print(f"Password: {password}")
+        print()
+
+        while input("Are you done (yes)? ") != "yes":
+            pass
 
     with working_env(KUBECONFIG=east_kubeconfig):
         call("skupper delete")
@@ -107,15 +117,22 @@ def wait_for_resource(group, name):
             call(f"kubectl logs {group}/{name}")
             raise
 
-def get_ingress_ip(service_name):
-    wait_for_resource("service", service_name)
+def wait_for_connection(name):
+    try:
+        call(f"skupper check-connection --wait 60 {name}")
+    except:
+        call("kubectl logs deployment/skupper-router")
+        raise
+
+def get_ingress_ip(group, name):
+    wait_for_resource(group, name)
 
     for i in range(60):
         sleep(1)
 
-        if call_for_stdout(f"kubectl get service/{service_name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
+        if call_for_stdout(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
     else:
-        fail(f"Timed out waiting for ingress for {service_name}")
+        fail(f"Timed out waiting for ingress for {group}/{name}")
 
-    return call_for_stdout(f"kubectl get service/{service_name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
+    return call_for_stdout(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
