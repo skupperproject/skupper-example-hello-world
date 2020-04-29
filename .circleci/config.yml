@@ -23,18 +23,13 @@ jobs:
           command: >-
             curl -fL https://github.com/skupperproject/skupper-cli/releases/download/0.2.0/skupper-cli-0.2.0-linux-amd64.tgz | tar -C ~/bin -xzf -
       - run:
-          name: Prepare Bash environment
+          name: Prepare test environment
           command: |
             echo 'export KUBECONFIG=/home/circleci/.kube/config' >> $BASH_ENV
             echo 'export GOROOT=/usr/local/go' >> $BASH_ENV
             echo 'export GOPATH=$HOME/go' >> $BASH_ENV
             echo 'export PATH=$GOPATH/bin:$GOROOT/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
-      - run:
-          name: Start Minikube
-          command: |
-            minikube start --vm-driver=docker --cpus 2 --memory 2048
-            sudo minikube tunnel &
       - run:
           name: Run tests
           command: >-

@@ -83,7 +83,6 @@ def run_test(west_kubeconfig, east_kubeconfig):
 
     with working_env(KUBECONFIG=east_kubeconfig):
         call("skupper delete")
-        call("kubectl delete service/hello-world-backend")
         call("kubectl delete deployment/hello-world-backend")
 
     with working_env(KUBECONFIG=west_kubeconfig):
