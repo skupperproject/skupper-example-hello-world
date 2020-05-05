@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from common import *
+from tests import *
 
 def main():
     check_environment()
