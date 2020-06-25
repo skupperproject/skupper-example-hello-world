@@ -30,7 +30,6 @@ def main():
             raise
         finally:
             with working_env(KUBECONFIG=west_kubeconfig):
-                call(f"minikube tunnel -p {west_profile} --cleanup")
                 call(f"minikube delete -p {west_profile}")
 
             with working_env(KUBECONFIG=east_kubeconfig):

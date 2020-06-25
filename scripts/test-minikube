@@ -28,7 +28,6 @@ def main():
                 error("Test result: FAILED")
                 raise
             finally:
-                call(f"minikube tunnel -p {test_profile} --cleanup")
                 call(f"minikube delete -p {test_profile}")
 
 if __name__ == "__main__":
