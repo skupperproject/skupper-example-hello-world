@@ -29,9 +29,12 @@ def main():
             error("Test result: FAILED")
             raise
         finally:
-            call(f"minikube tunnel -p {west_profile} --cleanup")
-            call(f"minikube delete -p {west_profile}")
-            call(f"minikube delete -p {east_profile}")
+            with working_env(KUBECONFIG=west_kubeconfig):
+                call(f"minikube tunnel -p {west_profile} --cleanup")
+                call(f"minikube delete -p {west_profile}")
+
+            with working_env(KUBECONFIG=east_kubeconfig):
+                call(f"minikube delete -p {east_profile}")
 
 if __name__ == "__main__":
     try:
