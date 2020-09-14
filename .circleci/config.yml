@@ -21,7 +21,7 @@ jobs:
       - run:
           name: Install Skupper
           command: >-
-            curl -fL https://github.com/skupperproject/skupper-cli/releases/download/0.2.0/skupper-cli-0.2.0-linux-amd64.tgz | tar -C ~/bin -xzf -
+            curl -fL https://github.com/skupperproject/skupper/releases/download/0.3.1/skupper-cli-0.3.1-linux-amd64.tgz | tar -C ~/bin -xzf -
       - run:
           name: Prepare test environment
           command: |

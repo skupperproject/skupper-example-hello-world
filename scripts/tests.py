@@ -4,74 +4,74 @@ def run_test(west_kubeconfig, east_kubeconfig):
     connection_token = make_temp_file()
 
     with working_env(KUBECONFIG=west_kubeconfig):
-        call("kubectl create namespace west")
-        call("kubectl config set-context --current --namespace west")
-        call("kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend")
+        run("kubectl create namespace west")
+        run("kubectl config set-context --current --namespace west")
+        run("kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend")
 
-        call("skupper init")
+        run("skupper init")
 
     with working_env(KUBECONFIG=east_kubeconfig):
-        call("kubectl create namespace east")
-        call("kubectl config set-context --current --namespace east")
-        call("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
+        run("kubectl create namespace east")
+        run("kubectl config set-context --current --namespace east")
+        run("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
 
-        call("skupper init --edge")
+        run("skupper init --edge")
 
     with working_env(KUBECONFIG=west_kubeconfig):
-        wait_for_resource("deployment", "skupper-proxy-controller")
+        wait_for_resource("deployment", "skupper-service-controller")
         wait_for_resource("deployment", "skupper-router")
         wait_for_resource("deployment", "hello-world-frontend")
 
-        call("skupper status")
-        call(f"skupper connection-token {connection_token}")
+        run("skupper status")
+        run(f"skupper connection-token {connection_token}")
 
     with working_env(KUBECONFIG=east_kubeconfig):
-        wait_for_resource("deployment", "skupper-proxy-controller")
+        wait_for_resource("deployment", "skupper-service-controller")
         wait_for_resource("deployment", "skupper-router")
         wait_for_resource("deployment", "hello-world-backend")
 
-        call("skupper status")
-        call(f"skupper connect {connection_token} --connection-name east-west")
+        run("skupper status")
+        run(f"skupper connect {connection_token} --connection-name east-west")
 
         wait_for_connection("east-west")
 
-        call("skupper expose deployment hello-world-backend --port 8080 --protocol http")
+        run("skupper expose deployment hello-world-backend --port 8080 --protocol http")
 
     with working_env(KUBECONFIG=west_kubeconfig):
-        call("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
+        run("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
 
         wait_for_resource("service", "hello-world-backend")
-        wait_for_resource("deployment", "hello-world-backend-proxy")
 
         frontend_ip = get_ingress_ip("service", "hello-world-frontend")
         frontend_url = f"http://{frontend_ip}:8080/"
 
+    # XXX Replace this with a wait operation when it's available
+    sleep(90)
+
     try:
         for i in range(10):
-            call(f"curl -f {frontend_url}")
+            run(f"curl -f {frontend_url}")
     except:
         with working_env(KUBECONFIG=east_kubeconfig):
-            call("kubectl logs deployment/hello-world-backend")
-            call("kubectl logs deployment/hello-world-backend-proxy")
+            run("kubectl logs deployment/hello-world-backend")
 
         with working_env(KUBECONFIG=west_kubeconfig):
-            call("kubectl logs deployment/hello-world-frontend")
-            call("kubectl logs deployment/hello-world-backend-proxy")
+            run("kubectl logs deployment/hello-world-frontend")
 
         raise
 
     if "SKUPPER_DEMO" in ENV:
         with working_env(KUBECONFIG=west_kubeconfig):
-            console_ip = get_ingress_ip('service', 'skupper-controller')
+            console_ip = get_ingress_ip("service", "skupper-controller")
             console_url = f"http://{console_ip}:8080/"
-            password_data = call_for_stdout("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'")
+            password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'")
             password = base64_decode(password_data).decode("ascii")
 
         print()
         print("Demo time!")
         print()
-        print(f"West kubeconfig: {west_kubeconfig}")
-        print(f"East kubeconfig: {east_kubeconfig}")
+        print(f"West kubeconfig: export KUBECONFIG={west_kubeconfig}")
+        print(f"East kubeconfig: export KUBECONFIG={east_kubeconfig}")
         print(f"Frontend URL: {frontend_url}")
         print(f"Console URL: {console_url}")
         print("User: admin")
@@ -82,71 +82,9 @@ def run_test(west_kubeconfig, east_kubeconfig):
             pass
 
     with working_env(KUBECONFIG=east_kubeconfig):
-        call("skupper delete")
-        call("kubectl delete deployment/hello-world-backend")
+        run("skupper delete")
+        run("kubectl delete deployment/hello-world-backend")
 
     with working_env(KUBECONFIG=west_kubeconfig):
-        call("skupper delete")
-        call("kubectl delete deployment/hello-world-frontend")
-
-def check_environment():
-    call("kubectl version --client --short")
-    call("skupper --version")
-    call("curl --version")
-
-# Eventually Kubernetes will make this nicer:
-# https://github.com/kubernetes/kubernetes/pull/87399
-# https://github.com/kubernetes/kubernetes/issues/80828
-# https://github.com/kubernetes/kubernetes/issues/83094
-def wait_for_resource(group, name, namespace=None):
-    namespace_option = ""
-
-    if namespace is not None:
-        namespace_option = f"-n {namespace}"
-
-    notice(f"Waiting for {group}/{name} to be available")
-
-    for i in range(180):
-        sleep(1)
-
-        if call_for_exit_code(f"kubectl {namespace_option} get {group}/{name}") == 0:
-            break
-    else:
-        fail(f"Timed out waiting for {group}/{name}")
-
-    if group == "deployment":
-        try:
-            call(f"kubectl {namespace_option} wait --for condition=available --timeout 180s {group}/{name}")
-        except:
-            call(f"kubectl {namespace_option} logs {group}/{name}")
-            raise
-
-def wait_for_connection(name, namespace=None):
-    namespace_option = ""
-
-    if namespace is not None:
-        namespace_option = f"-n {namespace}"
-
-    try:
-        call(f"skupper check-connection --wait 180 {name}")
-    except:
-        call("kubectl logs deployment/skupper-router")
-        raise
-
-def get_ingress_ip(group, name, namespace=None):
-    wait_for_resource(group, name, namespace=namespace)
-
-    namespace_option = ""
-
-    if namespace is not None:
-        namespace_option = f"-n {namespace}"
-
-    for i in range(180):
-        sleep(1)
-
-        if call_for_stdout(f"kubectl {namespace_option} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
-            break
-    else:
-        fail(f"Timed out waiting for ingress for {group}/{name}")
-
-    return call_for_stdout(f"kubectl {namespace_option} get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
+        run("skupper delete")
+        run("kubectl delete deployment/hello-world-frontend")

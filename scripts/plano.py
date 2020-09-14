@@ -44,14 +44,6 @@ import traceback as _traceback
 import types as _types
 import uuid as _uuid
 
-from subprocess import CalledProcessError
-from subprocess import PIPE
-
-# See documentation at http://www.ssorj.net/projects/plano.html
-
-class PlanoException(Exception):
-    pass
-
 LINE_SEP = _os.linesep
 PATH_SEP = _os.sep
 PATH_VAR_SEP = _os.pathsep
@@ -190,30 +182,9 @@ split = _os.path.split
 split_extension = _os.path.splitext
 
 get_current_dir = _os.getcwd
-sleep = _time.sleep
-
-def file_size(*args, **kwargs):
-    warn("Deprecated! Use get_file_size() instead")
-    return get_file_size(*args, **kwargs)
-
-def current_dir():
-    warn("Deprecated! Use get_current_dir() instead")
-    return get_current_dir()
-
-def absolute_path(path):
-    warn("Deprecated! Use get_absolute_path() instead")
-    return get_absolute_path(path)
-
-def real_path(path):
-    warn("Deprecated! Use get_real_path() instead")
-    return get_real_path(path)
 
 def get_home_dir(user=None):
     return _os.path.expanduser("~{0}".format(user or ""))
-
-def home_dir(user=None):
-    warn("Deprecated! Use get_home_dir() instead")
-    return get_home_dir(user=user)
 
 def get_user():
     return _getpass.getuser()
@@ -227,22 +198,14 @@ def get_parent_dir(path):
 
     return parent
 
-def parent_dir(path):
-    warn("Deprecated! Use get_parent_dir() instead")
-    return get_parent_dir(path)
-
-def get_file_name(file):
-    file = normalize_path(file)
-    dir, name = split(file)
+def get_file_name(file_):
+    file_ = normalize_path(file_)
+    dir_, name = split(file_)
 
     return name
 
-def file_name(file):
-    warn("Deprecated! Use get_file_name() instead")
-    return get_file_name(file)
-
-def get_name_stem(file):
-    name = get_file_name(file)
+def get_name_stem(file_):
+    name = get_file_name(file_)
 
     if name.endswith(".tar.gz"):
         name = name[:-3]
@@ -251,19 +214,11 @@ def get_name_stem(file):
 
     return stem
 
-def name_stem(file):
-    warn("Deprecated! Use get_name_stem() instead")
-    return get_name_stem(file)
-
-def get_name_extension(file):
-    name = get_file_name(file)
+def get_name_extension(file_):
+    name = get_file_name(file_)
     stem, ext = split_extension(name)
 
     return ext
-
-def name_extension(file):
-    warn("Deprecated! Use get_name_extension() instead")
-    return get_name_extension(file)
 
 def get_program_name(command=None):
     if command is None:
@@ -275,90 +230,86 @@ def get_program_name(command=None):
         if "=" not in arg:
             return get_file_name(arg)
 
-def program_name(command=None):
-    warn("Deprecated! Use get_program_name() instead")
-    return get_program_name(command=command)
-
 def which(program_name):
     assert "PATH" in ENV
 
-    for dir in ENV["PATH"].split(PATH_VAR_SEP):
-        program = join(dir, program_name)
+    for dir_ in ENV["PATH"].split(PATH_VAR_SEP):
+        program = join(dir_, program_name)
 
         if _os.access(program, _os.X_OK):
             return program
 
-def read(file):
-    with _codecs.open(file, encoding="utf-8", mode="r") as f:
+def read(file_):
+    with _codecs.open(file_, encoding="utf-8", mode="r") as f:
         return f.read()
 
-def write(file, string):
-    _make_dir(get_parent_dir(file))
+def write(file_, string):
+    make_parent_dir(file_, quiet=True)
 
-    with _codecs.open(file, encoding="utf-8", mode="w") as f:
+    with _codecs.open(file_, encoding="utf-8", mode="w") as f:
         f.write(string)
 
-    return file
+    return file_
 
-def append(file, string):
-    _make_dir(get_parent_dir(file))
+def append(file_, string):
+    make_parent_dir(file_, quiet=True)
 
-    with _codecs.open(file, encoding="utf-8", mode="a") as f:
+    with _codecs.open(file_, encoding="utf-8", mode="a") as f:
         f.write(string)
 
-    return file
+    return file_
 
-def prepend(file, string):
-    orig = read(file)
-    return write(file, string + orig)
+def prepend(file_, string):
+    orig = read(file_)
+    return write(file_, string + orig)
 
-def touch(file):
+def touch(file_):
     try:
-        _os.utime(file, None)
+        _os.utime(file_, None)
     except OSError:
-        append(file, "")
+        append(file_, "")
 
-    return file
+    return file_
 
-def tail(file, n):
-    return "".join(tail_lines(file, n))
+def tail(file_, n):
+    return "".join(tail_lines(file_, n))
 
-def read_lines(file):
-    with _codecs.open(file, encoding="utf-8", mode="r") as f:
+def read_lines(file_):
+    with _codecs.open(file_, encoding="utf-8", mode="r") as f:
         return f.readlines()
 
-def write_lines(file, lines):
-    _make_dir(get_parent_dir(file))
+def write_lines(file_, lines):
+    make_parent_dir(file_, quiet=True)
 
-    with _codecs.open(file, encoding="utf-8", mode="r") as f:
+    with _codecs.open(file_, encoding="utf-8", mode="r") as f:
         f.writelines(lines)
 
-    return file
+    return file_
 
-def append_lines(file, lines):
-    _make_dir(get_parent_dir(file))
+def append_lines(file_, lines):
+    make_parent_dir(file_, quiet=True)
 
-    with _codecs.open(file, encoding="utf-8", mode="a") as f:
+    with _codecs.open(file_, encoding="utf-8", mode="a") as f:
         f.writelines(string)
 
-    return file
+    return file_
 
-def prepend_lines(file, lines):
-    orig_lines = read_lines(file)
+def prepend_lines(file_, lines):
+    orig_lines = read_lines(file_)
 
-    _make_dir(get_parent_dir(file))
+    make_parent_dir(file_, quiet=True)
 
-    with _codecs.open(file, encoding="utf-8", mode="w") as f:
+    with _codecs.open(file_, encoding="utf-8", mode="w") as f:
         f.writelines(lines)
         f.writelines(orig_lines)
 
-    return file
+    return file_
 
 # Derived from http://stackoverflow.com/questions/136168/get-last-n-lines-of-a-file-with-python-similar-to-tail
-def tail_lines(file, n):
+def tail_lines(file_, n):
     assert n >= 0
 
-    with _codecs.open(file, encoding="utf-8", mode="r") as f:
+    with _codecs.open(file_, encoding="utf-8", mode="r") as f:
         pos = n + 1
         lines = list()
 
@@ -375,14 +326,14 @@ def tail_lines(file, n):
 
         return lines[-n:]
 
-def read_json(file):
-    with _codecs.open(file, encoding="utf-8", mode="r") as f:
+def read_json(file_):
+    with _codecs.open(file_, encoding="utf-8", mode="r") as f:
         return _json.load(f)
 
-def write_json(file, obj):
-    _make_dir(get_parent_dir(file))
+def write_json(file_, obj):
+    make_parent_dir(file_, quiet=True)
 
-    with _codecs.open(file, encoding="utf-8", mode="w") as f:
+    with _codecs.open(file_, encoding="utf-8", mode="w") as f:
         return _json.dump(obj, f, indent=4, separators=(",", ": "), sort_keys=True)
 
 def parse_json(json):
@@ -437,10 +388,6 @@ def get_user_temp_dir():
     except KeyError:
         return join(get_temp_dir(), get_user())
 
-def user_temp_dir():
-    warn("Deprecated! Use get_user_temp_dir() instead")
-    return get_user_temp_dir()
-
 def make_temp_file(suffix="", dir=None):
     if dir is None:
         dir = get_temp_dir()
@@ -455,13 +402,44 @@ def make_temp_dir(suffix="", dir=None):
 
 class temp_file(object):
     def __init__(self, suffix="", dir=None):
-        self.file = make_temp_file(suffix=suffix, dir=dir)
+        self._file = make_temp_file(suffix=suffix, dir=dir)
 
     def __enter__(self):
-        return self.file
+        return self._file
 
     def __exit__(self, exc_type, exc_value, traceback):
-        _remove(self.file)
+        remove(self._file, quiet=True)
+
+# No args constructor gets a temp dir
+class working_dir(object):
+    def __init__(self, dir_=None, remove=False):
+        self._dir = dir_
+        self._prev_dir = None
+        self._remove = remove
+
+        if self._dir is None:
+            self._dir = make_temp_dir()
+            self._remove = True
+
+    def __enter__(self):
+        make_dir(self._dir, quiet=True)
+
+        notice("Entering directory '{0}'", get_absolute_path(self._dir))
+
+        self._prev_dir = change_dir(self._dir, quiet=True)
+
+        return self._dir
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self._dir is None or self._dir == ".":
+            return
+
+        notice("Returning to directory '{0}'", get_absolute_path(self._prev_dir))
+
+        change_dir(self._prev_dir, quiet=True)
+
+        if self._remove:
+            remove(self._dir, quiet=True)
 
 # Length in bytes, renders twice as long in hex
 def get_unique_id(length=16):
@@ -473,25 +451,20 @@ def get_unique_id(length=16):
 
     return _binascii.hexlify(uuid_bytes).decode("utf-8")
 
-def unique_id(length=16):
-    warn("Deprecated! Use get_unique_id() instead")
-    return get_unique_id(length=length)
-
 def base64_encode(string):
     return _base64.b64encode(string)
 
 def base64_decode(string):
     return _base64.b64decode(string)
 
-def copy(from_path, to_path):
-    notice("Copying '{0}' to '{1}'", from_path, to_path)
-    return _copy(from_path, to_path)
+def copy(from_path, to_path, quiet=False):
+    if not quiet:
+        notice("Copying '{0}' to '{1}'", from_path, to_path)
 
-def _copy(from_path, to_path):
     if is_dir(to_path):
         to_path = join(to_path, get_file_name(from_path))
     else:
-        _make_parent_dir(to_path)
+        make_parent_dir(to_path, quiet=True)
 
     if is_dir(from_path):
         _copytree(from_path, to_path, symlinks=True)
@@ -500,15 +473,14 @@ def _copy(from_path, to_path):
 
     return to_path
 
-def move(from_path, to_path):
-    notice("Moving '{0}' to '{1}'", from_path, to_path)
-    return _move(from_path, to_path)
+def move(from_path, to_path, quiet=False):
+    if not quiet:
+        notice("Moving '{0}' to '{1}'", from_path, to_path)
 
-def _move(from_path, to_path):
     if is_dir(to_path):
         to_path = join(to_path, get_file_name(from_path))
     else:
-        _make_parent_dir(to_path)
+        make_parent_dir(to_path, quiet=True)
 
     _shutil.move(from_path, to_path)
 
@@ -526,11 +498,10 @@ def rename(path, expr, replacement):
 
     return to_path
 
-def remove(path):
-    notice("Removing '{0}'", path)
-    return _remove(path)
+def remove(path, quiet=False):
+    if not quiet:
+        notice("Removing '{0}'", path)
 
-def _remove(path):
     if not exists(path):
         return
 
@@ -605,9 +576,6 @@ def find_exactly_one(dir, *patterns):
 
     return path
 
-def string_replace(string, expr, replacement, count=0):
-    return _re.sub(expr, replacement, string, count)
-
 def configure_file(input_file, output_file, **substitutions):
     notice("Configuring '{0}' for output '{1}'", input_file, output_file)
 
@@ -620,44 +588,39 @@ def configure_file(input_file, output_file, **substitutions):
 
     _shutil.copymode(input_file, output_file)
 
-def make_dir(dir):
-    notice("Making directory '{0}'", dir)
-    return _make_dir(dir)
+def make_dir(dir_, quiet=False):
+    if not quiet:
+        notice("Making directory '{0}'", dir_)
 
-def _make_dir(dir):
-    if dir == "":
-        return dir
+    if dir_ == "":
+        return dir_
 
-    if not exists(dir):
-        _os.makedirs(dir)
+    if not exists(dir_):
+        _os.makedirs(dir_)
 
-    return dir
+    return dir_
 
-def make_parent_dir(path):
-    return make_dir(get_parent_dir(path))
-
-def _make_parent_dir(path):
-    return _make_dir(get_parent_dir(path))
+def make_parent_dir(path, quiet=False):
+    return make_dir(get_parent_dir(path), quiet=quiet)
 
 # Returns the current working directory so you can change it back
-def change_dir(dir):
-    notice("Changing directory to '{0}'", dir)
-    return _change_dir(dir)
+def change_dir(dir_, quiet=False):
+    if not quiet:
+        notice("Changing directory to '{0}'", dir_)
 
-def _change_dir(dir):
     try:
         cwd = get_current_dir()
     except FileNotFoundError:
         cwd = None
 
-    _os.chdir(dir)
+    _os.chdir(dir_)
 
     return cwd
 
-def list_dir(dir, *patterns):
-    assert is_dir(dir)
+def list_dir(dir_, *patterns):
+    assert is_dir(dir_)
 
-    names = _os.listdir(dir)
+    names = _os.listdir(dir_)
 
     if not patterns:
         return sorted(names)
@@ -668,40 +631,6 @@ def list_dir(dir, *patterns):
         matched_names.update(_fnmatch.filter(names, pattern))
 
     return sorted(matched_names)
-
-class working_dir(object):
-    def __init__(self, dir):
-        self.dir = dir
-        self.prev_dir = None
-
-    def __enter__(self):
-        if self.dir is None or self.dir == ".":
-            return
-
-        if not exists(self.dir):
-            _make_dir(self.dir)
-
-        notice("Entering directory '{0}'", get_absolute_path(self.dir))
-
-        self.prev_dir = _change_dir(self.dir)
-
-        return self.dir
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self.dir is None or self.dir == ".":
-            return
-
-        notice("Returning to directory '{0}'", get_absolute_path(self.prev_dir))
-
-        _change_dir(self.prev_dir)
-
-class temp_working_dir(working_dir):
-    def __init__(self):
-        super(temp_working_dir, self).__init__(make_temp_dir())
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        super(temp_working_dir, self).__exit__(exc_type, exc_value, traceback)
-        _remove(self.dir)
 
 class working_env(object):
     def __init__(self, **env_vars):
@@ -722,74 +651,169 @@ class working_env(object):
             else:
                 del ENV[name]
 
-def call(command, *args, **kwargs):
-    proc = start_process(command, *args, **kwargs)
-    check_process(proc)
+## Process operations
 
-def call_for_exit_code(command, *args, **kwargs):
-    proc = start_process(command, *args, **kwargs)
-    return wait_for_process(proc)
+def get_process_id():
+    return _os.getpid()
 
-def call_for_stdout(command, *args, **kwargs):
-    if "quiet" in kwargs or "output" in kwargs or "stdout" in kwargs:
-        raise PlanoException("Illegal output options")
+def sleep(seconds, quiet=False):
+    if not quiet:
+        notice("Sleeping for {0} {1}", seconds, plural("second", seconds))
 
-    kwargs["stdout"] = _subprocess.PIPE
+    _time.sleep(seconds)
 
-    proc = start_process(command, *args, **kwargs)
-    output = proc.communicate()[0]
+# quiet=False - Don't log at notice level
+# stash=False - No output unless there is an error
+# output=<file> - Send stdout and stderr to a file
+# stdout=<file> - Send stdout to a file
+# stderr=<file> - Send stderr to a file
+def start(command, *args, **options):
+    if options.pop("quiet", False):
+        debug("Starting '{0}'", _format_command(command, args, None))
+    else:
+        notice("Starting '{0}'", _format_command(command, args, None))
 
-    if output is None:
-        output = b""
+    stdout = options.get("stdout", _sys.stdout)
+    stderr = options.get("stderr", _sys.stderr)
 
-    output = output.decode("utf-8")
-    exit_code = proc.poll()
+    if "output" in options:
+        out = options.pop("output")
+        stdout, stderr = out, out
 
-    if exit_code != 0:
-        error = CalledProcessError(exit_code, proc.command_string)
-        error.output = output
+    if _is_string(stdout):
+        stdout = open(stdout, "w")
 
+    if _is_string(stderr):
+        stderr = open(stderr, "w")
+
+    options["stdout"] = stdout
+    options["stderr"] = stderr
+
+    temp_output_file = None
+
+    if options.pop("stash", False) is True:
+        temp_output_file = make_temp_file()
+        temp_output = open(temp_output_file, "w")
+
+        options["stdout"] = temp_output
+        options["stderr"] = temp_output
+
+    if "preexec_fn" not in options and _libc is not None:
+        options["preexec_fn"] = _libc.prctl(1, _signal.SIGKILL)
+
+    try:
+        proc = PlanoProcess(command, options, temp_output_file)
+    except OSError as e:
+        if e.errno == 2:
+            fail(e)
+
+        raise
+
+    debug("{0} started", proc)
+
+    return proc
+
+def stop(proc, quiet=False):
+    if quiet:
+        debug("Stopping {0}", proc)
+    else:
+        notice("Stopping {0}", proc)
+
+    if proc.poll() is not None:
+        if proc.exit_code == 0:
+            debug("{0} already exited normally", proc)
+        elif proc.exit_code == -(_signal.SIGTERM):
+            debug("{0} was already terminated", proc)
+        else:
+            debug("{0} already exited with code {1}", proc, proc.exit_code)
+
+        return proc
+
+    proc.terminate()
+
+    # XXX kill after timeout
+
+    return wait(proc, quiet=True)
+
+def wait(proc, check=False, quiet=False):
+    if quiet:
+        debug("Waiting for {0} to exit", proc)
+    else:
+        notice("Waiting for {0} to exit", proc)
+
+    proc.wait()
+
+    if proc.exit_code == 0:
+        debug("{0} exited normally", proc)
+    elif proc.exit_code < 0:
+        debug("{0} was terminated by signal {1}", proc, abs(proc.exit_code))
+    else:
+        debug("{0} exited with code {1}", proc, proc.exit_code)
+
+    if proc.temp_output_file is not None:
+        if proc.exit_code > 0:
+            eprint(read(proc.temp_output_file), end="")
+
+        remove(proc.temp_output_file, quiet=True)
+
+    if check and proc.exit_code > 0:
+        raise PlanoProcessError(proc)
+
+    return proc
+
+def run(command, *args, **options):
+    if options.get("quiet", False):
+        debug("Running '{0}'", _format_command(command, args))
+    else:
+        notice("Running '{0}'", _format_command(command, args))
+
+    check = options.pop("check", True)
+    options["quiet"] = True
+
+    proc = start(command, *args, **options)
+
+    return wait(proc, check=check, quiet=True)
+
+def call(command, *args, **options):
+    if options.pop("quiet", False):
+        debug("Calling '{0}'", _format_command(command, args))
+    else:
+        notice("Calling '{0}'", _format_command(command, args))
+
+    if any([x in options for x in ("check", "stash", "output", "stdout", "stderr")]):
+        raise PlanoException("Illegal options")
+
+    options["quiet"] = True
+    options["stdout"] = _subprocess.PIPE
+    options["stderr"] = _subprocess.PIPE
+
+    proc = start(command, *args, **options)
+    out, err = proc.communicate()
+
+    if proc.exit_code > 0:
+        error = PlanoProcessError(proc)
+        error.stdout, error.stderr = out, err
         raise error
 
-    return output
+    if out is None:
+        out = b""
 
-def call_for_stderr(command, *args, **kwargs):
-    if "quiet" in kwargs or "output" in kwargs or "stdout" in kwargs:
-        raise PlanoException("Illegal output options")
-
-    kwargs["stderr"] = _subprocess.PIPE
-
-    proc = start_process(command, *args, **kwargs)
-    output = proc.communicate()[1]
-
-    if output is None:
-        output = b""
-
-    output = output.decode("utf-8")
-    exit_code = proc.poll()
-
-    if exit_code != 0:
-        error = CalledProcessError(exit_code, proc.command_string)
-        error.output = output
-
-        raise error
-
-    return output
-
-def call_and_print_on_error(command, *args, **kwargs):
-    warn("Deprecated! Use call() with quiet=True instead")
-
-    kwargs["quiet"] = True
-    call(command, *args, **kwargs)
+    return out.decode("utf-8")
 
 _child_processes = list()
 
-class _Process(_subprocess.Popen):
-    def __init__(self, command, options, name, command_string, temp_output_file):
-        super(_Process, self).__init__(command, **options)
+class PlanoProcess(_subprocess.Popen):
+    def __init__(self, command, options, temp_output_file):
+        assert _is_string(command), command
 
-        self.name = name
-        self.command_string = command_string
+        if options.get("shell", False):
+            args = command
+        else:
+            args = _shlex.split(command)
+
+        super(PlanoProcess, self).__init__(args, **options)
+
+        self.command = command
         self.temp_output_file = temp_output_file
 
         _child_processes.append(self)
@@ -802,10 +826,25 @@ class _Process(_subprocess.Popen):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        stop_process(self)
+        if self.stdout:
+            self.stdout.close()
+        if self.stderr:
+            self.stderr.close()
+        try:
+            if self.stdin:
+                self.stdin.close()
+        finally:
+            stop(self)
 
     def __repr__(self):
-        return "process {0} ({1})".format(self.pid, self.name)
+        return "process {0} ('{1}')".format(self.pid, _format_command(self.command, None, 40))
+
+class PlanoException(Exception):
+    pass
+
+class PlanoProcessError(_subprocess.CalledProcessError, PlanoException):
+    def __init__(self, proc):
+        super(PlanoProcessError, self).__init__(proc.exit_code, proc.command)
 
 def default_sigterm_handler(signum, frame):
     for proc in _child_processes:
@@ -816,14 +855,11 @@ def default_sigterm_handler(signum, frame):
 
 _signal.signal(_signal.SIGTERM, default_sigterm_handler)
 
-def _command_string(command, args):
-    elems = ["\"{0}\"".format(x) if " " in x else x for x in command]
-    string = " ".join(elems)
-
+def _format_command(command, args, max=None):
     if args:
-        string = string.format(*args)
+        command = command.format(*args)
 
-    return string
+    return shorten(command.replace("\n", "\\n"), max, ellipsis="...")
 
 _libc = None
 
@@ -833,153 +869,13 @@ if _sys.platform == "linux2":
     except:
         _traceback.print_exc()
 
-# output - Send stdout and err to a file
-# quiet - No output unless there is an error
-def start_process(command, *args, **kwargs):
-    if _is_string(command):
-        if args:
-            command = command.format(*args)
-
-        command_args = _shlex.split(command)
-        command_string = command
-    elif isinstance(command, _collections.Iterable):
-        assert len(args) == 0, args
-        command_args = command
-        command_string = _command_string(command, [])
-    else:
-        raise Exception()
-
-    command_string = command_string.replace("\n", "\\n")
-
-    notice("Calling '{0}'", command_string)
-
-    name = kwargs.get("name", command_args[0])
-
-    stdout = kwargs.get("stdout", _sys.stdout)
-    stderr = kwargs.get("stderr", _sys.stderr)
-
-    if "output" in kwargs:
-        out = kwargs.pop("output")
-
-        stdout = out
-        stderr = out
-
-    if _is_string(stdout):
-        stdout = open(stdout, "w")
-
-    if _is_string(stderr):
-        stderr = open(stderr, "w")
-
-    kwargs["stdout"] = stdout
-    kwargs["stderr"] = stderr
-
-    temp_output_file = None
-
-    if "quiet" in kwargs:
-        if kwargs.pop("quiet") is True:
-            temp_output_file = make_temp_file()
-            temp_output = open(temp_output_file, "w")
-
-            kwargs["stdout"] = temp_output
-            kwargs["stderr"] = temp_output
-
-    if "preexec_fn" not in kwargs:
-        if _libc is not None:
-            kwargs["preexec_fn"] = _libc.prctl(1, _signal.SIGKILL)
-
-    try:
-        if "shell" in kwargs and kwargs["shell"] is True:
-            proc = _Process(command_string, kwargs, name, command_string, temp_output_file)
-        else:
-            proc = _Process(command_args, kwargs, name, command_string, temp_output_file)
-    except OSError as e:
-        if e.errno == 2:
-            fail(e)
-
-        raise
-
-    debug("{0} started", proc)
-
-    return proc
-
-# Exits without complaint if proc is null
-def terminate_process(proc):
-    if proc is None:
-        return
-
-    notice("Terminating {0}", proc)
-
-    if proc.poll() is None:
-        proc.terminate()
-    else:
-        debug("{0} already exited", proc)
-
-def stop_process(proc):
-    notice("Stopping {0}", proc)
-
-    if proc.poll() is not None:
-        if proc.returncode == 0:
-            debug("{0} already exited normally", proc)
-        elif proc.returncode == -(_signal.SIGTERM):
-            debug("{0} was already terminated", proc)
-        else:
-            debug("{0} already exited with code {1}", proc, proc.returncode)
-
-        return
-
-    proc.terminate()
-
-    return wait_for_process(proc)
-
-def wait_for_process(proc):
-    debug("Waiting for {0} to exit", proc)
-
-    proc.wait()
-
-    if proc.returncode == 0:
-        debug("{0} exited normally", proc)
-    elif proc.returncode == -(_signal.SIGTERM):
-        debug("{0} exited after termination", proc)
-    else:
-        debug("{0} exited with code {1}", proc, proc.exit_code)
-
-        if proc.temp_output_file is not None:
-            eprint(read(proc.temp_output_file), end="")
-
-    if proc.temp_output_file is not None:
-        _remove(proc.temp_output_file)
-
-    return proc.returncode
-
-def check_process(proc):
-    wait_for_process(proc)
-
-    if proc.returncode != 0:
-        raise CalledProcessError(proc.returncode, proc.command_string)
-
-def exec_process(command, *args):
-    if _is_string(command):
-        command = command.format(*args)
-        command_args = _shlex.split(command)
-        command_string = command
-    elif isinstance(command, _collections.Iterable):
-        assert len(args) == 0, args
-        command_args = command
-        command_string = _command_string(command, [])
-    else:
-        raise Exception()
-
-    notice("Calling '{0}'", command_string)
-
-    _os.execvp(command_args[0], command_args[1:])
-
 def make_archive(input_dir, output_dir, archive_stem):
     assert is_dir(input_dir), input_dir
     assert is_dir(output_dir), output_dir
     assert _is_string(archive_stem), archive_stem
 
-    with temp_working_dir() as dir:
-        temp_input_dir = join(dir, archive_stem)
+    with temp_working_dir() as dir_:
+        temp_input_dir = join(dir_, archive_stem)
 
         copy(input_dir, temp_input_dir)
         make_dir(output_dir)
@@ -987,8 +883,7 @@ def make_archive(input_dir, output_dir, archive_stem):
         output_file = "{0}.tar.gz".format(join(output_dir, archive_stem))
         output_file = get_absolute_path(output_file)
 
-        with working_dir(dir):
-            call("tar -czf {0} {1}", output_file, archive_stem)
+        call("tar -czf {0} {1}", output_file, archive_stem)
 
     return output_file
 
@@ -1010,12 +905,12 @@ def rename_archive(archive_file, new_archive_stem):
     if name_stem(archive_file) == new_archive_stem:
         return archive_file
 
-    with temp_working_dir() as dir:
-        extract_archive(archive_file, dir)
+    with temp_working_dir() as dir_:
+        extract_archive(archive_file, dir_)
 
-        input_name = list_dir(dir)[0]
-        input_dir = join(dir, input_name)
-        output_file = make_archive(input_dir, dir, new_archive_stem)
+        input_name = list_dir(dir_)[0]
+        input_dir = join(dir_, input_name)
+        output_file = make_archive(input_dir, dir_, new_archive_stem)
         output_name = get_file_name(output_file)
         archive_dir = get_parent_dir(archive_file)
         new_archive_file = join(archive_dir, output_name)
@@ -1027,10 +922,6 @@ def rename_archive(archive_file, new_archive_stem):
 
 def get_random_port(min=49152, max=65535):
     return _random.randint(min, max)
-
-def random_port(min=49152, max=65535):
-    warn("Deprecated! Use get_random_port() instead")
-    return get_random_port(min=min, max=max)
 
 def wait_for_port(port, host="", timeout=30):
     if _is_string(port):
@@ -1046,12 +937,15 @@ def wait_for_port(port, host="", timeout=30):
             if sock.connect_ex((host, port)) == 0:
                 return
 
-            sleep(0.1)
+            sleep(0.1, quiet=True)
 
             if _time.time() - start > timeout:
                 fail("Timed out waiting for port {0} to open", port)
     finally:
         sock.close()
+
+def string_replace(string, expr, replacement, count=0):
+    return _re.sub(expr, replacement, string, count)
 
 def nvl(value, substitution, template=None):
     assert substitution is not None
@@ -1064,29 +958,33 @@ def nvl(value, substitution, template=None):
 
     return value
 
-def shorten(string, max):
-    assert max is not None
-    assert isinstance(max, int)
+def shorten(string, max_, ellipsis=""):
+    assert max_ is None or isinstance(max_, int)
 
     if string is None:
         return ""
 
-    if len(string) < max:
+    if max_ is None or len(string) < max_:
         return string
     else:
-        return string[0:max]
+        if ellipsis:
+            string = string + ellipsis
+            end = max(0, max_ - len(ellipsis))
+            return string[0:end] + ellipsis
+        else:
+            return string[0:max_]
 
 def plural(noun, count=0):
-    if noun is None:
+    if noun in (None, ""):
         return ""
 
     if count == 1:
         return noun
 
     if noun.endswith("s"):
-        return "{}ses".format(noun)
+        return "{0}ses".format(noun)
 
-    return "{}s".format(noun)
+    return "{0}s".format(noun)
 
 # Modified copytree impl that allows for already existing destination
 # dirs
