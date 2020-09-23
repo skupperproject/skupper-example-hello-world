@@ -15,7 +15,7 @@ def run_test(west_kubeconfig, east_kubeconfig):
         run("kubectl config set-context --current --namespace east")
         run("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
 
-        run("skupper init --edge")
+        run("skupper init --cluster-local")
 
     with working_env(KUBECONFIG=west_kubeconfig):
         wait_for_resource("deployment", "skupper-service-controller")

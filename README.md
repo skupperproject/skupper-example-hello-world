@@ -60,12 +60,11 @@ Console for namespace `east`:
     <login-command-for-your-provider>
     kubectl create namespace east
     kubectl config set-context --current --namespace east
-    skupper init --edge
+    skupper init --cluster-local
 
-Using the `--edge` argument in `east` disables network ingress at the
-Skupper router layer.  In our scenario, `east` needs to establish one
-outbound connection to `west`.  It does not need to accept any incoming
-connections.  As a result, no network ingress is required in `east`.
+Note that using `--cluster-local` in `east` is done simply to make
+local development with Minikube easier.  It's not required if your two
+namespaces are on different hosts or on public clusters.
 
 See [Getting started with Skupper](https://skupper.io/start/) for more
 information about setting up namespaces.
