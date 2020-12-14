@@ -123,7 +123,7 @@ Use `skupper expose` in `east` to expose the backend:
 
 Namespace `east`:
 
-    skupper expose deployment hello-world-backend --port 8080 --protocol http
+    skupper expose deployment hello-world-backend --port 8080
 
 Once the service is marked for exposure, Skupper creates matching
 services on all the connected namespaces.  Use `kubectl get services`

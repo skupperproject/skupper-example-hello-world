@@ -35,7 +35,7 @@ def run_test(west_kubeconfig, east_kubeconfig):
 
         await_connection("east-west")
 
-        run("skupper expose deployment hello-world-backend --port 8080 --protocol http")
+        run("skupper expose deployment hello-world-backend --port 8080")
 
     with working_env(KUBECONFIG=west_kubeconfig):
         run("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
@@ -46,7 +46,7 @@ def run_test(west_kubeconfig, east_kubeconfig):
         frontend_url = f"http://{frontend_ip}:8080/"
 
     # XXX Replace this with a wait operation when it's available
-    sleep(90)
+    sleep(30)
 
     try:
         for i in range(10):
