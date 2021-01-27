@@ -1,12 +1,12 @@
-.phony: test
+.PHONY: test
 test:
 	python3 scripts/test-minikube
 
-.phony: demo
+.PHONY: demo
 demo:
 	SKUPPER_DEMO=1 python3 scripts/test-minikube
 
-.phony: build-images
+.PHONY: build-images
 build-images:
 	cd backend && make build
 	cd frontend && make build

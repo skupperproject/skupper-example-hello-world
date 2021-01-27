@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 
-from tests import *
+from test import *
 
 def main():
     check_environment()
+
+    if len(ARGS) != 3:
+        exit("Usage: test-external WEST-KUBECONFIG EAST-KUBECONFIG")
 
     west_kubeconfig = ARGS[1]
     east_kubeconfig = ARGS[2]

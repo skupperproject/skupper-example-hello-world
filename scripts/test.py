@@ -18,29 +18,29 @@ def run_test(west_kubeconfig, east_kubeconfig):
         run("skupper init --cluster-local")
 
     with working_env(KUBECONFIG=west_kubeconfig):
-        wait_for_resource("deployment", "skupper-service-controller")
-        wait_for_resource("deployment", "skupper-router")
-        wait_for_resource("deployment", "hello-world-frontend")
+        await_resource("deployment", "skupper-service-controller")
+        await_resource("deployment", "skupper-router")
+        await_resource("deployment", "hello-world-frontend")
 
         run("skupper status")
         run(f"skupper connection-token {connection_token}")
 
     with working_env(KUBECONFIG=east_kubeconfig):
-        wait_for_resource("deployment", "skupper-service-controller")
-        wait_for_resource("deployment", "skupper-router")
-        wait_for_resource("deployment", "hello-world-backend")
+        await_resource("deployment", "skupper-service-controller")
+        await_resource("deployment", "skupper-router")
+        await_resource("deployment", "hello-world-backend")
 
         run("skupper status")
         run(f"skupper connect {connection_token} --connection-name east-west")
 
-        wait_for_connection("east-west")
+        await_connection("east-west")
 
         run("skupper expose deployment hello-world-backend --port 8080 --protocol http")
 
     with working_env(KUBECONFIG=west_kubeconfig):
         run("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
 
-        wait_for_resource("service", "hello-world-backend")
+        await_resource("service", "hello-world-backend")
 
         frontend_ip = get_ingress_ip("service", "hello-world-frontend")
         frontend_url = f"http://{frontend_ip}:8080/"

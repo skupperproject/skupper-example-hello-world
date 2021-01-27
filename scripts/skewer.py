@@ -20,15 +20,15 @@
 from plano import *
 
 def check_environment():
-    run("kubectl version --client --short")
-    run("skupper --version")
-    run("curl --version")
+    check_program("kubectl")
+    check_program("skupper")
+    check_program("curl")
 
 # Eventually Kubernetes will make this nicer:
 # https://github.com/kubernetes/kubernetes/pull/87399
 # https://github.com/kubernetes/kubernetes/issues/80828
 # https://github.com/kubernetes/kubernetes/issues/83094
-def wait_for_resource(group, name, namespace=None):
+def await_resource(group, name, namespace=None):
     base_command = "kubectl"
 
     if namespace is not None:
@@ -51,7 +51,7 @@ def wait_for_resource(group, name, namespace=None):
             run(f"{base_command} logs {group}/{name}")
             raise
 
-def wait_for_connection(name, namespace=None):
+def await_connection(name, namespace=None):
     skupper_base_command = "skupper"
     kubectl_base_command = "kubectl"
 
@@ -66,7 +66,7 @@ def wait_for_connection(name, namespace=None):
         raise
 
 def get_ingress_ip(group, name, namespace=None):
-    wait_for_resource(group, name, namespace=namespace)
+    await_resource(group, name, namespace=namespace)
 
     base_command = "kubectl"
 
