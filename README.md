@@ -7,7 +7,7 @@ A minimal HTTP application deployed across Kubernetes clusters using [Skupper](h
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Set up your namespaces](#step-1-set-up-your-namespaces)
-* [Step 2: Connect your namespaces](#step-2-connect-your-namespaces)
+* [Step 2: Link your namespaces](#step-2-link-your-namespaces)
 * [Step 3: Deploy the backend and frontend services](#step-3-deploy-the-backend-and-frontend-services)
 * [Step 4: Expose the backend service on the Skupper network](#step-4-expose-the-backend-service-on-the-skupper-network)
 * [Step 5: Test the application](#step-5-test-the-application)
@@ -60,43 +60,55 @@ Console for namespace `east`:
     <login-command-for-your-provider>
     kubectl create namespace east
     kubectl config set-context --current --namespace east
-    skupper init --cluster-local
+    skupper init --ingress none
 
-Note that using `--cluster-local` in `east` is done simply to make
-local development with Minikube easier.  It's not required if your two
-namespaces are on different hosts or on public clusters.
+Now that we have our two kubeconfigs, use the `skupper init` command
+to install Skupper in each namespace:
+
+Console for namespace `west`:
+
+    skupper init
+
+Console for namespace `east`:
+
+    skupper init --ingress none
+
+Note that using `--ingress none` in `east` is done simply to make
+local development with Minikube easier.  (It's tricky to run two
+minikube tunnels on one host.)  The `--ingress none` option is not
+required if your two namespaces are on different hosts or on public
+clusters.
 
 See [Getting started with Skupper](https://skupper.io/start/) for more
 information about setting up namespaces.
 
 Use `skupper status` in each console to check that Skupper is
-installed.
+installed:
 
     $ skupper status
-    Skupper is enabled for namespace '<namespace>'. It is not connected to any other sites.
+    Skupper is enabled for namespace '<namespace>'. It is not linked to any other sites.
 
 As you move through the steps below, you can use `skupper status` at
 any time to check your progress.
 
-## Step 2: Connect your namespaces
+## Step 2: Link your namespaces
 
-To connect namespaces, Skupper requires a token representing
-permission to form a connection.  This token contains a secret (only
-share it with those you trust) and the logistical details of making a
-connection.
+To link namespaces, Skupper requires a token representing permission
+to create a link.  This token contains a secret (only share it with
+those you trust) and the logistical details of making a link.
 
-First, use `skupper connection-token` in `west` to generate the token.
+First, use `skupper token create` in `west` to generate the token:
 
 Namespace `west`:
 
-    skupper connection-token $HOME/secret.yaml
+    skupper token create $HOME/secret.yaml
 
-Then, use `skupper connect` in `east` to use the generated token to
-form a connection.
+Then, use `skupper link create` in `east` to use the generated token
+to create a link:
 
 Namespace `east`:
 
-    skupper connect $HOME/secret.yaml
+    skupper link create $HOME/secret.yaml
 
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
@@ -115,18 +127,18 @@ Namespace `east`:
 
 ## Step 4: Expose the backend service on the Skupper network
 
-We now have connected namespaces, but there is one more step.  Skupper
+We now have linked namespaces, but there is one more step.  Skupper
 uses the `skupper expose` command to select a service from one
-namespace for exposure on all the connected namespaces.
+namespace for exposure on all the linked namespaces.
 
 Use `skupper expose` in `east` to expose the backend:
 
 Namespace `east`:
 
-    skupper expose deployment hello-world-backend --port 8080
+    skupper expose deployment/hello-world-backend --port 8080
 
 Once the service is marked for exposure, Skupper creates matching
-services on all the connected namespaces.  Use `kubectl get services`
+services on all the linked namespaces.  Use `kubectl get services`
 in `west` to look for the `hello-world-backend` service.  It may take
 a couple attempts before it appears.
 
@@ -178,7 +190,7 @@ internet.
 Introducing Skupper into each namespace allows us to create a virtual
 application network that can connect services in different clusters.
 Any service exposed on the application network is represented as a
-local service in all of the connected namespaces.
+local service in all of the linked namespaces.
 
 The backend service is located in `east`, but the frontend service
 in `west` can "see" it as if it were local.  When the frontend

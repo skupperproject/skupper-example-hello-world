@@ -51,7 +51,7 @@ def await_resource(group, name, namespace=None):
             run(f"{base_command} logs {group}/{name}")
             raise
 
-def await_connection(name, namespace=None):
+def await_link(name, namespace=None):
     skupper_base_command = "skupper"
     kubectl_base_command = "kubectl"
 
@@ -60,7 +60,7 @@ def await_connection(name, namespace=None):
         kubectl_base_command = f"{kubectl_base_command} -n {namespace}"
 
     try:
-        run(f"{skupper_base_command} check-connection --wait 180 {name}")
+        run(f"{skupper_base_command} link status --wait 180 {name}")
     except:
         run(f"{kubectl_base_command} logs deployment/skupper-router")
         raise

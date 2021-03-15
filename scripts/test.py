@@ -1,7 +1,7 @@
 from skewer import *
 
 def run_test(west_kubeconfig, east_kubeconfig):
-    connection_token = make_temp_file()
+    link_token = make_temp_file()
 
     with working_env(KUBECONFIG=west_kubeconfig):
         run("kubectl create namespace west")
@@ -15,7 +15,7 @@ def run_test(west_kubeconfig, east_kubeconfig):
         run("kubectl config set-context --current --namespace east")
         run("kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend")
 
-        run("skupper init --cluster-local")
+        run("skupper init --ingress none")
 
     with working_env(KUBECONFIG=west_kubeconfig):
         await_resource("deployment", "skupper-service-controller")
@@ -23,7 +23,7 @@ def run_test(west_kubeconfig, east_kubeconfig):
         await_resource("deployment", "hello-world-frontend")
 
         run("skupper status")
-        run(f"skupper connection-token {connection_token}")
+        run(f"skupper token create {link_token}")
 
     with working_env(KUBECONFIG=east_kubeconfig):
         await_resource("deployment", "skupper-service-controller")
@@ -31,11 +31,11 @@ def run_test(west_kubeconfig, east_kubeconfig):
         await_resource("deployment", "hello-world-backend")
 
         run("skupper status")
-        run(f"skupper connect {connection_token} --connection-name east-west")
+        run(f"skupper link create {link_token} --name east-west")
 
-        await_connection("east-west")
+        await_link("east-west")
 
-        run("skupper expose deployment hello-world-backend --port 8080")
+        run("skupper expose deployment/hello-world-backend --port 8080")
 
     with working_env(KUBECONFIG=west_kubeconfig):
         run("kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer")
