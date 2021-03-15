@@ -28,9 +28,9 @@ It contains two services:
 * A frontend service that accepts HTTP requests, calls the backend to
   fetch new greetings, and serves them to the user.
 
-With Skupper, we can place the backend in one cluster and the frontend
-in another and maintain connectivity between the two services without
-exposing the backend to the public internet.
+With Skupper, you can place the backend in one cluster and the
+frontend in another and maintain connectivity between the two services
+without exposing the backend to the public internet.
 
 <img src="images/entities.svg" width="640"/>
 
