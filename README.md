@@ -52,7 +52,6 @@ Console for namespace `west`:
     <login-command-for-your-provider>
     kubectl create namespace west
     kubectl config set-context --current --namespace west
-    skupper init
 
 Console for namespace `east`:
 
@@ -60,7 +59,13 @@ Console for namespace `east`:
     <login-command-for-your-provider>
     kubectl create namespace east
     kubectl config set-context --current --namespace east
-    skupper init --ingress none
+
+**Note:** If you are using Minikube, you must run `minikube tunnel`
+before you install Skupper.  Run it in its own console using the
+`west` kubeconfig:
+
+    export KUBECONFIG=$HOME/.kube/config-west
+    minikube tunnel
 
 Now that we have our two kubeconfigs, use the `skupper init` command
 to install Skupper in each namespace:
@@ -73,11 +78,10 @@ Console for namespace `east`:
 
     skupper init --ingress none
 
-Note that using `--ingress none` in `east` is done simply to make
-local development with Minikube easier.  (It's tricky to run two
-minikube tunnels on one host.)  The `--ingress none` option is not
-required if your two namespaces are on different hosts or on public
-clusters.
+Here we are using `--ingress none` in `east` simply to make local
+development with Minikube easier.  (It's tricky to run two minikube
+tunnels on one host.)  The `--ingress none` option is not required if
+your two namespaces are on different hosts or on public clusters.
 
 See [Getting started with Skupper](https://skupper.io/start/) for more
 information about setting up namespaces.
@@ -163,8 +167,7 @@ Namespace `west`:
 
     kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
 
-It takes a moment for the external IP to become available.  (If you are
-using Minikube, you need to run `minikube tunnel` for this to work.)
+It takes a moment for the external IP to become available.
 
 Look up the external URL and use `curl` to send a request:
 
