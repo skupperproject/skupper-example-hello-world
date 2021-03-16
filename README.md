@@ -60,9 +60,9 @@ Console for namespace `east`:
     kubectl create namespace east
     kubectl config set-context --current --namespace east
 
-**Note:** If you are using Minikube, you must run `minikube tunnel`
-before you install Skupper.  Run it in its own console using the
-`west` kubeconfig:
+**Note:** If you are using Minikube, you must start `minikube tunnel`
+in the background before you install Skupper.  Run it in its own
+console using the `west` kubeconfig:
 
     export KUBECONFIG=$HOME/.kube/config-west
     minikube tunnel
