@@ -19,7 +19,7 @@
 
 FROM registry.fedoraproject.org/fedora-minimal
 
-RUN microdnf install python3-flask python3-requests && microdnf clean all
+RUN microdnf -y install python3-flask python3-requests && microdnf clean all
 
 COPY app.py /app/app.py
 ENV HOME=/app

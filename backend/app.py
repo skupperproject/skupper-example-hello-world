@@ -44,7 +44,7 @@ def hello():
     with lock:
         count += 1
 
-    return Response(f"Hello from {pod} ({count})", mimetype="text/plain")
+    return Response(f"Greetings from {pod} ({count})", mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(host=host, port=port)
