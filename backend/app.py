@@ -46,10 +46,10 @@ def hello():
         count += 1
     
     # Connect to the database
-    connection = pymysql.connect(host='localhost',
-                             user='root',
-                             password='welcome1',
-                             database='test',
+    connection = pymysql.connect(host='mydb',
+                             user='skupper',
+                             password='reppuks',
+                             database='skupper',
                              cursorclass=pymysql.cursors.DictCursor)
     with connection.cursor() as cursor:
         # Read a single record

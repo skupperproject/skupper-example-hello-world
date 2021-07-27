@@ -1,4 +1,4 @@
-IMAGE := quay.io/skupper/hello-world-frontend
+IMAGE := quay.io/pwright/hello-world-frontend
 
 .PHONY: build
 build:
