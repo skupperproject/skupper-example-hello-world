@@ -38,7 +38,7 @@ def error(e):
 @app.route("/")
 def message():
     result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
-    text = f"I am the frontend.  The backend says '{result.text}'.\n"
+    text = f"I am the frontend.  The backend queries the database and returns '{result.text}'.\n"
 
     return Response(text, mimetype="text/plain")
 

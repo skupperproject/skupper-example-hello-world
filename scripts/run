@@ -3,6 +3,7 @@
 from plano import *
 
 ENV["BACKEND_SERVICE_HOST"] = "localhost"
+ENV["DB_SERVICE_HOST"] = "localhost"
 ENV["BACKEND_SERVICE_PORT"] = backend_port = str(get_random_port())
 ENV["FRONTEND_SERVICE_PORT"] = frontend_port = str(get_random_port())
 

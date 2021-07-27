@@ -18,12 +18,13 @@
 #
 
 import os
-
+import pymysql.cursors
 from flask import Flask, Response
 from threading import Lock
 
 app = Flask(__name__)
 
+host = os.environ.get("DB_SERVICE_HOST", "0.0.0.0")
 host = os.environ.get("BACKEND_SERVICE_HOST", "0.0.0.0")
 port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 
@@ -43,8 +44,22 @@ def hello():
 
     with lock:
         count += 1
+    
+    # Connect to the database
+    connection = pymysql.connect(host='localhost',
+                             user='root',
+                             password='welcome1',
+                             database='test',
+                             cursorclass=pymysql.cursors.DictCursor)
+    with connection.cursor() as cursor:
+        # Read a single record
+        sql = "SELECT `text` FROM `greetings` WHERE `ID`=%s"
+        cursor.execute(sql, ('1',))
+        result = cursor.fetchone()
+        # print(result)
 
-    return Response(f"Hello from {pod} ({count})", mimetype="text/plain")
+
+    return Response(f"{result} ({count})", mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(host=host, port=port)
