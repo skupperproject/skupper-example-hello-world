@@ -1,0 +1,22 @@
+participant Curl
+
+participantgroup #cce5ff eu-north
+participant Frontend
+participant "Skupper" as Skupper1 #lightgreen
+end
+
+participantgroup #ffe6cc us-east
+participant "Skupper" as Skupper2 #lightgreen
+participant Backend #yellow
+end
+
+abox over Skupper1 #yellow: Backend
+
+Curl->Frontend: GET /         
+Frontend->Skupper1: GET /api/hello
+Skupper1->Skupper2:       GET /api/hello      
+Skupper2->Backend: GET /api/hello
+Skupper2<-Backend: "Hello 1"
+Skupper1<-Skupper2:       "Hello 1"      
+Frontend<-Skupper1: "Hello 1"
+Curl<-Frontend: "Hello 1"         
