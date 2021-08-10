@@ -1,0 +1,16 @@
+name: main
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: manusa/actions-setup-minikube@v2.4.2
+        with:
+          minikube version: 'v1.22.0'
+          kubernetes version: 'v1.21.2'
+          github token: ${{ secrets.GITHUB_TOKEN }}
+      - run: curl https://skupper.io/install.sh | sh
+      - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - run: ./plano test
