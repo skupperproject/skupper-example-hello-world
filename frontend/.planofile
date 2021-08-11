@@ -1,0 +1,21 @@
+image = "quay.io/skupper/hello-world-frontend"
+
+@command
+def build(app):
+    run(f"podman build -t {image} .")
+
+@command(name="run")
+def run_(app):
+    build(app)
+    run(f"podman run -p 8080:8080 {image}")
+
+@command
+def debug(app):
+    build(app)
+    run(f"podman run -p 8080:8080 -it {image} /bin/bash")
+
+@command
+def push(app):
+    run("podman login quay.io")
+    build(app)
+    run(f"podman push {image}")

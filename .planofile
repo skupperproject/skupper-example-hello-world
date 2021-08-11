@@ -35,3 +35,8 @@ def test_external(app, west_kubeconfig, east_kubeconfig):
     """
     generate_readme("skewer.yaml", make_temp_file())
     run_steps_external("skewer.yaml", west=west_kubeconfig, east=east_kubeconfig)
+
+@command
+def clean(app):
+    remove("README.html")
+    remove("python/__pycache__")
