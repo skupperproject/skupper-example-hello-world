@@ -57,8 +57,8 @@ services without exposing the backend to the public internet.
 * The `skupper` command-line tool, the latest version ([installation
   guide][install-skupper])
 
-* Access to two Kubernetes namespaces, from any providers you choose,
-  on any clusters you choose
+* Access to at least one Kubernetes cluster, from any provider you
+  choose
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [install-skupper]: https://skupper.io/install/index.html
@@ -302,7 +302,7 @@ Look up the external URL and use `curl` to send a request.
 Console for _west_:
 
 ~~~ shell
-curl $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
+curl -f $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
 ~~~
 
 Sample output:
