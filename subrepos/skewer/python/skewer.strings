@@ -15,8 +15,8 @@ across cloud providers, data centers, and edge sites.
 * The `skupper` command-line tool, the latest version ([installation
   guide][install-skupper])
 
-* Access to two Kubernetes namespaces, from any providers you choose,
-  on any clusters you choose
+* Access to at least one Kubernetes cluster, from any provider you
+  choose
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [install-skupper]: https://skupper.io/install/index.html

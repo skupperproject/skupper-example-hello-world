@@ -98,7 +98,7 @@ steps:
       Look up the external URL and use `curl` to send a request.
     commands:
       west:
-        - run: "curl $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
+        - run: "curl -f $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
           output: |
             I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
     postamble: |
