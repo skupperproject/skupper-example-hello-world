@@ -59,8 +59,7 @@ _standard_steps = {
         "title": "Configure separate console sessions",
         "preamble": _strings["configure_separate_console_sessions_preamble"],
         "commands": [
-            [{"run": "export KUBECONFIG=~/.kube/config-@namespace@"}],
-            [{"run": "export KUBECONFIG=~/.kube/config-@namespace@"}],
+            {"run": "export KUBECONFIG=~/.kube/config-@namespace@"}
         ],
     },
     "access_your_clusters": {
@@ -71,28 +70,18 @@ _standard_steps = {
         "title": "Set up your namespaces",
         "preamble": _strings["set_up_your_namespaces_preamble"],
         "commands": [
-            [
-                {"run": "kubectl create namespace @namespace@"},
-                {"run": "kubectl config set-context --current --namespace @namespace@"},
-            ],
-            [
-                {"run": "kubectl create namespace @namespace@"},
-                {"run": "kubectl config set-context --current --namespace @namespace@"},
-            ],
+            {"run": "kubectl create namespace @namespace@"},
+            {"run": "kubectl config set-context --current --namespace @namespace@"},
         ],
     },
     "install_skupper_in_your_namespaces": {
         "title": "Install Skupper in your namespaces",
         "preamble": _strings["install_skupper_in_your_namespaces_preamble"],
         "commands": [
-            [{
+            {
                 "run": "skupper init",
                 "await": ["deployment/skupper-service-controller", "deployment/skupper-router"],
-            }],
-            [{
-                "run": "skupper init --ingress none",
-                "await": ["deployment/skupper-service-controller", "deployment/skupper-router"],
-            }],
+            }
         ],
         "postamble": _strings["install_skupper_in_your_namespaces_postamble"],
     },
@@ -100,12 +89,9 @@ _standard_steps = {
         "title": "Check the status of your namespaces",
         "preamble": _strings["check_the_status_of_your_namespaces_preamble"],
         "commands": [
-            [{
+            {
                 "run": "skupper status",
-            }],
-            [{
-                "run": "skupper status",
-            }],
+            }
         ],
         "postamble": _strings["check_the_status_of_your_namespaces_postamble"],
     },
@@ -174,7 +160,7 @@ def run_steps_on_minikube(skewer_file):
     try:
         run(f"minikube -p skewer start")
 
-        for name, value in skewer_data["contexts"].items():
+        for name, value in skewer_data["sites"].items():
             kubeconfig = value["kubeconfig"].replace("~", work_dir)
 
             with working_env(KUBECONFIG=kubeconfig):
@@ -196,12 +182,12 @@ def run_steps_external(skewer_file, **kubeconfigs):
     work_dir = make_temp_dir()
 
     for name, kubeconfig in kubeconfigs.items():
-        skewer_data["contexts"][name]["kubeconfig"] = kubeconfig
+        skewer_data["sites"][name]["kubeconfig"] = kubeconfig
 
     _run_steps(work_dir, skewer_data)
 
 def _run_steps(work_dir, skewer_data):
-    contexts = skewer_data["contexts"]
+    sites = skewer_data["sites"]
 
     for step_data in skewer_data["steps"]:
         _run_step(work_dir, skewer_data, step_data)
@@ -221,11 +207,11 @@ def _run_step(work_dir, skewer_data, step_data):
     except AttributeError:
         items = list()
 
-        for context_name in skewer_data["contexts"]:
+        for context_name in skewer_data["sites"]:
             items.append((context_name, step_data["commands"]))
 
     for context_name, commands in items:
-        kubeconfig = skewer_data["contexts"][context_name]["kubeconfig"].replace("~", work_dir)
+        kubeconfig = skewer_data["sites"][context_name]["kubeconfig"].replace("~", work_dir)
 
         with working_env(KUBECONFIG=kubeconfig):
             for command in commands:
@@ -350,7 +336,7 @@ def _generate_readme_step(skewer_data, step_data):
             outputs = list()
 
             if context_name:
-                namespace = skewer_data["contexts"][context_name]["namespace"]
+                namespace = skewer_data["sites"][context_name]["namespace"]
                 out.append(f"Console for _{namespace}_:")
                 out.append("")
             else:
@@ -404,11 +390,10 @@ def _apply_standard_steps(skewer_data):
         if "commands" in standard_step_data:
             step_data["commands"] = dict()
 
-            for i, item  in enumerate(skewer_data["contexts"].items()):
-                namespace, context_data = item
+            for namespace, context_data in skewer_data["sites"].items():
                 resolved_commands = list()
 
-                for command in standard_step_data["commands"][i]:
+                for command in standard_step_data["commands"]:
                     resolved_command = dict(command)
                     resolved_command["run"] = command["run"].replace("@namespace@", namespace)
 

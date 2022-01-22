@@ -15,3 +15,9 @@ def test(app):
         generate_readme("skewer.yaml", "README.md")
         check_file("README.md")
         run_steps_on_minikube("skewer.yaml")
+
+@command
+def render(app):
+    check_program("pandoc")
+    run(f"pandoc -o README.html README.md")
+    print(f"file:{get_real_path('README.html')}")

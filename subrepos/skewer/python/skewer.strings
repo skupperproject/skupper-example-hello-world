@@ -69,18 +69,12 @@ The `skupper init` command installs the Skupper router and service
 controller in the current namespace.  Run the `skupper init` command
 in each namespace.
 
-[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
-
 **Note:** If you are using Minikube, [you need to start `minikube
 tunnel`][minikube-tunnel] before you install Skupper.
 
-[install_skupper_in_your_namespaces_postamble]
+[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
-Here we are using `--ingress none` in one of the namespaces simply to
-make local development with Minikube easier.  (It's tricky to run two
-Minikube tunnels on one host.)  The `--ingress none` option is not
-required if your two namespaces are on different hosts or on public
-clusters.
+[install_skupper_in_your_namespaces_postamble]
 
 [check_the_status_of_your_namespaces_preamble]
 

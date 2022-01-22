@@ -20,7 +20,7 @@ overview: |
 
   <img src="images/entities.svg" width="640"/>
 prerequisites: !string prerequisites
-contexts:
+sites:
   west:
     kubeconfig: ~/.kube/config-west
     namespace: west
