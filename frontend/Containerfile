@@ -17,13 +17,17 @@
 # under the License.
 #
 
-FROM registry.fedoraproject.org/fedora-minimal
+FROM registry.fedoraproject.org/fedora-minimal:35
 
-RUN microdnf -y install python3-flask python3-requests && microdnf clean all
+RUN microdnf -y install python3-pip python3-requests && microdnf clean all
 
+RUN pip3 install httpx starlette sse_starlette uvicorn
+
+COPY animalid.py /app/animalid.py
 COPY main.py /app/main.py
-ENV HOME=/app
+COPY static /app/static
 
 EXPOSE 8080
 
-CMD ["python3", "/app/main.py"]
+WORKDIR /app
+CMD ["python3", "main.py"]

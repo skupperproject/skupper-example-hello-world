@@ -1,0 +1,62 @@
+html {
+    overflow-y: scroll;
+}
+
+header,
+section,
+footer {
+    padding: 1em;
+}
+
+header > div,
+section > div,
+footer > div {
+    width: 960px;
+    margin: 0 auto;
+}
+
+header > div,
+footer > div {
+    display: flex;
+    justify-content: space-between;
+}
+
+header a,
+header a:visited,
+footer a,
+footer a:visited {
+    color: var(--black);
+}
+
+header {
+    border-bottom: 1px solid var(--light-gray);
+}
+
+footer {
+    border-top: 1px solid var(--light-gray);
+}
+
+a#logotype {
+    color: inherit;
+    font-weight: 700;
+}
+
+nav#top-nav {
+    display: flex;
+}
+
+nav#top-nav > a {
+    display: block;
+    width: 8em;
+    text-align: center;
+    color: var(--dark-gray);
+}
+
+nav#top-nav > a.selected {
+    color: inherit;
+    font-weight: 600;
+}
+
+nav#global-nav {
+    color: inherit;
+}

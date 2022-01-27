@@ -18,33 +18,34 @@
 #
 
 import os
+import uvicorn
 
-from flask import Flask, Response
+from animalid import generate_animal_id
+from starlette.applications import Starlette
+from starlette.responses import Response, FileResponse, JSONResponse, RedirectResponse
 from threading import Lock
 
-app = Flask(__name__)
-
-host = os.environ.get("BACKEND_SERVICE_HOST", "0.0.0.0")
-port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
-
+# process_id = f"backend-{uuid.uuid4().hex[:8]}"
+name = generate_animal_id()
 pod = os.environ.get("HOSTNAME", "hello-world-backend")
 
-lock = Lock()
-count = 0
 
-@app.errorhandler(Exception)
-def error(e):
-    app.logger.error(e)
-    return Response(f"Trouble! {e}\n", status=500, mimetype="text/plain")
+star = Starlette(debug=True)
 
-@app.route("/api/hello")
-def hello():
-    global count
+@star.route("/api/say-hello", methods=["POST"])
+async def post_say_hello(request):
+    request_data = await request.json()
+    user = request_data["name"]
 
-    with lock:
-        count += 1
+    response_data = {
+        "text": f"Hi, {user}.  I am {name} ({pod}).",
+        "name": name,
+    }
 
-    return Response(f"Hello from {pod} ({count})", mimetype="text/plain")
+    return JSONResponse(response_data)
 
 if __name__ == "__main__":
-    app.run(host=host, port=port)
+    host = os.environ.get("BACKEND_SERVICE_HOST", "0.0.0.0")
+    port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
+
+    uvicorn.run(star, host=host, port=port)

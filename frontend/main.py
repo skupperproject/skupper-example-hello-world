@@ -17,30 +17,93 @@
 # under the License.
 #
 
+import asyncio
 import os
-import requests
+import json
+import uuid
+import uvicorn
 
-from flask import Flask, Response
+from animalid import generate_animal_id
+from httpx import AsyncClient
+from sse_starlette.sse import EventSourceResponse
+from starlette.applications import Starlette
+from starlette.responses import Response, FileResponse, JSONResponse, RedirectResponse
+from starlette.staticfiles import StaticFiles
 
-app = Flask(__name__)
-
-host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
-port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
+process_id = f"frontend-{uuid.uuid4().hex[:8]}"
 
 backend_host = os.environ.get("BACKEND_SERVICE_HOST", "hello-world-backend")
 backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
+backend_url = f"http://{backend_host}:{backend_port}"
 
-@app.errorhandler(Exception)
-def error(e):
-    app.logger.error(e)
-    return Response(f"Trouble! {e}\n", status=500, mimetype="text/plain")
+responses = list()
+change_event = None
 
-@app.route("/")
-def message():
-    result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
-    text = f"I am the frontend.  The backend says '{result.text}'.\n"
+def log(message):
+    print(f"{process_id}: {message}")
 
-    return Response(text, mimetype="text/plain")
+async def startup():
+    global change_event
+    change_event = asyncio.Event()
+
+star = Starlette(debug=True, on_startup=[startup])
+star.mount("/static", StaticFiles(directory="static"), name="static")
+
+@star.route("/")
+
+async def get_index(request):
+    # user = request.query_params.get("user")
+
+    # if user is None:
+    #     user = generate_animal_id()
+    #     return RedirectResponse(url=f"?user={user}")
+
+    return FileResponse("static/index.html")
+
+@star.route("/api/notifications")
+async def get_notifications(request):
+    async def generate():
+        while True:
+            await change_event.wait()
+            yield {"data": "1"}
+
+    return EventSourceResponse(generate())
+
+@star.route("/api/data")
+async def get_data(request):
+    return JSONResponse(responses);
+
+@star.route("/api/generate-id", methods=["POST"])
+async def post_generate_id(request):
+    id = generate_animal_id()
+
+    data = {
+        "id": id,
+        "name": id.replace("-", " ").title(),
+        "error": None,
+    }
+
+    return JSONResponse(data)
+
+@star.route("/api/say-hello", methods=["POST"])
+async def post_say_hello(request):
+    request_data = await request.json()
+
+    async with AsyncClient() as client:
+        response = await client.post(f"{backend_url}/api/say-hello", json=request_data)
+
+    responses.append({
+        "request": request_data["text"],
+        "response": response.json()["text"],
+    });
+
+    change_event.set()
+    change_event.clear()
+
+    return JSONResponse({"error": None})
 
 if __name__ == "__main__":
-    app.run(host=host, port=port)
+    host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
+    port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
+
+    uvicorn.run(star, host=host, port=port)

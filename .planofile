@@ -40,3 +40,19 @@ def test_external(app, west_kubeconfig, east_kubeconfig):
 def clean(app):
     remove("README.html")
     remove("python/__pycache__")
+
+@command(name="run")
+def run_(app):
+    with working_env(BACKEND_SERVICE_HOST="localhost", BACKEND_SERVICE_PORT=8081):
+        with working_dir("backend"):
+            backend1 = start("python3 main.py")
+
+        with working_dir("frontend"):
+            frontend1 = start("python3 main.py")
+
+    try:
+        while True:
+            sleep(86400)
+    finally:
+        kill(frontend1)
+        kill(backend1)
