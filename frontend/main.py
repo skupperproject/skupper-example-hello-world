@@ -27,7 +27,7 @@ from animalid import generate_animal_id
 from httpx import AsyncClient
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
-from starlette.responses import Response, FileResponse, JSONResponse, RedirectResponse
+from starlette.responses import FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
 
 process_id = f"frontend-{uuid.uuid4().hex[:8]}"
@@ -36,7 +36,7 @@ backend_host = os.environ.get("BACKEND_SERVICE_HOST", "hello-world-backend")
 backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 backend_url = f"http://{backend_host}:{backend_port}"
 
-responses = list()
+records = list()
 change_event = None
 
 def log(message):
@@ -50,15 +50,12 @@ star = Starlette(debug=True, on_startup=[startup])
 star.mount("/static", StaticFiles(directory="static"), name="static")
 
 @star.route("/")
-
 async def get_index(request):
-    # user = request.query_params.get("user")
-
-    # if user is None:
-    #     user = generate_animal_id()
-    #     return RedirectResponse(url=f"?user={user}")
-
     return FileResponse("static/index.html")
+
+@star.route("/api/data")
+async def get_data(request):
+    return JSONResponse(records);
 
 @star.route("/api/notifications")
 async def get_notifications(request):
@@ -69,33 +66,31 @@ async def get_notifications(request):
 
     return EventSourceResponse(generate())
 
-@star.route("/api/data")
-async def get_data(request):
-    return JSONResponse(responses);
-
 @star.route("/api/generate-id", methods=["POST"])
-async def post_generate_id(request):
+async def generate_id(request):
     id = generate_animal_id()
 
-    data = {
+    response_data = {
         "id": id,
         "name": id.replace("-", " ").title(),
         "error": None,
     }
 
-    return JSONResponse(data)
+    return JSONResponse(response_data)
 
 @star.route("/api/say-hello", methods=["POST"])
-async def post_say_hello(request):
+async def say_hello(request):
     request_data = await request.json()
 
     async with AsyncClient() as client:
         response = await client.post(f"{backend_url}/api/say-hello", json=request_data)
 
-    responses.append({
+    record = {
         "request": request_data["text"],
         "response": response.json()["text"],
-    });
+    }
+
+    records.append(record);
 
     change_event.set()
     change_event.clear()
