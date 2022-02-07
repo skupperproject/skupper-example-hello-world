@@ -1,4 +1,4 @@
-import * as gesso from "./gesso.js";
+import * as gesso from "./gesso/gesso.js";
 
 const html = `
 <body>
