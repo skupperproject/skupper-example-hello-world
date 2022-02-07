@@ -7,12 +7,12 @@ def build(app):
 @command(name="run")
 def run_(app):
     build(app)
-    run(f"podman run -p 8080:8080 {image}")
+    run(f"podman run -p 8081:8080 {image}")
 
 @command
 def debug(app):
     build(app)
-    run(f"podman run -p 8080:8080 -it {image} /bin/bash")
+    run(f"podman run -p 8081:8080 -it {image} /bin/bash")
 
 @command
 def push(app):

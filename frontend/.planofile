@@ -7,7 +7,7 @@ def build(app):
 @command(name="run")
 def run_(app):
     build(app)
-    run(f"podman run --net host {image_tag}")
+    run(f"podman run --net host --env BACKEND_SERVICE_HOST=localhost --env BACKEND_SERVICE_PORT=8081 {image_tag}")
 
 @command
 def push(app):

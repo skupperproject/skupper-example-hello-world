@@ -24,7 +24,6 @@ import uuid
 from animalid import generate_animal_id
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
-from threading import Lock
 
 process_id = f"backend-{uuid.uuid4().hex[:8]}"
 
