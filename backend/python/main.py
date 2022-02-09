@@ -20,11 +20,11 @@
 import os
 import uvicorn
 
-from robotid import generate_robot_id
+from thingid import generate_thing_id
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 
-name = generate_robot_id().replace("-", " ").title()
+name = generate_thing_id().replace("-", " ").title()
 pod = os.environ.get("HOSTNAME", "hello-world-backend")
 
 star = Starlette(debug=True)

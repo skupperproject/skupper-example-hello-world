@@ -236,7 +236,7 @@ kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-wor
 Console for _east_:
 
 ~~~ shell
-kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
+kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend --replicas 3
 ~~~
 
 ## Step 8: Expose the backend service

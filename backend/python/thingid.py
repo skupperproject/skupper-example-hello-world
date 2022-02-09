@@ -197,41 +197,57 @@ _adjectives = [
     "zesty",
 ]
 
-_robots = [
+_things = [
     "android",
     "apparatus",
-    "application"
+    "application",
     "automaton",
     "bot",
-    "contraption",
+    "box",
+    ("cog", "k"),
+    ("component", "k"),
+    ("contraption", "k"),
     "device",
+    "dingus",
+    "doodad",
+    "doohickey",
     "droid",
+    "drone",
     "engine",
+    "entity",
     "gadget",
     "gizmo",
+    "hardware",
     "instrument",
+    "item",
     "machine",
     "mechanism",
+    "object",
     "process",
     "processor",
+    "program",
     "robot",
     "server",
     "system",
+    # "thing",
+    # "thingamajig",
+    # "thingamabob",
+    "widget",
     "worker",
     ("computer", "k"),
     ("cyborg", "s"),
     ("unit", "y"),
 ]
 
-def generate_robot_id():
+def generate_thing_id():
     _random.seed()
 
-    robot = _random.choice(_robots)
+    thing = _random.choice(_things)
 
-    if type(robot) is tuple:
-        robot, robot_initial = robot
+    if type(thing) is tuple:
+        thing, thing_initial = thing
     else:
-        robot_initial = robot[0]
+        thing_initial = thing[0]
 
     def match(adjective):
         if type(adjective) is tuple:
@@ -239,7 +255,7 @@ def generate_robot_id():
         else:
             adjective_initial = adjective[0]
 
-        return adjective_initial == robot_initial
+        return adjective_initial == thing_initial
 
     try:
         adjective = _random.choice([x for x in _adjectives if match(x)])
@@ -249,8 +265,8 @@ def generate_robot_id():
     if type(adjective) is tuple:
         adjective, _ = adjective
 
-    return "-".join((adjective, robot))
+    return "-".join((adjective, thing))
 
 if __name__ == "__main__":
     for i in range(100):
-        print(generate_robot_id())
+        print(generate_thing_id())
