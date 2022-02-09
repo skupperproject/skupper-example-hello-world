@@ -376,6 +376,9 @@ export class Router {
     }
 }
 
+// One column: [title string, data key, optional rendering function]
+// Rendering function: render(value, item, context) => value
+// Context is whatever the user chooses to pass into update()
 export class Table {
     constructor(id, columns) {
         this.id = id;
@@ -398,7 +401,7 @@ export class Table {
                 let value = item[column[1]];
 
                 if (column.length === 3) {
-                    value = column[2](value, context);
+                    value = column[2](value, item, context);
                 }
 
                 row.push(value);

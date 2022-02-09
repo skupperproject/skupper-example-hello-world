@@ -1,4 +1,4 @@
-image = "quay.io/skupper/hello-world-backend"
+image = "quay.io/ssorj/hello-world-backend"
 
 @command
 def build(app):

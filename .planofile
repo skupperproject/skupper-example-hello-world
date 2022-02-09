@@ -45,10 +45,10 @@ def clean(app):
 def run_(app):
     with working_env(BACKEND_SERVICE_HOST="localhost", BACKEND_SERVICE_PORT=8081):
         with working_dir("backend"):
-            backend1 = start("python3 main.py")
+            backend1 = start("python3 python/main.py")
 
         with working_dir("frontend"):
-            frontend1 = start("python3 main.py")
+            frontend1 = start("python3 python/main.py")
 
     try:
         while True:

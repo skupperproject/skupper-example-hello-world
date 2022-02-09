@@ -14,12 +14,6 @@ const html = `
     <div>
       <div>Your name is <b id="name"></b>.</div>
 
-      <form id="change-name-form" style="margin-bottom: 0;">
-        <div class="form-field">
-          <button type="submit">Change your name</button>
-        </div>
-      </form>
-
       <form id="hello-form" style="margin-bottom: 2em;">
         <div class="form-field">
           <button type="submit">Say hello</button>
@@ -34,19 +28,35 @@ const html = `
 </body>
 `;
 
+function renderRequest(value, item, context) {
+    const elem = gesso.createElement(null, "div");
+
+    elem.innerHTML = item.request.text.replace(item.request.name, `<b>${item.request.name}</b>`);
+
+    return elem;
+}
+
+function renderResponse(value, item, context) {
+    const elem = gesso.createElement(null, "div");
+
+    elem.innerHTML = item.response.text.replace(item.response.name, `<b>${item.response.name}</b>`);
+
+    return elem;
+}
+
 const helloTable = new gesso.Table("hello-table", [
-    ["Frontend requests", "request"],
-    ["Backend responses", "response"],
+    ["Frontend requests", "request", renderRequest],
+    ["Backend responses", "response", renderResponse],
 ]);
 
-export class MainPage extends gesso.Page {
+class MainPage extends gesso.Page {
     constructor(router) {
         super(router, "/", html);
 
         this.body.$("#hello-form").addEventListener("submit", event => {
             event.preventDefault();
 
-            gesso.postJson("/api/say-hello", {
+            gesso.postJson("/api/hello", {
                 text: `Hello! I am ${this.name}.`,
                 name: this.name,
             });
@@ -59,7 +69,7 @@ export class MainPage extends gesso.Page {
                 this.id = data.id;
                 this.name = data.name;
 
-                this.router.navigate(new URL(`/?id=${data.id}`, window.location));
+                super.process();
             });
 
             return;
@@ -79,7 +89,7 @@ export class MainPage extends gesso.Page {
     }
 }
 
-export const router = new gesso.Router();
+const router = new gesso.Router();
 
 new MainPage(router);
 

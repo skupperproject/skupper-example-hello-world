@@ -78,16 +78,16 @@ async def generate_id(request):
 
     return JSONResponse(response_data)
 
-@star.route("/api/say-hello", methods=["POST"])
-async def say_hello(request):
+@star.route("/api/hello", methods=["POST"])
+async def hello(request):
     request_data = await request.json()
 
     async with AsyncClient() as client:
-        response = await client.post(f"{backend_url}/api/say-hello", json=request_data)
+        response = await client.post(f"{backend_url}/api/hello", json=request_data)
 
     record = {
-        "request": request_data["text"],
-        "response": response.json()["text"],
+        "request": request_data,
+        "response": response.json(),
     }
 
     records.append(record);

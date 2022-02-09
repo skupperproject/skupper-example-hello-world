@@ -21,12 +21,11 @@ FROM registry.fedoraproject.org/fedora-minimal:35
 
 RUN microdnf -y install python3-pip && microdnf clean all
 
-RUN pip3 install httpx starlette sse_starlette uvicorn
+RUN pip3 install starlette sse_starlette uvicorn
 
-COPY animalid.py /app/animalid.py
-COPY main.py /app/main.py
+COPY python /app/python
 
 EXPOSE 8080
 
 WORKDIR /app
-CMD ["python3", "main.py"]
+CMD ["python3", "python/main.py"]

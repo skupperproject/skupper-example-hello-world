@@ -19,24 +19,18 @@
 
 import os
 import uvicorn
-import uuid
 
-from animalid import generate_animal_id
+from robotid import generate_robot_id
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 
-process_id = f"backend-{uuid.uuid4().hex[:8]}"
-
-name = generate_animal_id().replace("-", " ").title()
+name = generate_robot_id().replace("-", " ").title()
 pod = os.environ.get("HOSTNAME", "hello-world-backend")
 
 star = Starlette(debug=True)
 
-def log(message):
-    print(f"{process_id}: {message}")
-
-@star.route("/api/say-hello", methods=["POST"])
-async def say_hello(request):
+@star.route("/api/hello", methods=["POST"])
+async def hello(request):
     request_data = await request.json()
     requestor = request_data["name"]
 
