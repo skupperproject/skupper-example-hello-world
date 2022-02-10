@@ -27,7 +27,7 @@ from animalid import generate_animal_id
 from httpx import AsyncClient
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
-from starlette.responses import FileResponse, JSONResponse
+from starlette.responses import FileResponse, JSONResponse, PlainTextResponse
 from starlette.staticfiles import StaticFiles
 
 process_id = f"frontend-{uuid.uuid4().hex[:8]}"
@@ -73,7 +73,6 @@ async def generate_id(request):
     response_data = {
         "id": id,
         "name": id.replace("-", " ").title(),
-        "error": None,
     }
 
     return JSONResponse(response_data)
@@ -85,9 +84,11 @@ async def hello(request):
     async with AsyncClient() as client:
         response = await client.post(f"{backend_url}/api/hello", json=request_data)
 
+    response_data = response.json()
+
     record = {
         "request": request_data,
-        "response": response.json(),
+        "response": response_data,
     }
 
     records.append(record);
@@ -95,7 +96,7 @@ async def hello(request):
     change_event.set()
     change_event.clear()
 
-    return JSONResponse({"error": None})
+    return JSONResponse(response_data)
 
 if __name__ == "__main__":
     host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
