@@ -81,6 +81,11 @@ async def generate_id(request):
 async def hello(request):
     request_data = await request.json()
 
+    request_data = {
+        "name": request_data["name"],
+        "text": request_data["text"],
+    }
+
     async with AsyncClient() as client:
         response = await client.post(f"{backend_url}/api/hello", json=request_data)
 

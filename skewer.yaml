@@ -113,7 +113,7 @@ steps:
     commands:
       west:
         - run: "kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080' > url.txt"
-        - run: "curl -d '{\"name\": \"Bobby\"}' -H 'Content-Type: application/json' $(cat url.txt)/api/hello"
+        - run: "curl -d '{\"name\": \"Bobby\", \"text\": \"Hi!\"}' -H 'Content-Type: application/json' $(cat url.txt)/api/hello"
           sleep: 86400
           output: |
             {"text": "Hi, Bobby.  I am Defiant Dingus (fedora).", "name": "Defiant Dingus"}
