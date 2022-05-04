@@ -41,6 +41,7 @@ steps:
       east:
         - run: skupper link create ~/west.token
         - run: skupper link status --wait 30
+          suppress: true
     postamble: !string link_your_namespaces_postamble
   - title: Deploy the frontend and backend services
     preamble: |
@@ -65,7 +66,6 @@ steps:
     commands:
       east:
         - run: skupper expose deployment/hello-world-backend --port 8080
-          sleep: 30
           output: |
             NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
             hello-world-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
@@ -98,7 +98,8 @@ steps:
       Look up the external URL and use `curl` to send a request.
     commands:
       west:
-        - run: "curl -f $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
+        - run: "curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
+          run_override: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
           output: |
             I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
     postamble: |

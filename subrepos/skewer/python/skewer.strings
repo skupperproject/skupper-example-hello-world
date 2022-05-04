@@ -117,6 +117,9 @@ token.  Then, use `skupper link create` in the other to create a link.
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
 
+You can use the `skupper link status` command to check if linking
+succeeded.
+
 [cleaning_up_preamble]
 
 To remove Skupper and the other resources from this exercise, use the

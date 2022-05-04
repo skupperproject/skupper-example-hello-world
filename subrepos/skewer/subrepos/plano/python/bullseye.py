@@ -276,6 +276,17 @@ def _generate_file(project_files, filename, stdout):
     else:
         write(filename, content)
 
+# @command
+# def coverage(app):
+#     check_program("coverage3")
+
+#     with project_env():
+#         run("coverage3 run --include python/qtools/\* build/scripts-3.9/qtools-self-test")
+#         run("coverage3 report")
+#         run("coverage3 html")
+
+#         print(f"file:{get_current_dir()}/htmlcov/index.html")
+
 class _StringCatalog(dict):
     def __init__(self, path):
         super(_StringCatalog, self).__init__()
