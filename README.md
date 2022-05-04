@@ -151,14 +151,8 @@ skupper init
 Console for _east_:
 
 ~~~ shell
-skupper init --ingress none
+skupper init
 ~~~
-
-Here we are using `--ingress none` in one of the namespaces
-simply to make local development with Minikube easier.  (It's
-tricky to run two Minikube tunnels on one host.)  The `--ingress
-none` option is not required if your two namespaces are on
-different hosts or on public clusters.
 
 ## Step 5: Check the status of your namespaces
 
@@ -299,25 +293,31 @@ skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP
 
 ## Step 10: Test the application
 
-Look up the external URL and use `curl` to send a request.
+In the west namespace, use `kubectl get service/frontend` to
+look up the external URL of the frontend service.  Then use
+`curl` or a similar tool to request the `/api/health` endpoint.
 
 Console for _west_:
 
 ~~~ shell
-kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080' > url.txt
-curl -d '{"name": "Bobby", "text": "Hi!"}' -H 'Content-Type: application/json' $(cat url.txt)/api/hello
+FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')
+curl $FRONTEND/api/health
 ~~~
 
 Sample output:
 
 ~~~
-{"text": "Hi, Bobby.  I am Impeccable Item (backend-69b56f7cb9-cws8p).", "name": Impeccable Item"}
+OK
 ~~~
+
+If everything is in order, you can now access the application
+using your browser by navigating to the URL stored in
+`$FRONTEND`.
 
 **Note:** If the embedded `kubectl get` command fails to get the
 IP address, you can find it manually by running `kubectl get
-services` and looking up the external IP of the
-`frontend` service.
+services` and looking up the external IP of the `frontend`
+service.
 
 ## Summary
 

@@ -31,21 +31,7 @@ steps:
   - standard: configure_separate_console_sessions
   - standard: access_your_clusters
   - standard: set_up_your_namespaces
-  - title: Install Skupper in your namespaces
-    preamble: !string install_skupper_in_your_namespaces_preamble
-    commands:
-      west:
-        - run: skupper init
-          await: [deployment/skupper-service-controller, deployment/skupper-router]
-      east:
-        - run: skupper init --ingress none
-          await: [deployment/skupper-service-controller, deployment/skupper-router]
-    postamble: |
-      Here we are using `--ingress none` in one of the namespaces
-      simply to make local development with Minikube easier.  (It's
-      tricky to run two Minikube tunnels on one host.)  The `--ingress
-      none` option is not required if your two namespaces are on
-      different hosts or on public clusters.
+  - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
   - title: Link your namespaces
     preamble: !string link_your_namespaces_preamble
@@ -109,21 +95,26 @@ steps:
             skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
   - title: Test the application
     preamble: |
-      Look up the external URL and use `curl` to send a request.
+      In the west namespace, use `kubectl get service/frontend` to
+      look up the external URL of the frontend service.  Then use
+      `curl` or a similar tool to request the `/api/health` endpoint.
     commands:
       west:
-        - run: "kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080' > url.txt"
-        - run: "curl -d '{\"name\": \"Bobby\", \"text\": \"Hi!\"}' -H 'Content-Type: application/json' $(cat url.txt)/api/hello"
-          run_override: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 -d '{\"name\": \"Bobby\", \"text\": \"Hi!\"}' -H 'Content-Type: application/json' $(cat url.txt)/api/hello"
+        - run: "FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')"
+          run_override: echo -n
+        - run: "curl $FRONTEND/api/health"
+          run_override: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')"
           output: |
-            {"text": "Hi, Bobby.  I am Impeccable Item (backend-69b56f7cb9-cws8p).", "name": Impeccable Item"}
-        - run: sleep 86400
-          suppress: true
+            OK
     postamble: |
+      If everything is in order, you can now access the application
+      using your browser by navigating to the URL stored in
+      `$FRONTEND`.
+
       **Note:** If the embedded `kubectl get` command fails to get the
       IP address, you can find it manually by running `kubectl get
-      services` and looking up the external IP of the
-      `frontend` service.
+      services` and looking up the external IP of the `frontend`
+      service.
 summary: |
   This example locates the frontend and backend services in different
   namespaces, on different clusters.  Ordinarily, this means that they

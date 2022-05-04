@@ -27,7 +27,7 @@ from animalid import generate_animal_id
 from httpx import AsyncClient
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
-from starlette.responses import FileResponse, JSONResponse, PlainTextResponse
+from starlette.responses import FileResponse, JSONResponse, Response
 from starlette.staticfiles import StaticFiles
 
 process_id = f"frontend-{uuid.uuid4().hex[:8]}"
@@ -66,6 +66,12 @@ async def get_notifications(request):
 
     return EventSourceResponse(generate())
 
+@star.route("/api/health")
+async def get_health(request):
+    await send_hello("Testy Tiger", "Hi")
+
+    return Response("OK\n", 200)
+
 @star.route("/api/generate-id", methods=["POST"])
 async def generate_id(request):
     id = generate_animal_id()
@@ -81,15 +87,7 @@ async def generate_id(request):
 async def hello(request):
     request_data = await request.json()
 
-    request_data = {
-        "name": request_data["name"],
-        "text": request_data["text"],
-    }
-
-    async with AsyncClient() as client:
-        response = await client.post(f"{backend_url}/api/hello", json=request_data)
-
-    response_data = response.json()
+    request_data, response_data = await send_hello(request_data["name"], request_data["text"])
 
     record = {
         "request": request_data,
@@ -102,6 +100,19 @@ async def hello(request):
     change_event.clear()
 
     return JSONResponse(response_data)
+
+async def send_hello(name, text):
+    request_data = {
+        "name": name,
+        "text": text,
+    }
+
+    async with AsyncClient() as client:
+        response = await client.post(f"{backend_url}/api/hello", json=request_data)
+
+    response_data = response.json()
+
+    return request_data, response_data
 
 if __name__ == "__main__":
     host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")

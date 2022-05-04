@@ -174,6 +174,7 @@ _adjectives = [
     ("swell", "sw"),
     ("swift", "sw"),
     "terrific",
+    "testy",
     "tiptop",
     "top-notch",
     "transcendent",
