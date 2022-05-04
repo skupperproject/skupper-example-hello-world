@@ -55,6 +55,7 @@ steps:
       east:
         - run: skupper link create ~/west.token
         - run: skupper link status --wait 30
+          suppress: true
     postamble: !string link_your_namespaces_postamble
   - title: Deploy the frontend and backend services
     preamble: |
@@ -62,11 +63,11 @@ steps:
       in `west` and the backend service in `east`.
     commands:
       west:
-        - run: kubectl create deployment hello-world-frontend --image quay.io/ssorj/hello-world-frontend
-          await: [deployment/hello-world-frontend]
+        - run: kubectl create deployment frontend --image quay.io/ssorj/hello-world-frontend
+          await: [deployment/frontend]
       east:
-        - run: kubectl create deployment hello-world-backend --image quay.io/ssorj/hello-world-backend --replicas 3
-          await: [deployment/hello-world-backend]
+        - run: kubectl create deployment backend --image quay.io/ssorj/hello-world-backend --replicas 3
+          await: [deployment/backend]
   - title: Expose the backend service
     preamble: |
       We now have two namespaces linked to form a Skupper network, but
@@ -78,11 +79,10 @@ steps:
       frontend service.
     commands:
       east:
-        - run: skupper expose deployment/hello-world-backend --port 8080
-          sleep: 30
+        - run: skupper expose deployment/backend --port 8080
           output: |
-            NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
-            hello-world-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
+            NAME         TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)      AGE
+            backend      ClusterIP      10.106.92.175    <none>           8080/TCP     1m31s
   - title: Expose the frontend service
     preamble: |
       We have established connectivity between the two namespaces and
@@ -95,15 +95,15 @@ steps:
       check for the service and its external IP address.
     commands:
       west:
-        - run: kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-          await_external_ip: [service/hello-world-frontend]
+        - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
+          await_external_ip: [service/frontend]
           output: |
-            service/hello-world-frontend exposed
+            service/frontend exposed
         - run: kubectl get services
           output: |
             NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-            hello-world-backend    ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-            hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
+            backend                ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
+            frontend               LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
             skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
             skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
             skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
@@ -112,16 +112,18 @@ steps:
       Look up the external URL and use `curl` to send a request.
     commands:
       west:
-        - run: "kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080' > url.txt"
+        - run: "kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080' > url.txt"
         - run: "curl -d '{\"name\": \"Bobby\", \"text\": \"Hi!\"}' -H 'Content-Type: application/json' $(cat url.txt)/api/hello"
-          sleep: 86400
+          run_override: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 -d '{\"name\": \"Bobby\", \"text\": \"Hi!\"}' -H 'Content-Type: application/json' $(cat url.txt)/api/hello"
           output: |
-            {"text": "Hi, Bobby.  I am Defiant Dingus (fedora).", "name": "Defiant Dingus"}
+            {"text": "Hi, Bobby.  I am Impeccable Item (backend-69b56f7cb9-cws8p).", "name": Impeccable Item"}
+        - run: sleep 86400
+          suppress: true
     postamble: |
       **Note:** If the embedded `kubectl get` command fails to get the
       IP address, you can find it manually by running `kubectl get
       services` and looking up the external IP of the
-      `hello-world-frontend` service.
+      `frontend` service.
 summary: |
   This example locates the frontend and backend services in different
   namespaces, on different clusters.  Ordinarily, this means that they
@@ -145,9 +147,9 @@ cleaning_up:
   commands:
     west:
       - run: skupper delete
-      - run: kubectl delete service/hello-world-frontend
-      - run: kubectl delete deployment/hello-world-frontend
+      - run: kubectl delete service/frontend
+      - run: kubectl delete deployment/frontend
     east:
       - run: skupper delete
-      - run: kubectl delete deployment/hello-world-backend
+      - run: kubectl delete deployment/backend
 next_steps: !string next_steps

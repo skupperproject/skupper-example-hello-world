@@ -25,7 +25,7 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 
 name = generate_thing_id().replace("-", " ").title()
-pod = os.environ.get("HOSTNAME", "hello-world-backend")
+pod = os.environ.get("HOSTNAME", "backend")
 
 star = Starlette(debug=True)
 

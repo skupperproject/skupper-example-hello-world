@@ -32,7 +32,7 @@ from starlette.staticfiles import StaticFiles
 
 process_id = f"frontend-{uuid.uuid4().hex[:8]}"
 
-backend_host = os.environ.get("BACKEND_SERVICE_HOST", "hello-world-backend")
+backend_host = os.environ.get("BACKEND_SERVICE_HOST", "backend")
 backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
 backend_url = f"http://{backend_host}:{backend_port}"
 
