@@ -41,7 +41,7 @@ steps:
       east:
         - run: skupper link create ~/west.token
         - run: skupper link status --wait 30
-          suppress: true
+          apply: test
     postamble: !string link_your_namespaces_postamble
   - title: Deploy the frontend and backend services
     preamble: |
@@ -99,9 +99,11 @@ steps:
     commands:
       west:
         - run: "curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
-          run_override: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
+          apply: readme
           output: |
             I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
+        - run: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
+          apply: test
     postamble: |
       **Note:** If the embedded `kubectl get` command fails to get the
       IP address, you can find it manually by running `kubectl get
