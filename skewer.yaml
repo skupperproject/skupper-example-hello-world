@@ -41,7 +41,7 @@ steps:
       east:
         - run: skupper link create ~/west.token
         - run: skupper link status --wait 30
-          suppress: true
+          apply: test
     postamble: !string link_your_namespaces_postamble
   - title: Deploy the frontend and backend services
     preamble: |
@@ -101,11 +101,14 @@ steps:
     commands:
       west:
         - run: "FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')"
-          run_override: echo -n
+          apply: readme
         - run: "curl $FRONTEND/api/health"
-          run_override: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')"
+          apply: readme
           output: |
+            $ curl $FRONTEND/api/health
             OK
+        - run: "curl --fail --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')"
+          apply: test
     postamble: |
       If everything is in order, you can now access the web interface
       using your browser by navigating to the URL stored in

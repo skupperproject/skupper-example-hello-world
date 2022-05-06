@@ -307,6 +307,7 @@ curl $FRONTEND/api/health
 Sample output:
 
 ~~~
+$ curl $FRONTEND/api/health
 OK
 ~~~
 
