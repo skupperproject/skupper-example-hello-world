@@ -251,13 +251,6 @@ Console for _east_:
 skupper expose deployment/backend --port 8080
 ~~~
 
-Sample output:
-
-~~~
-NAME         TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)      AGE
-backend      ClusterIP      10.106.92.175    <none>           8080/TCP     1m31s
-~~~
-
 ## Step 9: Expose the frontend service
 
 We have established connectivity between the two namespaces and
@@ -266,8 +259,7 @@ Before we can test the application, we need external access to
 the frontend.
 
 Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.  Use `kubectl get services` to
-check for the service and its external IP address.
+access to the frontend service.
 
 Console for _west_:
 
@@ -294,20 +286,26 @@ skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP
 ## Step 10: Test the application
 
 In the west namespace, use `kubectl get service/frontend` to
-look up the external URL of the frontend service.  Then use
+look up the external IP of the frontend service.  Then use
 `curl` or a similar tool to request the `/api/health` endpoint.
 
 Console for _west_:
 
 ~~~ shell
-FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')
-curl $FRONTEND/api/health
+kubectl get service/frontend
+curl http://<external-ip>:8080/api/health
 ~~~
 
 Sample output:
 
 ~~~
-$ curl $FRONTEND/api/health
+$ kubectl get service/frontend
+$ kubectl get service/frontend
+NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+frontend   LoadBalancer   10.103.232.28   10.103.232.28   8080:30407/TCP   15s
+
+$ curl http://<external-ip>:8080/api/health
+$ curl http://10.103.232.28:8080/api/health
 OK
 ~~~
 
