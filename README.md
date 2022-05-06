@@ -265,29 +265,23 @@ Console for _west_:
 
 ~~~ shell
 kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-kubectl get services
 ~~~
 
 Sample output:
 
 ~~~
-$ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 service/frontend exposed
-
-$ kubectl get services
-NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-backend                ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-frontend               LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
-skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
-skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
-skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
 ~~~
 
 ## Step 10: Test the application
 
 In the west namespace, use `kubectl get service/frontend` to
 look up the external IP of the frontend service.  Then use
-`curl` or a similar tool to request the `/api/health` endpoint.
+`curl` or a similar tool to request the `/api/health` endpoint
+at that address.
+
+**Note:** The `<external-ip>` field in the following commands is
+a placeholder.  For you, it will be an IP address.
 
 Console for _west_:
 
@@ -300,23 +294,17 @@ Sample output:
 
 ~~~
 $ kubectl get service/frontend
-$ kubectl get service/frontend
 NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-frontend   LoadBalancer   10.103.232.28   10.103.232.28   8080:30407/TCP   15s
+frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
 
 $ curl http://<external-ip>:8080/api/health
-$ curl http://10.103.232.28:8080/api/health
 OK
 ~~~
 
 If everything is in order, you can now access the web interface
-using your browser by navigating to the URL stored in
-`$FRONTEND`.
-
-**Note:** If the embedded `kubectl get` command fails to get the
-IP address, you can find it manually by running `kubectl get
-services` and looking up the external IP of the `frontend`
-service.
+using your browser by navigating to
+`http://<external-ip>:8080/`.  The frontend will assign you a
+name.  Click *Hello* to send greetings to the backend.
 
 ## Summary
 
