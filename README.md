@@ -275,13 +275,13 @@ service/frontend exposed
 
 ## Step 10: Test the application
 
-In the west namespace, use `kubectl get service/frontend` to
-look up the external IP of the frontend service.  Then use
-`curl` or a similar tool to request the `/api/health` endpoint
-at that address.
+Now we're ready to try it out.  Use `kubectl get
+service/frontend` to look up the external IP of the frontend
+service.  Then use `curl` or a similar tool to request the
+`/api/health` endpoint at that address.
 
 **Note:** The `<external-ip>` field in the following commands is
-a placeholder.  For you, it will be an IP address.
+a placeholder.  For you, it is an IP address.
 
 Console for _west_:
 
@@ -302,9 +302,9 @@ OK
 ~~~
 
 If everything is in order, you can now access the web interface
-using your browser by navigating to
-`http://<external-ip>:8080/`.  The frontend will assign you a
-name.  Click *Hello* to send greetings to the backend.
+by navigating to `http://<external-ip>:8080/` in your browser.
+The frontend assigns each new user a name.  Click *Hello* to
+send greetings to the backend.
 
 ## Summary
 

@@ -83,13 +83,13 @@ steps:
             service/frontend exposed
   - title: Test the application
     preamble: |
-      In the west namespace, use `kubectl get service/frontend` to
-      look up the external IP of the frontend service.  Then use
-      `curl` or a similar tool to request the `/api/health` endpoint
-      at that address.
+      Now we're ready to try it out.  Use `kubectl get
+      service/frontend` to look up the external IP of the frontend
+      service.  Then use `curl` or a similar tool to request the
+      `/api/health` endpoint at that address.
 
       **Note:** The `<external-ip>` field in the following commands is
-      a placeholder.  For you, it will be an IP address.
+      a placeholder.  For you, it is an IP address.
     commands:
       west:
         - run: kubectl get service/frontend
@@ -105,9 +105,9 @@ steps:
           apply: test
     postamble: |
       If everything is in order, you can now access the web interface
-      using your browser by navigating to
-      `http://<external-ip>:8080/`.  The frontend will assign you a
-      name.  Click *Hello* to send greetings to the backend.
+      by navigating to `http://<external-ip>:8080/` in your browser.
+      The frontend assigns each new user a name.  Click *Hello* to
+      send greetings to the backend.
 summary: |
   This example locates the frontend and backend services in different
   namespaces, on different clusters.  Ordinarily, this means that they
