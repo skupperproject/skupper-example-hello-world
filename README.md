@@ -37,8 +37,8 @@ be deployed across multiple Kubernetes clusters using Skupper.
 It contains two services:
 
 * A backend service that exposes an `/api/hello` endpoint.  It
-  returns greetings of the form `Hi, &lt;your-name&gt;.  I am
-  &lt;my-name&gt; (&lt;pod-name&gt;)`.
+  returns greetings of the form `Hi, <your-name>.  I am <my-name>
+  (<pod-name>)`.
 
 * A frontend service that sends greetings to the backend and
   fetches new greetings in response.
