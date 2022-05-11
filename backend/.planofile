@@ -1,21 +1,21 @@
-image = "quay.io/ssorj/hello-world-backend"
+image_tag = "quay.io/ssorj/hello-world-backend"
 
 @command
 def build(app):
-    run(f"podman build -t {image} .")
+    run(f"podman build -t {image_tag} .")
 
-@command(name="run")
+@command
 def run_(app):
     build(app)
-    run(f"podman run -p 8081:8080 {image}")
+    run(f"podman run --net host -p 8081:8080 {image_tag}")
 
 @command
 def debug(app):
     build(app)
-    run(f"podman run -p 8081:8080 -it {image} /bin/bash")
+    run(f"podman run --net host -p 8081:8080 -it {image_tag} /bin/bash")
 
 @command
 def push(app):
     run("podman login quay.io")
     build(app)
-    run(f"podman push {image}")
+    run(f"podman push {image_tag}")
