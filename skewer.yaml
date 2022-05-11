@@ -49,10 +49,10 @@ steps:
       in `west` and the backend service in `east`.
     commands:
       west:
-        - run: kubectl create deployment frontend --image quay.io/ssorj/hello-world-frontend
+        - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
           await: [deployment/frontend]
       east:
-        - run: kubectl create deployment backend --image quay.io/ssorj/hello-world-backend --replicas 3
+        - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
           await: [deployment/backend]
   - title: Expose the backend service
     preamble: |

@@ -1,4 +1,4 @@
-image_tag = "quay.io/ssorj/hello-world-frontend"
+image_tag = "quay.io/skupper/hello-world-frontend"
 
 @command
 def build(app):

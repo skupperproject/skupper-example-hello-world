@@ -226,13 +226,13 @@ in `west` and the backend service in `east`.
 Console for _west_:
 
 ~~~ shell
-kubectl create deployment frontend --image quay.io/ssorj/hello-world-frontend
+kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
 Console for _east_:
 
 ~~~ shell
-kubectl create deployment backend --image quay.io/ssorj/hello-world-backend --replicas 3
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 ~~~
 
 ## Step 8: Expose the backend service
