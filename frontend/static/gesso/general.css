@@ -1,0 +1,61 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons+Outlined");
+
+:root {
+    --black: hsla(0, 0%, 0%, 0.9);
+    --dark-gray: hsla(0, 0%, 0%, 0.5);
+    --light-gray: hsla(0, 0%, 0%, 0.3);
+}
+
+* {
+    margin: 1em 0;
+    padding: 0;
+    box-sizing: border-box;
+    border-style: none;
+}
+
+*:first-child {
+    margin-top: 0;
+}
+
+*:last-child {
+    margin-bottom: 0;
+}
+
+html,
+body,
+div,
+nav,
+a,
+br {
+    margin: 0;
+}
+
+body {
+    font: 13pt/19pt "Source Sans Pro", sans-serif;
+    font-weight: 400;
+    color: var(--black);
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+    color: rgb(0, 0, 238); /* XXX */
+}
+
+a:visited {
+    color: inherit;
+    color: rgb(0, 0, 238); /* XXX */
+}
+
+pre {
+    font-family: monospace;
+}
+
+h2 {
+    font-size: 1.15em;
+}
+
+h1, h2, h3, h4, th, b {
+    font-weight: 600;
+}

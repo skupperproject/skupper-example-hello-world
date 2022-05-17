@@ -1,0 +1,26 @@
+div.tabs > nav {
+    diplay: flex;
+    margin-top: -0.4em;
+    margin-bottom: 1.6em;
+}
+
+div.tabs > nav > a {
+    display: inline-block;
+    padding: 0.4em 0;
+    margin-right: 2em;
+    color: #666;
+}
+
+div.tabs > nav > a:hover,
+div.tabs > nav > a.selected {
+    border-bottom: 1.5px solid black;
+    color: black;
+}
+
+div.tabs > div {
+    display: none;
+}
+
+div.tabs > div.selected {
+    display: inherit;
+}

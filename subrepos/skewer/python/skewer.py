@@ -89,9 +89,7 @@ _standard_steps = {
         "title": "Check the status of your namespaces",
         "preamble": _strings["check_the_status_of_your_namespaces_preamble"],
         "commands": [
-            {
-                "run": "skupper status",
-            }
+            {"run": "skupper status"}
         ],
         "postamble": _strings["check_the_status_of_your_namespaces_postamble"],
     },
@@ -215,6 +213,9 @@ def _run_step(work_dir, skewer_data, step_data):
 
         with working_env(KUBECONFIG=kubeconfig):
             for command in commands:
+                if command.get("apply") == "readme":
+                    continue
+
                 run(command["run"].replace("~", work_dir), shell=True)
 
                 if "await" in command:
@@ -346,6 +347,9 @@ def _generate_readme_step(skewer_data, step_data):
             out.append("~~~ shell")
 
             for command in commands:
+                if command.get("apply") == "test":
+                    continue
+
                 out.append(command["run"])
 
                 if "output" in command:

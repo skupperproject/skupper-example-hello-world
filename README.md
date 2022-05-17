@@ -37,11 +37,11 @@ be deployed across multiple Kubernetes clusters using Skupper.
 It contains two services:
 
 * A backend service that exposes an `/api/hello` endpoint.  It
-  returns greetings of the form `Hello from <pod-name>
-  (<request-count>)`.
+  returns greetings of the form `Hi, <your-name>.  I am <my-name>
+  (<pod-name>)`.
 
-* A frontend service that accepts HTTP requests, calls the backend
-  to fetch new greetings, and serves them to the user.
+* A frontend service that sends greetings to the backend and
+  fetches new greetings in response.
 
 With Skupper, you can place the backend in one cluster and the
 frontend in another and maintain connectivity between the two
@@ -151,14 +151,8 @@ skupper init
 Console for _east_:
 
 ~~~ shell
-skupper init --ingress none
+skupper init
 ~~~
-
-Here we are using `--ingress none` in one of the namespaces
-simply to make local development with Minikube easier.  (It's
-tricky to run two Minikube tunnels on one host.)  The `--ingress
-none` option is not required if your two namespaces are on
-different hosts or on public clusters.
 
 ## Step 5: Check the status of your namespaces
 
@@ -216,11 +210,13 @@ Console for _east_:
 
 ~~~ shell
 skupper link create ~/west.token
-skupper link status --wait 30
 ~~~
 
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
+
+You can use the `skupper link status` command to check if linking
+succeeded.
 
 ## Step 7: Deploy the frontend and backend services
 
@@ -230,13 +226,13 @@ in `west` and the backend service in `east`.
 Console for _west_:
 
 ~~~ shell
-kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend
+kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
 Console for _east_:
 
 ~~~ shell
-kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 ~~~
 
 ## Step 8: Expose the backend service
@@ -252,14 +248,7 @@ frontend service.
 Console for _east_:
 
 ~~~ shell
-skupper expose deployment/hello-world-backend --port 8080
-~~~
-
-Sample output:
-
-~~~
-NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
-hello-world-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
+skupper expose deployment/backend --port 8080
 ~~~
 
 ## Step 9: Expose the frontend service
@@ -270,51 +259,52 @@ Before we can test the application, we need external access to
 the frontend.
 
 Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.  Use `kubectl get services` to
-check for the service and its external IP address.
+access to the frontend service.
 
 Console for _west_:
 
 ~~~ shell
-kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-kubectl get services
+kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 ~~~
 
 Sample output:
 
 ~~~
-$ kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-service/hello-world-frontend exposed
-
-$ kubectl get services
-NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-hello-world-backend    ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
-skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
-skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
-skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
+service/frontend exposed
 ~~~
 
 ## Step 10: Test the application
 
-Look up the external URL and use `curl` to send a request.
+Now we're ready to try it out.  Use `kubectl get
+service/frontend` to look up the external IP of the frontend
+service.  Then use `curl` or a similar tool to request the
+`/api/health` endpoint at that address.
+
+**Note:** The `<external-ip>` field in the following commands is
+a placeholder.  For you, it is an IP address.
 
 Console for _west_:
 
 ~~~ shell
-curl -f $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
+kubectl get service/frontend
+curl http://<external-ip>:8080/api/health
 ~~~
 
 Sample output:
 
 ~~~
-I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
+$ kubectl get service/frontend
+NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
+
+$ curl http://<external-ip>:8080/api/health
+OK
 ~~~
 
-**Note:** If the embedded `kubectl get` command fails to get the
-IP address, you can find it manually by running `kubectl get
-services` and looking up the external IP of the
-`hello-world-frontend` service.
+If everything is in order, you can now access the web interface
+by navigating to `http://<external-ip>:8080/` in your browser.
+The frontend assigns each new user a name.  Click *Hello* to
+send greetings to the backend.
 
 ## Summary
 
@@ -345,15 +335,15 @@ Console for _west_:
 
 ~~~ shell
 skupper delete
-kubectl delete service/hello-world-frontend
-kubectl delete deployment/hello-world-frontend
+kubectl delete service/frontend
+kubectl delete deployment/frontend
 ~~~
 
 Console for _east_:
 
 ~~~ shell
 skupper delete
-kubectl delete deployment/hello-world-backend
+kubectl delete deployment/backend
 ~~~
 
 ## Next steps

@@ -18,29 +18,31 @@
 #
 
 import os
-import requests
+import uvicorn
 
-from flask import Flask, Response
+from thingid import generate_thing_id
+from starlette.applications import Starlette
+from starlette.responses import JSONResponse
 
-app = Flask(__name__)
+name = generate_thing_id().replace("-", " ").title()
+pod = os.environ.get("HOSTNAME", "backend")
 
-host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
-port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
+star = Starlette(debug=True)
 
-backend_host = os.environ.get("BACKEND_SERVICE_HOST", "hello-world-backend")
-backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
+@star.route("/api/hello", methods=["POST"])
+async def hello(request):
+    request_data = await request.json()
+    requestor = request_data["name"]
 
-@app.errorhandler(Exception)
-def error(e):
-    app.logger.error(e)
-    return Response(f"Trouble! {e}\n", status=500, mimetype="text/plain")
+    response_data = {
+        "text": f"Hi, {requestor}.  I am {name} ({pod}).",
+        "name": name,
+    }
 
-@app.route("/")
-def message():
-    result = requests.get(f"http://{backend_host}:{backend_port}/api/hello")
-    text = f"I am the frontend.  The backend says '{result.text}'.\n"
-
-    return Response(text, mimetype="text/plain")
+    return JSONResponse(response_data)
 
 if __name__ == "__main__":
-    app.run(host=host, port=port)
+    host = os.environ.get("BACKEND_SERVICE_HOST", "0.0.0.0")
+    port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
+
+    uvicorn.run(star, host=host, port=port)

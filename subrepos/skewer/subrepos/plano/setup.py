@@ -31,7 +31,12 @@ class _build_scripts(build_scripts):
         try:
             prefix = self.distribution.command_options["install"]["prefix"][1]
         except KeyError:
-            prefix = "/usr/local"
+            try:
+                self.distribution.command_options["install"]["user"]
+            except KeyError:
+                prefix = "/usr/local"
+            else:
+                prefix = os.path.join(os.path.expanduser("~"), ".local")
 
         temp_dir = tempfile.mkdtemp()
         default_home = os.path.join(prefix, "lib", "plano")

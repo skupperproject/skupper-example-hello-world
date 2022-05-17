@@ -437,6 +437,12 @@ def io_operations():
         result = read(file_d)
         assert result == "frontM@middle@back", result
 
+        file_e = write("e", "123")
+        file_f = write("f", "456")
+        concatenate("g", (file_e, "not-there", file_f))
+        result = read("g")
+        assert result == "123456", result
+
 @test
 def iterable_operations():
     result = unique([1, 1, 1, 2, 2, 3])
