@@ -96,7 +96,7 @@ A **site**:
 A tilde (~) in the kubeconfig file path is replaced with a temporary
 working directory during testing.
 
-An example site:
+Example sites:
 
 ~~~ yaml
 sites:
@@ -153,6 +153,7 @@ steps:
   - standard: set_up_your_namespaces
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
+  - standard: link_your_namespaces
   [...]
 ~~~
 
@@ -165,11 +166,9 @@ A **command**:
 
 ~~~ yaml
 run:                # A shell command (optional)
-await:              # A list of resources for which to await readiness (optional)
-await_external_ip:  # A list of resources for which to await a {.status.loadBalancer.ingress} value (optional)
-sleep:              # An integer number of seconds to sleep after running and awaiting (optional)
-output:             # Sample output to include in the README (optional)
 apply:              # Use this command only for "readme" or "test" (optional, default is both)
+output:             # Sample output to include in the README (optional)
+await:              # A resource or list of resources for which to await readiness (optional)
 ~~~
 
 Only the `run` and `output` fields are used in the README content.
@@ -180,27 +179,24 @@ The `apply` field is useful when you want the readme instructions to
 be different from the test procedure, or you simply want to omit
 something.
 
+The `await` field is often used by itself to pause for a condition you
+require before going to the next step.  It is used only for testing
+and does not impact the README.
+
 Example commands:
 
 ~~~ yaml
 commands:
   east:
-    - run: echo Hello
-      sleep: 1
-      output: Hello
+    - run: kubectl expose deployment/backend --port 8080 --type LoadBalancer
+      output: |
+        service/frontend exposed
   west:
-    - run: kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-      await_external_ip: [service/hello-world-frontend]
+    - await: service/backend
+    - run: kubectl get service/backend
       output: |
-        service/hello-world-frontend exposed
-    - run: kubectl get services
-      output: |
-        NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-        hello-world-backend    ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-        hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
-        skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
-        skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
-        skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
+        NAME          TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)         AGE
+        backend       ClusterIP      10.102.112.121   <none>           8080/TCP        30s
 ~~~
 
 Skewer has boilerplate strings for a lot of cases.  You can see what's

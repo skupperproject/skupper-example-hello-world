@@ -84,13 +84,13 @@ Start a console session for each of your namespaces.  Set the
 `KUBECONFIG` environment variable to a different path in each
 session.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-west
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-east
@@ -117,18 +117,38 @@ Use `kubectl create namespace` to create the namespaces you wish to
 use (or use existing namespaces).  Use `kubectl config set-context` to
 set the current namespace for each session.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 kubectl create namespace west
 kubectl config set-context --current --namespace west
 ~~~
 
-Console for _east_:
+Sample output:
+
+~~~ console
+$ kubectl create namespace west
+namespace/west created
+
+$ kubectl config set-context --current --namespace west
+Context "minikube" modified.
+~~~
+
+**Console for _east_:**
 
 ~~~ shell
 kubectl create namespace east
 kubectl config set-context --current --namespace east
+~~~
+
+Sample output:
+
+~~~ console
+$ kubectl create namespace east
+namespace/east created
+
+$ kubectl config set-context --current --namespace east
+Context "minikube" modified.
 ~~~
 
 ## Step 4: Install Skupper in your namespaces
@@ -142,16 +162,32 @@ tunnel`][minikube-tunnel] before you install Skupper.
 
 [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 skupper init
 ~~~
 
-Console for _east_:
+Sample output:
+
+~~~ console
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
+~~~
+
+**Console for _east_:**
 
 ~~~ shell
 skupper init
+~~~
+
+Sample output:
+
+~~~ console
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
 ~~~
 
 ## Step 5: Check the status of your namespaces
@@ -159,13 +195,13 @@ skupper init
 Use `skupper status` in each console to check that Skupper is
 installed.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 skupper status
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 skupper status
@@ -200,39 +236,67 @@ have access to it.
 First, use `skupper token create` in one namespace to generate the
 token.  Then, use `skupper link create` in the other to create a link.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
-skupper token create ~/west.token
+skupper token create ~/secret.token
 ~~~
 
-Console for _east_:
+Sample output:
+
+~~~ console
+$ skupper token create ~/secret.token
+Token written to ~/secret.token
+~~~
+
+**Console for _east_:**
 
 ~~~ shell
-skupper link create ~/west.token
+skupper link create ~/secret.token
+~~~
+
+Sample output:
+
+~~~ console
+$ skupper link create ~/secret.token
+Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
+Check the status of the link using 'skupper link status'.
 ~~~
 
 If your console sessions are on different machines, you may need to
-use `scp` or a similar tool to transfer the token.
-
-You can use the `skupper link status` command to check if linking
-succeeded.
+use `sftp` or a similar tool to transfer the token securely.  By
+default, tokens expire after a single use or 15 minutes after
+creation.
 
 ## Step 7: Deploy the frontend and backend services
 
 Use `kubectl create deployment` to deploy the frontend service
 in `west` and the backend service in `east`.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
-kubectl create deployment hello-world-frontend --image quay.io/skupper/hello-world-frontend
+kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
-Console for _east_:
+Sample output:
+
+~~~ console
+$ kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+deployment.apps/frontend created
+~~~
+
+**Console for _east_:**
 
 ~~~ shell
-kubectl create deployment hello-world-backend --image quay.io/skupper/hello-world-backend
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend
+~~~
+
+Sample output:
+
+~~~ console
+$ kubectl create deployment backend --image quay.io/skupper/hello-world-backend
+deployment.apps/backend created
 ~~~
 
 ## Step 8: Expose the backend service
@@ -245,17 +309,17 @@ exposure on all the linked namespaces.
 Use `skupper expose` to expose the backend service to the
 frontend service.
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
-skupper expose deployment/hello-world-backend --port 8080
+skupper expose deployment/backend --port 8080
 ~~~
 
 Sample output:
 
-~~~
-NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)          AGE
-hello-world-backend    ClusterIP      10.106.92.175    <none>           8080/TCP         1m31s
+~~~ console
+$ skupper expose deployment/backend --port 8080
+deployment backend exposed as backend
 ~~~
 
 ## Step 9: Expose the frontend service
@@ -266,51 +330,50 @@ Before we can test the application, we need external access to
 the frontend.
 
 Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.  Use `kubectl get services` to
-check for the service and its external IP address.
+access to the frontend service.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
-kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-kubectl get services
+kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 ~~~
 
 Sample output:
 
-~~~
-$ kubectl expose deployment/hello-world-frontend --port 8080 --type LoadBalancer
-service/hello-world-frontend exposed
-
-$ kubectl get services
-NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)                           AGE
-hello-world-backend    ClusterIP      10.102.112.121   <none>           8080/TCP                          30s
-hello-world-frontend   LoadBalancer   10.98.170.106    10.98.170.106    8080:30787/TCP                    2s
-skupper                LoadBalancer   10.101.101.208   10.101.101.208   8080:31494/TCP                    82s
-skupper-router         LoadBalancer   10.110.252.252   10.110.252.252   55671:32111/TCP,45671:31193/TCP   86s
-skupper-router-local   ClusterIP      10.96.123.13     <none>           5671/TCP                          86s
+~~~ console
+$ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
+service/frontend exposed
 ~~~
 
 ## Step 10: Test the application
 
-Look up the external URL and use `curl` to send a request.
+Now we're ready to try it out.  Use `kubectl get service/frontend` to
+look up the external IP of the frontend service.  Then use `curl` or a
+similar tool to request the `/api/health` endpoint at that address.
 
-Console for _west_:
+**Note:** The `<external-ip>` field in the following commands is a
+placeholder.  The actual value is an IP address.
+
+**Console for _west_:**
 
 ~~~ shell
-curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
+kubectl get service/frontend
+curl http://<external-ip>:8080/api/health
 ~~~
 
 Sample output:
 
-~~~
-I am the frontend.  The backend says 'Hello from hello-world-backend-869cd94f69-wh6zt (1)'.
+~~~ console
+$ kubectl get service/frontend
+NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
+
+$ curl http://<external-ip>:8080/api/health
+OK
 ~~~
 
-**Note:** If the embedded `kubectl get` command fails to get the
-IP address, you can find it manually by running `kubectl get
-services` and looking up the external IP of the
-`hello-world-frontend` service.
+If everything is in order, you can now access the web interface by
+navigating to `http://<external-ip>:8080/` in your browser.
 
 ## Summary
 
@@ -337,19 +400,19 @@ the frontend.
 To remove Skupper and the other resources from this exercise, use the
 following commands.
 
-Console for _west_:
+**Console for _west_:**
 
 ~~~ shell
 skupper delete
-kubectl delete service/hello-world-frontend
-kubectl delete deployment/hello-world-frontend
+kubectl delete service/frontend
+kubectl delete deployment/frontend
 ~~~
 
-Console for _east_:
+**Console for _east_:**
 
 ~~~ shell
 skupper delete
-kubectl delete deployment/hello-world-backend
+kubectl delete deployment/backend
 ~~~
 
 ## Next steps

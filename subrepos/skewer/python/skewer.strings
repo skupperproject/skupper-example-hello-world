@@ -115,10 +115,23 @@ token.  Then, use `skupper link create` in the other to create a link.
 [link_your_namespaces_postamble]
 
 If your console sessions are on different machines, you may need to
-use `scp` or a similar tool to transfer the token.
+use `sftp` or a similar tool to transfer the token securely.  By
+default, tokens expire after a single use or 15 minutes after
+creation.
 
-You can use the `skupper link status` command to check if linking
-succeeded.
+[test_the_application_preamble]
+
+Now we're ready to try it out.  Use `kubectl get service/frontend` to
+look up the external IP of the frontend service.  Then use `curl` or a
+similar tool to request the `/api/health` endpoint at that address.
+
+**Note:** The `<external-ip>` field in the following commands is a
+placeholder.  The actual value is an IP address.
+
+[test_the_application_postamble]
+
+If everything is in order, you can now access the web interface by
+navigating to `http://<external-ip>:8080/` in your browser.
 
 [cleaning_up_preamble]
 
