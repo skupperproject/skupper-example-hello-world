@@ -71,8 +71,7 @@ steps:
       west:
         - await: deployment/frontend
         - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-          output: |
-            service/frontend exposed
+          output: service/frontend exposed
   - standard: test_the_application
 summary: |
   This example locates the frontend and backend services in different
