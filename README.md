@@ -315,6 +315,13 @@ frontend service.
 skupper expose deployment/backend --port 8080
 ~~~
 
+Sample output:
+
+~~~ console
+$ skupper expose deployment/backend --port 8080
+deployment backend exposed as backend
+~~~
+
 ## Step 9: Expose the frontend service
 
 We have established connectivity between the two namespaces and

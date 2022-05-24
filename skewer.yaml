@@ -58,6 +58,7 @@ steps:
       east:
         - await: deployment/backend
         - run: skupper expose deployment/backend --port 8080
+          output: deployment backend exposed as backend
   - title: Expose the frontend service
     preamble: |
       We have established connectivity between the two namespaces and
