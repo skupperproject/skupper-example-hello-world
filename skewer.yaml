@@ -41,10 +41,10 @@ steps:
     commands:
       west:
         - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
-          await: [deployment/frontend]
+          output: deployment.apps/frontend created
       east:
         - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
-          await: [deployment/backend]
+          output: deployment.apps/backend created
   - title: Expose the backend service
     preamble: |
       We now have two namespaces linked to form a Skupper network, but
@@ -56,6 +56,7 @@ steps:
       frontend service.
     commands:
       east:
+        - await: deployment/backend
         - run: skupper expose deployment/backend --port 8080
   - title: Expose the frontend service
     preamble: |
@@ -68,8 +69,8 @@ steps:
       access to the frontend service.
     commands:
       west:
+        - await: deployment/frontend
         - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-          await_external_ip: [service/frontend]
           output: |
             service/frontend exposed
   - standard: test_the_application

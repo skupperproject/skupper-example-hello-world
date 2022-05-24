@@ -279,10 +279,24 @@ in `west` and the backend service in `east`.
 kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
+Sample output:
+
+~~~ console
+$ kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+deployment.apps/frontend created
+~~~
+
 **Console for _east_:**
 
 ~~~ shell
 kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+~~~
+
+Sample output:
+
+~~~ console
+$ kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+deployment.apps/backend created
 ~~~
 
 ## Step 8: Expose the backend service
