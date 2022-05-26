@@ -8,18 +8,17 @@ overview: |
   It contains two services:
 
   * A backend service that exposes an `/api/hello` endpoint.  It
-    returns greetings of the form `Hello from <pod-name>
-    (<request-count>)`.
+    returns greetings of the form `Hi, <your-name>.  I am <my-name>
+    (<pod-name>)`.
 
-  * A frontend service that accepts HTTP requests, calls the backend
-    to fetch new greetings, and serves them to the user.
+  * A frontend service that sends greetings to the backend and
+    fetches new greetings in response.
 
   With Skupper, you can place the backend in one cluster and the
   frontend in another and maintain connectivity between the two
   services without exposing the backend to the public internet.
 
   <img src="images/entities.svg" width="640"/>
-prerequisites: !string prerequisites
 sites:
   west:
     kubeconfig: ~/.kube/config-west
@@ -43,7 +42,7 @@ steps:
         - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
           output: deployment.apps/frontend created
       east:
-        - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend
+        - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
           output: deployment.apps/backend created
   - title: Expose the backend service
     preamble: |
@@ -74,6 +73,16 @@ steps:
         - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
           output: service/frontend exposed
   - standard: test_the_application
+  - standard: accessing_the_web_console
+  - standard: cleaning_up
+    commands:
+      west:
+        - run: skupper delete
+        - run: kubectl delete service/frontend
+        - run: kubectl delete deployment/frontend
+      east:
+        - run: skupper delete
+        - run: kubectl delete deployment/backend
 summary: |
   This example locates the frontend and backend services in different
   namespaces, on different clusters.  Ordinarily, this means that they
@@ -92,14 +101,3 @@ summary: |
   the frontend.
 
   <img src="images/sequence.svg" width="640"/>
-cleaning_up:
-  preamble: !string cleaning_up_preamble
-  commands:
-    west:
-      - run: skupper delete
-      - run: kubectl delete service/frontend
-      - run: kubectl delete deployment/frontend
-    east:
-      - run: skupper delete
-      - run: kubectl delete deployment/backend
-next_steps: !string next_steps

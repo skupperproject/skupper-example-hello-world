@@ -6,7 +6,7 @@ A library for documenting and testing Skupper examples
 
 A `skewer.yaml` file describes the steps and commands to achieve an
 objective using Skupper.  Skewer takes the `skewer.yaml` file as input
-and produces a `README.md` file and a test routine as output.
+and produces two outputs: a `README.md` file and a test routine.
 
 ## An example example
 
@@ -14,11 +14,15 @@ and produces a `README.md` file and a test routine as output.
 
 [Example `README.md` output](test-example/README.md)
 
-[Example generate and test functions](test-example/Planofile)
+[Example generate and test functions](test-example/.planofile)
 
 ## Setting up Skewer for your own example
 
-Add the Skewer code as a subrepo in your project:
+Make sure you have git-subrepo installed:
+
+    dnf install git-subrepo
+
+Add the Skewer code as a subrepo in your example project:
 
     cd project-dir/
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
@@ -26,63 +30,72 @@ Add the Skewer code as a subrepo in your project:
 Symlink the Skewer libraries into your `python` directory:
 
     mkdir -p python
-    ln -s ../subrepos/skewer/python/skewer.strings python/skewer.strings
     ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
+    ln -s ../subrepos/skewer/python/skewer.yaml python/skewer.yaml
     ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
 Symlink the `plano` command into the root of your project.  Copy the
-example `Planofile` there as well:
+example `.planofile` there as well:
 
     ln -s subrepos/skewer/plano
-    cp subrepos/skewer/test-example/Planofile .
+    cp subrepos/skewer/test-example/.planofile .
 
-Use your editor to create a `skewer.yaml` file:
+Use your editor to create a `skewer.yaml` file in the root of your
+project:
 
-     emacs skewer.yaml
+    emacs skewer.yaml
 
-Run the `./plano` command to see what you can do: generate the
-README and test your example.
+Run the `./plano` command to see the available commands:
 
-     ./plano
+~~~ console
+$ ./plano
+usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {test,generate,render,test-external} ...
 
-## Installing Git Subrepo on Fedora
+options:
+  --verbose             Print detailed logging to the console
+  --quiet               Print no logging to the console
+  --debug               Print debugging output to the console
+  -h, --help            Show this help message and exit
+  -f FILE, --file FILE  Load commands from FILE (default 'Planofile' or '.planofile')
 
-    dnf install git-subrepo
+commands:
+  {test,generate,render,test-external}
+    test                Test the example using Minikube
+    generate            Generate README.md from the data in skewer.yaml
+    render              Render README.html from the data in skewer.yaml
+    test-external       Test the example against external clusters
+    demo                Run the example steps and pause before cleaning up
+~~~
 
 ## Updating a Skewer subrepo inside your example project
 
-Usually this will do what you want:
+Use `git subrepo pull`:
 
-    git subrepo pull subrepos/skewer
+    git subrepo pull --force subrepos/skewer
 
-If you made changes to the Skewer subrepo, the command above will ask
-you to perform a merge.  You can use the procedure that the subrepo
-tooling offers, but if you'd prefer to simply blow away your changes
-and get the latest Skewer, you can use the following procedure:
+Some older versions of git-subrepo won't complete a force pull.  If
+that happens, you can simply blow away your changes and get the latest
+Skewer, using these commands:
 
     git subrepo clean subrepos/skewer
     git rm -rf subrepos/skewer/
     git commit -am "Temporarily remove the previous version of Skewer"
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
 
-You should also be able to use `git subrepo pull --force`, to achieve
-the same, but it didn't work with my version of Git Subrepo.
-
 ## Skewer YAML
 
 The top level:
 
 ~~~ yaml
-title:               # Your example's title (required)
-subtitle:            # Your chosen subtitle (required)
-github_actions_url:  # The URL of your workflow (optional)
-overview:            # Text introducing your example (optional)
-prerequisites:       # Text describing prerequisites (optional)
-sites:               # A map of named sites.  See below.
-steps:               # A list of steps.  See below.
-summary:             # Text to summarize what the user did (optional)
-cleaning_up:         # A special step for cleaning up (optional)
-next_steps:          # Text linking to more examples (optional)
+title:              # Your example's title (required)
+subtitle:           # Your chosen subtitle (required)
+github_actions_url: # The URL of your workflow (optional)
+overview:           # Text introducing your example (optional)
+prerequisites:      # Text describing prerequisites (optional, has default text)
+sites:              # A map of named sites.  See below.
+steps:              # A list of steps.  See below.
+summary:            # Text to summarize what the user did (optional)
+next_steps:         # Text linking to more examples (optional, has default text)
 ~~~
 
 A **site**:
@@ -111,10 +124,10 @@ sites:
 A **step**:
 
 ~~~ yaml
-title:      # The step title (required)
-preamble:   # Text before the commands (optional)
-commands:   # Named groups of commands.  See below.
-postamble:  # Text after the commands (optional)
+- title:            # The step title (required)
+  preamble:         # Text before the commands (optional)
+  commands:         # Named groups of commands.  See below.
+  postamble:        # Text after the commands (optional)
 ~~~
 
 An example step:
@@ -136,14 +149,31 @@ steps:
       west: <list-of-commands>
 ~~~
 
-Or you can use a named, canned step from the library of standard
-steps:
+Or you can use a named step from the library of standard steps:
 
 ~~~ yaml
-standard: configure_separate_console_sessions
+- standard: configure_separate_console_sessions
 ~~~
 
-The initial steps are usually standard ones, so you may be able to use
+The standard steps are defined in
+[python/skewer.yaml](python/skewer.yaml).
+
+You can override the `title`, `preamble`, `commands`, or `postamble`
+field of a standard step by adding the field in addition to
+`standard`:
+
+~~~ yaml
+- standard: cleaning_up
+  commands:
+    east:
+     - run: skupper delete
+     - run: kubectl delete deployment/database
+    west:
+     - run: skupper delete
+~~~
+
+The initial steps are usually standard ones.  There are also some
+standard steps at the end.  You may be able to use something like
 this:
 
 ~~~ yaml
@@ -154,8 +184,16 @@ steps:
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
   - standard: link_your_namespaces
-  [...]
+  <your-custom-steps>
+  - standard: test_the_application
+  - standard: accessing_the_web_console
+  - standard: cleaning_up
 ~~~
+
+Note that the `link_your_namespaces` and `test_the_application` steps
+are less generic than the other steps, so check that the text and
+commands they produce are doing what you need.  If not, you'll need to
+provide a custom step.
 
 The step commands are separated into named groups corresponding to the
 sites.  Each named group contains a list of command entries.  Each
@@ -165,10 +203,9 @@ fields for awaiting completion or providing sample output.
 A **command**:
 
 ~~~ yaml
-run:                # A shell command (optional)
-apply:              # Use this command only for "readme" or "test" (optional, default is both)
-output:             # Sample output to include in the README (optional)
-await:              # A resource or list of resources for which to await readiness (optional)
+- run:              # A shell command (required)
+  apply:            # Use this command only for "readme" or "test" (optional, default is both)
+  output:           # Sample output to include in the README (optional)
 ~~~
 
 Only the `run` and `output` fields are used in the README content.
@@ -179,9 +216,13 @@ The `apply` field is useful when you want the readme instructions to
 be different from the test procedure, or you simply want to omit
 something.
 
-The `await` field is often used by itself to pause for a condition you
-require before going to the next step.  It is used only for testing
-and does not impact the README.
+There is also a special `await` command you can use to pause for a
+condition you require before going to the next step.  It is used only
+for testing and does not impact the README.
+
+~~~ yaml
+- await:            # A resource or list of resources for which to await readiness (optional)
+~~~
 
 Example commands:
 
@@ -199,10 +240,11 @@ commands:
         backend       ClusterIP      10.102.112.121   <none>           8080/TCP        30s
 ~~~
 
-Skewer has boilerplate strings for a lot of cases.  You can see what's
-there in the `skewer.strings` file.  To include a string, use the
-`!string` directive.
+## Demo mode
 
-~~~ yaml
-next_steps: !string next_steps
-~~~
+Skewer has a mode where it executes all the steps, but before cleaning
+up and exiting, it pauses so you can inspect things.
+
+It is enabled by setting the environment variable `SKEWER_DEMO` to any
+value when you run the test routine.  You can also use `./plano demo`,
+which sets the variable for you.
