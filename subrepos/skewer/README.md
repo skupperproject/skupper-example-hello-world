@@ -14,8 +14,6 @@ and produces two outputs: a `README.md` file and a test routine.
 
 [Example `README.md` output](test-example/README.md)
 
-[Example generate and test functions](test-example/.planofile)
-
 ## Setting up Skewer for your own example
 
 Make sure you have git-subrepo installed:
@@ -31,14 +29,13 @@ Symlink the Skewer libraries into your `python` directory:
 
     mkdir -p python
     ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
-    ln -s ../subrepos/skewer/python/skewer.yaml python/skewer.yaml
     ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
-Symlink the `plano` command into the root of your project.  Copy the
-example `.planofile` there as well:
+Symlink the `plano` command into the root of your project.  Symlink
+the standard `example.planofile` as `.planofile` in the root as well:
 
     ln -s subrepos/skewer/plano
-    cp subrepos/skewer/test-example/.planofile .
+    ln -s subrepos/skewer/example.planofile .planofile
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
@@ -49,7 +46,7 @@ Run the `./plano` command to see the available commands:
 
 ~~~ console
 $ ./plano
-usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {test,generate,render,test-external} ...
+usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {test,generate,render,run,run-external,demo} ...
 
 options:
   --verbose             Print detailed logging to the console
@@ -59,11 +56,12 @@ options:
   -f FILE, --file FILE  Load commands from FILE (default 'Planofile' or '.planofile')
 
 commands:
-  {test,generate,render,test-external}
-    test                Test the example using Minikube
+  {test,generate,render,run,run-external,demo}
+    test                Test README generation and run the steps on Minikube
     generate            Generate README.md from the data in skewer.yaml
     render              Render README.html from the data in skewer.yaml
-    test-external       Test the example against external clusters
+    run                 Run the example steps using Minikube
+    run-external        Run the example steps against external clusters
     demo                Run the example steps and pause before cleaning up
 ~~~
 
@@ -246,5 +244,5 @@ Skewer has a mode where it executes all the steps, but before cleaning
 up and exiting, it pauses so you can inspect things.
 
 It is enabled by setting the environment variable `SKEWER_DEMO` to any
-value when you run the test routine.  You can also use `./plano demo`,
-which sets the variable for you.
+value when you call `./plano run` or one of its variants.  You can
+also use `./plano demo`, which sets the variable for you.

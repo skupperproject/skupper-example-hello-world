@@ -1,0 +1,51 @@
+from skewer import *
+
+@command
+def generate(app):
+    """
+    Generate README.md from the data in skewer.yaml
+    """
+    generate_readme("skewer.yaml", "README.md")
+
+@command
+def render(app):
+    """
+    Render README.html from the data in skewer.yaml
+    """
+    check_program("pandoc")
+
+    generate(app)
+
+    run(f"pandoc -o README.html README.md")
+
+    print(f"file:{get_real_path('README.html')}")
+
+@command
+def run_(app):
+    """
+    Run the example steps using Minikube
+    """
+    run_steps_on_minikube("skewer.yaml")
+
+@command
+def run_external(app, west_kubeconfig, east_kubeconfig):
+    """
+    Run the example steps against external clusters
+    """
+    run_steps_external("skewer.yaml", west=west_kubeconfig, east=east_kubeconfig)
+
+@command
+def demo(app):
+    """
+    Run the example steps and pause before cleaning up
+    """
+    with working_env(SKEWER_DEMO=1):
+        run_steps_on_minikube("skewer.yaml")
+
+@command
+def test(app):
+    """
+    Test README generation and run the steps on Minikube
+    """
+    generate_readme("skewer.yaml", make_temp_file())
+    run_steps_on_minikube("skewer.yaml")

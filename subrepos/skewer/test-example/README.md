@@ -400,8 +400,8 @@ secret/skupper-console-users` to look up the console admin
 password.
 
 **Note:** The `<console-url>` and `<password>` fields in the
-following commands are placeholders.  The actual values are
-specific to your environment.
+following output are placeholders.  The actual values are specific
+to your environment.
 
 _**Console for west:**_
 
