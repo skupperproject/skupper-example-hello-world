@@ -58,6 +58,7 @@ steps:
         - await: deployment/backend
         - run: skupper expose deployment/backend --port 8080
           output: deployment backend exposed as backend
+    # curl --verbose -H "Content-Type: application/json" -d '{"name": "Hubert"}' http://<service-name>:8080/api/hello
   - title: Expose the frontend service
     preamble: |
       We have established connectivity between the two namespaces and
