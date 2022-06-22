@@ -32,8 +32,8 @@ from starlette.staticfiles import StaticFiles
 
 process_id = f"frontend-{uuid.uuid4().hex[:8]}"
 
-backend_host = os.environ.get("BACKEND_SERVICE_HOST", "backend")
-backend_port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
+backend_host = os.environ.get("BACKEND_SERVICE_HOST_", "backend")
+backend_port = int(os.environ.get("BACKEND_SERVICE_PORT_", 8080))
 backend_url = f"http://{backend_host}:{backend_port}"
 
 records = list()
@@ -115,7 +115,7 @@ async def send_hello(name, text):
     return request_data, response_data
 
 if __name__ == "__main__":
-    host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
-    port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
+    host = os.environ.get("FRONTEND_SERVICE_HOST_", "0.0.0.0")
+    port = int(os.environ.get("FRONTEND_SERVICE_PORT_", 8080))
 
     uvicorn.run(star, host=host, port=port)

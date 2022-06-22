@@ -2,9 +2,9 @@
 
 from plano import *
 
-ENV["BACKEND_SERVICE_HOST"] = "localhost"
-ENV["BACKEND_SERVICE_PORT"] = backend_port = str(get_random_port())
-ENV["FRONTEND_SERVICE_PORT"] = frontend_port = str(get_random_port())
+ENV["BACKEND_SERVICE_HOST_"] = "localhost"
+ENV["BACKEND_SERVICE_PORT_"] = backend_port = str(get_random_port())
+ENV["FRONTEND_SERVICE_PORT_"] = frontend_port = str(get_random_port())
 
 backend_url = f"http://localhost:{backend_port}/api/hello"
 frontend_url = f"http://localhost:{frontend_port}/"

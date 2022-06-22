@@ -18,9 +18,9 @@ spec:
         - name: frontend
           image: quay.io/ssorj/hello-world-frontend
           env:
-            - name: BACKEND_SERVICE_HOST
+            - name: BACKEND_SERVICE_HOST_
               value: database
-            - name: BACKEND_SERVICE_PORT
+            - name: BACKEND_SERVICE_PORT_
               value: "5432"
           ports:
             - containerPort: 8080

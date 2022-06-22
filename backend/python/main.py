@@ -42,7 +42,7 @@ async def hello(request):
     return JSONResponse(response_data)
 
 if __name__ == "__main__":
-    host = os.environ.get("BACKEND_SERVICE_HOST", "0.0.0.0")
-    port = int(os.environ.get("BACKEND_SERVICE_PORT", 8080))
+    host = os.environ.get("BACKEND_SERVICE_HOST_", "0.0.0.0")
+    port = int(os.environ.get("BACKEND_SERVICE_PORT_", 8080))
 
     uvicorn.run(star, host=host, port=port)
