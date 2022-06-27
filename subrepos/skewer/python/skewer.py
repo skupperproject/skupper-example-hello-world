@@ -88,7 +88,6 @@ install_skupper_in_your_namespaces:
         output: |
           Waiting for LoadBalancer IP or hostname...
           Skupper is now installed in namespace '@namespace@'.  Use 'skupper status' to get more information.
-      - await: [deployment/skupper-service-controller, deployment/skupper-router]
 check_the_status_of_your_namespaces:
   title: Check the status of your namespaces
   preamble: |
@@ -96,6 +95,7 @@ check_the_status_of_your_namespaces:
     installed.
   commands:
     "*":
+      - await: [deployment/skupper-service-controller, deployment/skupper-router]
       - run: skupper status
         output: |
           Skupper is enabled for namespace "@namespace@" in interior mode. It is connected to 1 other site. It has 1 exposed service.
@@ -342,7 +342,29 @@ def _run_steps(work_dir, skewer_data):
         if "SKEWER_DEMO" in ENV:
             _pause_for_demo(work_dir, skewer_data)
     except:
-        run("skupper debug events")
+        print("TROUBLE!")
+        print("-- Start of debug output")
+
+        for site_name, site_data in skewer_data["sites"].items():
+            kubeconfig = site_data["kubeconfig"].replace("~", work_dir)
+            print(f"---- Debug output for site '{site_name}'")
+
+            with working_env(KUBECONFIG=kubeconfig):
+                run("kubectl get services", check=False)
+                run("kubectl get deployments", check=False)
+                run("kubectl get statefulsets", check=False)
+                run("kubectl get pods", check=False)
+                run("skupper version", check=False)
+                run("skupper status", check=False)
+                run("skupper link status", check=False)
+                run("skupper service status", check=False)
+                run("skupper gateway status", check=False)
+                run("skupper network status", check=False)
+                run("skupper debug events", check=False)
+                run("kubectl logs deployment/skupper-router", check=False)
+                run("kubectl logs deployment/skupper-service-controller", check=False)
+
+        print("-- End of debug output")
     finally:
         if cleaning_up_step is not None:
             _run_step(work_dir, skewer_data, cleaning_up_step, check=False)

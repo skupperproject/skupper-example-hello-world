@@ -1,1 +1,1 @@
-../../python/skewer.py
+../subrepos/skewer/python/skewer.py

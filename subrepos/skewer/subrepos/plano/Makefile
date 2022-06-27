@@ -21,6 +21,14 @@
 
 export PYTHONPATH := python:${PYTHONPATH}
 
+# A workaround for an install-with-prefix problem in Fedora 36
+#
+# https://docs.fedoraproject.org/en-US/fedora/latest/release-notes/developers/Development_Python/#_pipsetup_py_installation_with_prefix
+# https://bugzilla.redhat.com/show_bug.cgi?id=2026979
+
+export RPM_BUILD_ROOT := fake
+
+
 DESTDIR := /
 PREFIX := ${HOME}/.local
 DOCKER_COMMAND := podman
@@ -61,7 +69,7 @@ test: clean build
 	$$(type -P python2) && python2 scripts/test || :
 
 .PHONY: big-test
-big-test: test test-centos-8 test-centos-7 test-fedora test-ubuntu
+big-test: test test-centos-7 test-centos-8 test-fedora test-ubuntu
 
 .PHONY: test-centos-8
 test-centos-8:

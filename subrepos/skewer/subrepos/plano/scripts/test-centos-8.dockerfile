@@ -17,7 +17,7 @@
 # under the License.
 #
 
-FROM centos:8
+FROM centos:stream8
 
 RUN dnf -qy update && dnf -q clean all
 

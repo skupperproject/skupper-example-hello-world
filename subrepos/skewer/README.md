@@ -25,17 +25,30 @@ Add the Skewer code as a subrepo in your example project:
     cd project-dir/
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
 
-Symlink the Skewer libraries into your `python` directory:
+Symlink the Skewer library into your `python` directory:
 
     mkdir -p python
     ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
-    ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
 Symlink the `plano` command into the root of your project.  Symlink
-the standard `example.planofile` as `.planofile` in the root as well:
+the standard `config/.planofile` as `.planofile` in the root as well:
 
     ln -s subrepos/skewer/plano
-    ln -s subrepos/skewer/example.planofile .planofile
+    ln -s subrepos/skewer/config/.planofile
+
+<!-- This sucks.  GitHub Actions doesn't support workflow files as symlinks. -->
+
+<!-- Symlink the standard GitHub Actions workflow file: -->
+
+<!--     mkdir -p .github/workflows -->
+<!--     ln -s ../../subrepos/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml -->
+
+<!-- So I have a convenience for copying the latest version into place. -->
+
+Use the `plano update-workflow` to copy the latest GitHub Actions
+workflow file into your project:
+
+    ./plano update-workflow
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
