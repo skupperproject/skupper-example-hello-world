@@ -71,7 +71,7 @@ steps:
     commands:
       west:
         - run: read -n 1 -p "Press return to continue" dummy 
-        - run: skupper expose service east/backend --port 8080 --address backend
+        - run: skupper expose service east.backend --port 8080 --address backend
         
         - await: deployment/frontend
         - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
