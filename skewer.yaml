@@ -51,25 +51,28 @@ steps:
       expose` command to select a service from one namespace for
       exposure on all the linked namespaces.
 
-      Use `skupper expose` to expose the backend service to the
-      frontend service.
+      Use `kubectl expose` to expose the backend service.
     commands:
       east:
         - await: deployment/backend
-        - run: skupper expose deployment/backend --port 8080
+        - run: kubectl expose deployment/backend --port 8080
           output: deployment backend exposed as backend
     # curl --verbose -H "Content-Type: application/json" -d '{"name": "Hubert"}' http://<service-name>:8080/api/hello
   - title: Expose the frontend service
     preamble: |
-      We have established connectivity between the two namespaces and
+      We have not established connectivity between the two namespaces and
       made the backend in `east` available to the frontend in `west`.
-      Before we can test the application, we need external access to
+      Before we can test the application, we need to expose the backend on
+      the service network and expose external access to
       the frontend.
 
       Use `kubectl expose` with `--type LoadBalancer` to open network
       access to the frontend service.
     commands:
       west:
+        - run: read -n 1 -p "Press return to continue" dummy 
+        - run: skupper expose service east/backend --port 8080 --address backend
+        
         - await: deployment/frontend
         - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
           output: service/frontend exposed
