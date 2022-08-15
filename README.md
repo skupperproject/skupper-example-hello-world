@@ -49,6 +49,9 @@ With Skupper, you can place the backend in one cluster and the
 frontend in another and maintain connectivity between the two
 services without exposing the backend to the public internet.
 
+This example links `east` and `west` namespaces but deploys the
+backend in the `east-backend` namespace.
+
 <img src="images/entities.svg" width="640"/>
 
 ## Prerequisites
@@ -285,8 +288,8 @@ creation.
 
 ## Step 7: Deploy the frontend and backend services
 
-Use `kubectl create deployment` to deploy the frontend service
-in `west` and the backend service in `east`.
+Use `kubectl create deployment` to deploy the frontend service in
+in `west` and the backend service in `east-backend`.
 
 _**Console for west:**_
 
@@ -304,7 +307,11 @@ deployment.apps/frontend created
 _**Console for east:**_
 
 ~~~ shell
+kubectl create namespace east-backend
+kubectl config set-context --current --namespace east-backend
 kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+kubectl expose deployment/backend --port 8080 --target-port 8080
+kubectl config set-context --current --namespace east
 ~~~
 
 _Sample output:_
@@ -321,27 +328,28 @@ no services are exposed on it.  Skupper uses the `skupper
 expose` command to select a service from one namespace for
 exposure on all the linked namespaces.
 
-Use `skupper expose` to expose the backend service to the
-frontend service.
+Use `skupper expose` to expose the backend service
+from the `east-backend`
 
 _**Console for east:**_
 
 ~~~ shell
-skupper expose deployment/backend --port 8080
+skupper expose service backend.east-backend --port 8080 --address backend
 ~~~
 
 _Sample output:_
 
 ~~~ console
-$ skupper expose deployment/backend --port 8080
-deployment backend exposed as backend
+$ skupper expose service backend.east-backend --port 8080 --address backend
+service backend exposed as backend
 ~~~
 
 ## Step 9: Expose the frontend service
 
 We have established connectivity between the two namespaces and
 made the backend in `east` available to the frontend in `west`.
-Before we can test the application, we need external access to
+Before we can test the application, we need to expose the backend on
+the service network and expose external access to
 the frontend.
 
 Use `kubectl expose` with `--type LoadBalancer` to open network
@@ -447,17 +455,16 @@ kubectl delete deployment/backend
 
 ## Summary
 
-This example locates the frontend and backend services in different
-namespaces, on different clusters.  Ordinarily, this means that they
+This example locates the frontend and backend services on different clusters.  Ordinarily, this means that they
 have no way to communicate unless they are exposed to the public
 internet.
 
-Introducing Skupper into each namespace allows us to create a virtual
+Introducing Skupper into namespaces allows us to create a virtual
 application network that can connect services in different clusters.
 Any service exposed on the application network is represented as a
 local service in all of the linked namespaces.
 
-The backend service is located in `east`, but the frontend service
+The backend service is located in `east-backend`, but the frontend service
 in `west` can "see" it as if it were local.  When the frontend
 sends a request to the backend, Skupper forwards the request to the
 namespace where the backend is running and routes the response back to
