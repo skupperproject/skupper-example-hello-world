@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   width="782px"
+   height="311px"
+   viewBox="-0.5 -0.5 782 311"
+   style="background-color: rgb(255, 255, 255);"
+   id="svg190"
+   sodipodi:docname="entities-other-ns.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <sodipodi:namedview
+     id="namedview192"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="2.4540765"
+     inkscape:cx="319.2647"
+     inkscape:cy="145.47224"
+     inkscape:window-width="2560"
+     inkscape:window-height="1403"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg190" />
+  <defs
+     id="defs106" />
+  <rect
+     x="181"
+     y="0"
+     width="260"
+     height="310"
+     fill-opacity="0.5"
+     fill="#cce5ff"
+     stroke="none"
+     pointer-events="none"
+     id="rect108" />
+  <rect
+     x="498.69611"
+     y="0"
+     width="282.30389"
+     height="310"
+     fill-opacity="0.5"
+     fill="#ffe6cc"
+     stroke="none"
+     pointer-events="none"
+     id="rect110"
+     style="stroke-width:1.04201" />
+  <rect
+     x="201"
+     y="60"
+     width="220"
+     height="230"
+     fill="none"
+     stroke="#004c99"
+     stroke-dasharray="3, 3"
+     pointer-events="none"
+     id="rect112" />
+  <rect
+     x="512.42017"
+     y="59.863422"
+     width="116.09051"
+     height="230.27315"
+     fill="none"
+     stroke="#994c00"
+     stroke-dasharray="2.18056, 2.18056"
+     pointer-events="none"
+     id="rect114"
+     style="stroke-width:0.72685" />
+  <rect
+     x="649.15546"
+     y="59.84985"
+     width="112.85062"
+     height="230.28334"
+     fill="none"
+     stroke="#994c00"
+     stroke-dasharray="2.14996, 2.14996"
+     pointer-events="none"
+     id="rect114-3"
+     style="stroke-width:0.716651" />
+  <path
+     d="m 312,175 v 35"
+     fill="none"
+     stroke="#008a00"
+     stroke-width="3"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path116" />
+  <path
+     d="M 244,149 H 106"
+     fill="none"
+     stroke="#b20000"
+     stroke-width="2"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path118" />
+  <rect
+     x="244"
+     y="123"
+     width="135"
+     height="52"
+     rx="7.8000002"
+     ry="7.8000002"
+     fill="#ffffff"
+     stroke="#000000"
+     stroke-width="2"
+     pointer-events="none"
+     id="rect120" />
+  <g
+     transform="translate(262.5,142.5)"
+     id="g126">
+    <switch
+       id="switch124">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="97"
+         height="12"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 98px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Frontend service</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="49"
+         y="12"
+         fill="#000000"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text122">Frontend service</text>
+    </switch>
+  </g>
+  <path
+     d="M 367,233 H 597"
+     fill="none"
+     stroke="#008a00"
+     stroke-width="3"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path128" />
+  <rect
+     x="256.5"
+     y="210"
+     width="110"
+     height="45"
+     rx="6.75"
+     ry="6.75"
+     fill="#008a00"
+     stroke="none"
+     pointer-events="none"
+     id="rect130" />
+  <g
+     transform="translate(285.5,225.5)"
+     id="g136">
+    <switch
+       id="switch134">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="52"
+         height="13"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 13px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; vertical-align: top; width: 53px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Skupper</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="26"
+         y="13"
+         fill="#ffffff"
+         text-anchor="middle"
+         font-size="13px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text132">Skupper</text>
+    </switch>
+  </g>
+  <g
+     transform="translate(251.5,23.5)"
+     id="g142">
+    <switch
+       id="switch140">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="119"
+         height="12"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 119px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Kubernetes cluster 1</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="60"
+         y="12"
+         fill="#000000"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text138">Kubernetes cluster 1</text>
+    </switch>
+  </g>
+  <g
+     transform="translate(246.5,85.5)"
+     id="g148">
+    <switch
+       id="switch146">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="130"
+         height="12"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 76, 153); line-height: 1.2; vertical-align: top; width: 131px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Namespace &quot;west&quot;</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="65"
+         y="12"
+         fill="#004c99"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text144">Namespace &quot;west&quot;</text>
+    </switch>
+  </g>
+  <g
+     transform="translate(508.5,85.5)"
+     id="g154">
+    <switch
+       id="switch152">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="124"
+         height="12"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(153, 76, 0); line-height: 1.2; vertical-align: top; width: 124px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Namespace <xhtml:br /> &quot;east&quot;</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="62"
+         y="12"
+         fill="#994c00"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text150"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;fill:#994c00"><tspan
+           sodipodi:role="line"
+           id="tspan719"
+           x="62"
+           y="12">Namespace&lt;br/&gt;</tspan><tspan
+           sodipodi:role="line"
+           id="tspan721"
+           x="62"
+           y="27">&quot;east&quot;</tspan></text>
+    </switch>
+  </g>
+  <g
+     transform="translate(575.20166,45.03261)"
+     id="g154-6" />
+  <g
+     transform="translate(644.02528,84.732522)"
+     id="g154-7">
+    <switch
+       id="switch152-5">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="124"
+         height="12"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(153, 76, 0); line-height: 1.2; vertical-align: top; width: 124px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Namespace<xhtml:br />&quot;east-backend&quot;</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="62"
+         y="12"
+         fill="#994c00"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text150-3"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;fill:#994c00"><tspan
+           sodipodi:role="line"
+           id="tspan723"
+           x="62"
+           y="12">Namespace&lt;br/&gt;</tspan><tspan
+           sodipodi:role="line"
+           id="tspan725"
+           x="62"
+           y="27">&quot;east-backend&quot;</tspan></text>
+    </switch>
+  </g>
+  <g
+     transform="translate(591.5,23.5)"
+     id="g160">
+    <switch
+       id="switch158">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="119"
+         height="12"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 119px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Kubernetes cluster 2</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="60"
+         y="12"
+         fill="#000000"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text156">Kubernetes cluster 2</text>
+    </switch>
+  </g>
+  <rect
+     x="653.508"
+     y="122.87936"
+     width="103.90726"
+     height="52.241299"
+     rx="6.0035305"
+     ry="7.8361955"
+     fill="#ffffff"
+     stroke="#000000"
+     stroke-width="1.7587"
+     pointer-events="none"
+     id="rect162" />
+  <g
+     transform="translate(656.32295,141.11729)"
+     id="g168">
+    <switch
+       id="switch166">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="95"
+         height="12"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 95px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Backend service</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="48"
+         y="12"
+         fill="#000000"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text164">Backend service</text>
+    </switch>
+  </g>
+  <path
+     d="M 707.8014,233.13069 H 707 v -57.23325"
+     fill="none"
+     stroke="#008a00"
+     stroke-width="3.43429"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path170" />
+  <path
+     d="m 624.0842,233.70134 v -0.67168 h 82.24541"
+     fill="none"
+     stroke="#008a00"
+     stroke-width="3.76897"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path170-6" />
+  <rect
+     x="518.5"
+     y="210"
+     width="103.64547"
+     height="45"
+     rx="6.3600631"
+     ry="6.75"
+     fill="#008a00"
+     stroke="none"
+     pointer-events="none"
+     id="rect172"
+     style="stroke-width:0.970686" />
+  <g
+     transform="translate(543.5,225.5)"
+     id="g178">
+    <switch
+       id="switch176">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="52"
+         height="13"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 13px; font-family: Helvetica; color: rgb(255, 255, 255); line-height: 1.2; vertical-align: top; width: 53px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Skupper</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="26"
+         y="13"
+         fill="#ffffff"
+         text-anchor="middle"
+         font-size="13px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text174">Skupper</text>
+    </switch>
+  </g>
+  <path
+     d="m 31,118 c -24,0 -30,31 -10.8,37.2 -19.2,13.64 2.4,43.4 18,31 10.8,24.8 46.8,24.8 58.8,0 24,0 24,-24.8 9,-37.2 C 121,124.2 97,99.4 76,111.8 61,93.2 37,93.2 31,118 Z"
+     fill="#ffffff"
+     stroke="#c4c4c4"
+     stroke-width="2"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path180" />
+  <g
+     transform="translate(37.5,135.5)"
+     id="g186">
+    <switch
+       id="switch184">
+      <foreignObject
+         style="overflow:visible;"
+         pointer-events="all"
+         width="46"
+         height="26"
+         requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+        <xhtml:div
+           style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(115, 115, 115); line-height: 1.2; vertical-align: top; width: 46px; white-space: nowrap; overflow-wrap: normal; font-weight: bold; text-align: center;">
+          <xhtml:div
+             style="display:inline-block;text-align:inherit;text-decoration:inherit;white-space:normal;">Public<xhtml:br />
+network</xhtml:div>
+        </xhtml:div>
+      </foreignObject>
+      <text
+         x="23"
+         y="19"
+         fill="#737373"
+         text-anchor="middle"
+         font-size="12px"
+         font-family="Helvetica"
+         font-weight="bold"
+         id="text182"
+         style="-inkscape-font-specification:'Helvetica, Bold';font-family:Helvetica;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal;font-size:12px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;fill:#737373"><tspan
+           sodipodi:role="line"
+           id="tspan727">Public&lt;br/&gt;</tspan><tspan
+           sodipodi:role="line"
+           id="tspan729">network</tspan></text>
+    </switch>
+  </g>
+</svg>
