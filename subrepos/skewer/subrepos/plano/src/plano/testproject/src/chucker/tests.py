@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -20,12 +19,41 @@
 
 from plano import *
 
-if __name__ == "__main__":
-    import plano_tests
-    test_modules = [plano_tests]
+@test
+def hello():
+    print("Hello")
 
-    if PYTHON3:
-        import bullseye_tests
-        test_modules.append(bullseye_tests)
+@test
+async def hello_async():
+    print("Hello")
 
-    PlanoTestCommand(test_modules).main()
+@test
+def goodbye():
+    print("Goodbye")
+
+@test(disabled=True)
+def badbye():
+    print("Badbye")
+    assert False
+
+@test(disabled=True)
+def skipped():
+    skip_test("Skipped")
+    assert False
+
+@test(disabled=True)
+def keyboard_interrupt():
+    raise KeyboardInterrupt()
+
+@test(disabled=True, timeout=0.05)
+def timeout():
+    sleep(10, quiet=True)
+    assert False
+
+@test(disabled=True)
+def process_error():
+    run("expr 1 / 0")
+
+@test(disabled=True)
+def system_exit_():
+    exit(1)

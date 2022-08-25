@@ -16,6 +16,11 @@ and produces two outputs: a `README.md` file and a test routine.
 
 ## Setting up Skewer for your own example
 
+**Note:** This is how you set things up from scratch.  You can also
+use the [Skupper example template][template] as a starting point.
+
+[template]: https://github.com/skupperproject/skupper-example-template
+
 Make sure you have git-subrepo installed:
 
     dnf install git-subrepo
@@ -28,7 +33,7 @@ Add the Skewer code as a subrepo in your example project:
 Symlink the Skewer library into your `python` directory:
 
     mkdir -p python
-    ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
+    ln -s ../subrepos/skewer/python/skewer python/skewer
 
 Symlink the `plano` command into the root of your project.  Symlink
 the standard `config/.planofile` as `.planofile` in the root as well:
@@ -45,8 +50,14 @@ the standard `config/.planofile` as `.planofile` in the root as well:
 
 <!-- So I have a convenience for copying the latest version into place. -->
 
-Use the `plano update-workflow` to copy the latest GitHub Actions
-workflow file into your project:
+To use the `./plano` command, you must have the Python `pyyaml`
+package installed.  Use `pip` (or `pip3` on some systems) to install
+it:
+
+    pip install pyyaml
+
+Use the `plano update-workflow` command to copy the latest GitHub
+Actions workflow file into your project:
 
     ./plano update-workflow
 
@@ -59,7 +70,9 @@ Run the `./plano` command to see the available commands:
 
 ~~~ console
 $ ./plano
-usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {test,generate,render,run,run-external,demo} ...
+usage: plano [--verbose] [--quiet] [--debug] [-h] [-f FILE] {generate,render,run,run-external,demo,test,update-workflow} ...
+
+Run commands defined as Python functions
 
 options:
   --verbose             Print detailed logging to the console
@@ -69,13 +82,14 @@ options:
   -f FILE, --file FILE  Load commands from FILE (default 'Planofile' or '.planofile')
 
 commands:
-  {test,generate,render,run,run-external,demo}
-    test                Test README generation and run the steps on Minikube
+  {generate,render,run,run-external,demo,test,update-workflow}
     generate            Generate README.md from the data in skewer.yaml
     render              Render README.html from the data in skewer.yaml
     run                 Run the example steps using Minikube
     run-external        Run the example steps against external clusters
     demo                Run the example steps and pause before cleaning up
+    test                Test README generation and run the steps on Minikube
+    update-workflow     Update the GitHub Actions workflow file
 ~~~
 
 ## Updating a Skewer subrepo inside your example project
@@ -103,8 +117,8 @@ subtitle:           # Your chosen subtitle (required)
 github_actions_url: # The URL of your workflow (optional)
 overview:           # Text introducing your example (optional)
 prerequisites:      # Text describing prerequisites (optional, has default text)
-sites:              # A map of named sites.  See below.
-steps:              # A list of steps.  See below.
+sites:              # A map of named sites (see below)
+steps:              # A list of steps (see below)
 summary:            # Text to summarize what the user did (optional)
 next_steps:         # Text linking to more examples (optional, has default text)
 ~~~

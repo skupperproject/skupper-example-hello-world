@@ -17,12 +17,4 @@
 # under the License.
 #
 
-FROM centos:stream8
-
-RUN dnf -qy update && dnf -q clean all
-
-RUN dnf -y install make python2 python2-pyyaml python3 python3-pyyaml
-
-COPY . /root/plano
-WORKDIR /root/plano
-CMD ["make", "clean", "test", "install", "PREFIX=/usr/local"]
+from .main import *

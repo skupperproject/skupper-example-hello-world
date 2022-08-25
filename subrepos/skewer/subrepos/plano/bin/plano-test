@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,12 +18,14 @@
 # under the License.
 #
 
-FROM ubuntu
+import os
+import sys
 
-RUN apt-get update -qq && apt-get upgrade -y -qq
+if os.path.islink(__file__):
+    repo_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    sys.path.insert(0, os.path.join(repo_dir, "src"))
 
-RUN apt-get -y install curl make python3 python3-distutils python3-yaml
+from plano.commands import PlanoTestCommand
 
-COPY . /root/plano
-WORKDIR /root/plano
-CMD ["make", "test", "install", "PREFIX=/usr/local"]
+if __name__ == "__main__":
+    PlanoTestCommand().main()

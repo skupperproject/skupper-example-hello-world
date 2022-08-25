@@ -1,2 +1,3 @@
 __pycache__/
-README.html
+/README.html
+/.coverage

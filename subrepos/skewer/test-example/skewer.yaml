@@ -19,6 +19,8 @@ overview: |
   services without exposing the backend to the public internet.
 
   <img src="images/entities.svg" width="640"/>
+prerequisites: |
+  Custom prerequisites
 sites:
   west:
     kubeconfig: ~/.kube/config-west
@@ -27,12 +29,18 @@ sites:
     kubeconfig: ~/.kube/config-east
     namespace: east
 steps:
+  - standard: install_the_skupper_command_line_tool
   - standard: configure_separate_console_sessions
   - standard: access_your_clusters
   - standard: set_up_your_namespaces
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
   - standard: link_your_namespaces
+  - title: Fail on demand
+    commands:
+      west:
+        - run: |
+            if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
   - title: Deploy the frontend and backend services
     preamble: |
       Use `kubectl create deployment` to deploy the frontend service
@@ -101,3 +109,5 @@ summary: |
   the frontend.
 
   <img src="images/sequence.svg" width="640"/>
+next_steps: |
+  Custom next steps

@@ -1,57 +1,76 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
 from skewer import *
 
 @command
-def generate(app):
+def generate():
     """
     Generate README.md from the data in skewer.yaml
     """
     generate_readme("skewer.yaml", "README.md")
 
 @command
-def render(app):
+def render():
     """
     Render README.html from the data in skewer.yaml
     """
     check_program("pandoc")
 
-    generate(app)
+    generate()
 
     run(f"pandoc -o README.html README.md")
 
     print(f"file:{get_real_path('README.html')}")
 
 @command
-def run_(app):
+def run_(debug=False):
     """
     Run the example steps using Minikube
     """
-    run_steps_on_minikube("skewer.yaml")
+    run_steps_minikube("skewer.yaml", debug=debug)
 
 @command
-def run_external(app, kubeconfig1, kubeconfig2):
+def run_external(*kubeconfigs, debug=False):
     """
-    Run the example steps against external clusters
+    Run the example steps with user-provided kubeconfigs
     """
-    run_steps_external("skewer.yaml", site1=kubeconfig1, site2=kubeconfig2)
+    run_steps("skewer.yaml", *kubeconfigs, debug=debug)
 
 @command
-def demo(app):
+def demo(debug=False):
     """
     Run the example steps and pause before cleaning up
     """
     with working_env(SKEWER_DEMO=1):
-        run_steps_on_minikube("skewer.yaml")
+        run_steps_minikube("skewer.yaml", debug=debug)
 
 @command
-def test(app):
+def test_(debug=False):
     """
     Test README generation and run the steps on Minikube
     """
     generate_readme("skewer.yaml", make_temp_file())
-    run_steps_on_minikube("skewer.yaml")
+    run_steps_minikube("skewer.yaml", debug=debug)
 
 @command
-def update_workflow(app):
+def update_workflow():
     """
     Update the GitHub Actions workflow file
     """

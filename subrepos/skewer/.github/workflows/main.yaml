@@ -16,7 +16,8 @@ jobs:
         with:
           minikube version: "v1.25.2"
           kubernetes version: "v1.24.1"
-          github token: ${{ secrets.GITHUB_TOKEN }}
+          github token: ${{secrets.GITHUB_TOKEN}}
+      - run: pip install pyyaml
       - run: curl -f https://skupper.io/install.sh | sh
       - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - run: ./plano test
