@@ -27,6 +27,7 @@ sites:
     kubeconfig: ~/.kube/config-east
     namespace: east
 steps:
+  - standard: install_the_skupper_command_line_tool
   - standard: configure_separate_console_sessions
   - standard: access_your_clusters
   - standard: set_up_your_namespaces
