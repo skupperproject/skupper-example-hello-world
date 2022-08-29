@@ -23,14 +23,17 @@ import uvicorn
 
 from thingid import generate_thing_id
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse, PlainTextResponse
+from starlette.responses import JSONResponse, Response
 
 name = generate_thing_id().replace("-", " ").title()
 pod = os.environ.get("HOSTNAME", "backend")
 star = Starlette(debug=True)
 
-@star.route("/api/hello", methods=["POST"])
+@star.route("/api/hello", methods=["GET", "POST"])
 async def hello(request):
+    if request.method == "GET":
+        return Response(f"Hello, stranger.  I am {name} ({pod}).\n", 200)
+
     request_data = await request.json()
     requestor = request_data["name"]
 
@@ -43,7 +46,7 @@ async def hello(request):
 
 @star.route("/api/health", methods=["GET"])
 async def health(request):
-    return PlainTextResponse("OK\n")
+    return Response("OK\n", 200)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

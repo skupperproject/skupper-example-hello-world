@@ -42,27 +42,21 @@ star = Starlette(debug=True, on_startup=[startup])
 star.mount("/static", StaticFiles(directory="static"), name="static")
 
 @star.route("/")
-async def get_index(request):
+async def index(request):
     return FileResponse("static/index.html")
 
 @star.route("/api/data")
-async def get_data(request):
+async def data(request):
     return JSONResponse(records);
 
 @star.route("/api/notifications")
-async def get_notifications(request):
+async def notifications(request):
     async def generate():
         while True:
             await change_event.wait()
             yield {"data": "1"}
 
     return EventSourceResponse(generate())
-
-@star.route("/api/health")
-async def get_health(request):
-    await send_hello("Testy Tiger", "Hi")
-
-    return Response("OK\n", 200)
 
 @star.route("/api/generate-id", methods=["POST"])
 async def generate_id(request):
@@ -79,11 +73,11 @@ async def generate_id(request):
 async def hello(request):
     request_data = await request.json()
 
-    request_data, response_data = await send_hello(request_data["name"], request_data["text"])
+    backend_request, backend_response = await send_greeting(request_data["name"], request_data["text"])
 
     record = {
-        "request": request_data,
-        "response": response_data,
+        "request": backend_request,
+        "response": backend_response,
     }
 
     records.append(record);
@@ -91,9 +85,9 @@ async def hello(request):
     change_event.set()
     change_event.clear()
 
-    return JSONResponse(response_data)
+    return JSONResponse(backend_response)
 
-async def send_hello(name, text):
+async def send_greeting(name, text):
     request_data = {
         "name": name,
         "text": text,
@@ -105,6 +99,12 @@ async def send_hello(name, text):
     response_data = response.json()
 
     return request_data, response_data
+
+@star.route("/api/health", methods=["GET"])
+async def health(request):
+    await send_greeting("Testy Tiger", "Hi")
+
+    return Response("OK\n", 200)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
