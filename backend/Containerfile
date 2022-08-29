@@ -17,15 +17,15 @@
 # under the License.
 #
 
-FROM registry.fedoraproject.org/fedora-minimal:35
+FROM registry.fedoraproject.org/fedora-minimal
 
-RUN microdnf -y install python3-pip && microdnf clean all
+RUN microdnf -y install python-pip && microdnf clean all
 
-RUN pip3 install starlette sse_starlette uvicorn
+RUN pip install starlette sse_starlette uvicorn
 
 COPY python /app/python
 
 EXPOSE 8080
 
 WORKDIR /app
-CMD ["python3", "python/main.py"]
+CMD ["python", "python/main.py"]

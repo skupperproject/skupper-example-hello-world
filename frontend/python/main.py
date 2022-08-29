@@ -17,6 +17,7 @@
 # under the License.
 #
 
+import argparse
 import asyncio
 import os
 import json
@@ -31,16 +32,7 @@ from starlette.responses import FileResponse, JSONResponse, Response
 from starlette.staticfiles import StaticFiles
 
 process_id = f"frontend-{uuid.uuid4().hex[:8]}"
-
-backend_host = os.environ.get("BACKEND_SERVICE_HOST_", "backend")
-backend_port = int(os.environ.get("BACKEND_SERVICE_PORT_", 8080))
-backend_url = f"http://{backend_host}:{backend_port}"
-
 records = list()
-change_event = None
-
-def log(message):
-    print(f"{process_id}: {message}")
 
 async def startup():
     global change_event
@@ -115,7 +107,14 @@ async def send_hello(name, text):
     return request_data, response_data
 
 if __name__ == "__main__":
-    host = os.environ.get("FRONTEND_SERVICE_HOST_", "0.0.0.0")
-    port = int(os.environ.get("FRONTEND_SERVICE_PORT_", 8080))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8080)
+    parser.add_argument("--backend", metavar="URL", default="http://backend:8080")
 
-    uvicorn.run(star, host=host, port=port)
+    args = parser.parse_args()
+
+    global backend_url
+    backend_url = args.backend
+
+    uvicorn.run(star, host=args.host, port=args.port)

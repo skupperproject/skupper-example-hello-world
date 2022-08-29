@@ -17,16 +17,16 @@
 # under the License.
 #
 
+import argparse
 import os
 import uvicorn
 
 from thingid import generate_thing_id
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, PlainTextResponse
 
 name = generate_thing_id().replace("-", " ").title()
 pod = os.environ.get("HOSTNAME", "backend")
-
 star = Starlette(debug=True)
 
 @star.route("/api/hello", methods=["POST"])
@@ -41,8 +41,15 @@ async def hello(request):
 
     return JSONResponse(response_data)
 
-if __name__ == "__main__":
-    host = os.environ.get("BACKEND_SERVICE_HOST_", "0.0.0.0")
-    port = int(os.environ.get("BACKEND_SERVICE_PORT_", 8080))
+@star.route("/api/health", methods=["GET"])
+async def health(request):
+    return PlainTextResponse("OK\n")
 
-    uvicorn.run(star, host=host, port=port)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8080)
+
+    args = parser.parse_args()
+
+    uvicorn.run(star, host=args.host, port=args.port)
