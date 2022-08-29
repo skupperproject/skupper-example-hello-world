@@ -60,15 +60,14 @@ Custom prerequisites
 ## Step 1: Install the Skupper command-line tool
 
 The `skupper` command-line tool is the primary entrypoint for
-installing and configuring the Skupper infrastructure.  You need
-to install the `skupper` command only once for each development
-environment.
+installing and configuring Skupper.  You need to install the
+`skupper` command only once for each development environment.
 
 On Linux or Mac, you can use the install script (inspect it
 [here][install-script]) to download and extract the command:
 
 ~~~ shell
-curl -f https://skupper.io/install.sh | sh
+curl https://skupper.io/install.sh | sh
 ~~~
 
 The script installs the command under your home directory.  It
@@ -115,8 +114,8 @@ export KUBECONFIG=~/.kube/config-east
 
 ## Step 3: Access your clusters
 
-The methods for accessing your clusters vary by Kubernetes
-provider. Find the instructions for your chosen providers and use
+The procedure for accessing a Kubernetes cluster varies by
+provider. Find the instructions for your chosen provider and use
 them to authenticate and configure access for each console
 session.  See the following links for more information:
 

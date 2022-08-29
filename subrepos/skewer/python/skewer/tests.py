@@ -58,8 +58,9 @@ def run_steps_():
         with working_env(SKEWER_DEMO=1, SKEWER_DEMO_NO_WAIT=1):
             run_steps_minikube("skewer.yaml", debug=True)
 
-        with working_env(SKEWER_FAIL=1):
-            run_steps_minikube("skewer.yaml", debug=True)
+        with expect_error():
+            with working_env(SKEWER_FAIL=1):
+                run_steps_minikube("skewer.yaml", debug=True)
 
 if __name__ == "__main__":
     from plano.commands import PlanoTestCommand
