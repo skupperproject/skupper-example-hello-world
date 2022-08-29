@@ -2,8 +2,8 @@ title: Skupper Hello World
 subtitle: A minimal HTTP application deployed across Kubernetes clusters using Skupper
 github_actions_url: https://github.com/skupperproject/skupper-example-hello-world/actions/workflows/main.yaml
 overview: |
-  This example is a very simple multi-service HTTP application that can
-  be deployed across multiple Kubernetes clusters using Skupper.
+  This example is a very simple multi-service HTTP application
+  deployed across Kubernetes clusters using Skupper.
 
   It contains two services:
 
