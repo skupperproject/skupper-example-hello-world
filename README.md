@@ -338,8 +338,8 @@ no services are exposed on it.  Skupper uses the `skupper
 expose` command to select a service from one namespace for
 exposure on all the linked namespaces.
 
-You can expose services that are not in the same namespace 
-where you installed skupper as described in the [Exposing 
+**Note:** You can expose services that are not in the same namespace 
+where you installed Skupper as described in the [Exposing 
 services from a different namespace](https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns) documentation.
 
 Use `skupper expose` to expose the backend service to the
