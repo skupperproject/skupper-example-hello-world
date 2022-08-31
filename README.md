@@ -33,8 +33,8 @@ across cloud providers, data centers, and edge sites.
 
 ## Overview
 
-This example is a very simple multi-service HTTP application that can
-be deployed across multiple Kubernetes clusters using Skupper.
+This example is a very simple multi-service HTTP application
+deployed across Kubernetes clusters using Skupper.
 
 It contains two services:
 
@@ -65,9 +65,8 @@ services without exposing the backend to the public internet.
 ## Step 1: Install the Skupper command-line tool
 
 The `skupper` command-line tool is the primary entrypoint for
-installing and configuring the Skupper infrastructure.  You need
-to install the `skupper` command only once for each development
-environment.
+installing and configuring Skupper.  You need to install the
+`skupper` command only once for each development environment.
 
 On Linux or Mac, you can use the install script (inspect it
 [here][install-script]) to download and extract the command:
@@ -120,8 +119,8 @@ export KUBECONFIG=~/.kube/config-east
 
 ## Step 3: Access your clusters
 
-The methods for accessing your clusters vary by Kubernetes
-provider. Find the instructions for your chosen providers and use
+The procedure for accessing a Kubernetes cluster varies by
+provider. Find the instructions for your chosen provider and use
 them to authenticate and configure access for each console
 session.  See the following links for more information:
 
@@ -338,6 +337,10 @@ We now have two namespaces linked to form a Skupper network, but
 no services are exposed on it.  Skupper uses the `skupper
 expose` command to select a service from one namespace for
 exposure on all the linked namespaces.
+
+**Note:** You can expose services that are not in the same namespace 
+where you installed Skupper as described in the [Exposing 
+services from a different namespace](https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns) documentation.
 
 Use `skupper expose` to expose the backend service to the
 frontend service.
