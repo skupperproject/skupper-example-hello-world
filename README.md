@@ -64,9 +64,9 @@ services without exposing the backend to the public internet.
 
 ## Step 1: Install the Skupper command-line tool
 
-The `skupper` command-line tool is the primary entrypoint for
-installing and configuring Skupper.  You need to install the
-`skupper` command only once for each development environment.
+The `skupper` command-line tool is the entrypoint for installing
+and configuring Skupper.  You need to install the `skupper`
+command only once for each development environment.
 
 On Linux or Mac, you can use the install script (inspect it
 [here][install-script]) to download and extract the command:
@@ -120,17 +120,11 @@ export KUBECONFIG=~/.kube/config-east
 ## Step 3: Access your clusters
 
 The procedure for accessing a Kubernetes cluster varies by
-provider. Find the instructions for your chosen provider and use
-them to authenticate and configure access for each console
-session.  See the following links for more information:
+provider. [Find the instructions for your chosen
+provider][kube-providers] and use them to authenticate and
+configure access for each console session.
 
-* [Minikube](https://skupper.io/start/minikube.html)
-* [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
-* [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html)
-* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html)
-* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html)
-* [OpenShift](https://skupper.io/start/openshift.html)
-* [More providers](https://kubernetes.io/partners/#kcsp)
+[kube-providers]: https://skupper.io/start/kubernetes.html
 
 ## Step 4: Set up your namespaces
 
@@ -145,31 +139,11 @@ kubectl create namespace west
 kubectl config set-context --current --namespace west
 ~~~
 
-_Sample output:_
-
-~~~ console
-$ kubectl create namespace west
-namespace/west created
-
-$ kubectl config set-context --current --namespace west
-Context "minikube" modified.
-~~~
-
 _**Console for east:**_
 
 ~~~ shell
 kubectl create namespace east
 kubectl config set-context --current --namespace east
-~~~
-
-_Sample output:_
-
-~~~ console
-$ kubectl create namespace east
-namespace/east created
-
-$ kubectl config set-context --current --namespace east
-Context "minikube" modified.
 ~~~
 
 ## Step 5: Install Skupper in your namespaces
@@ -189,14 +163,6 @@ _**Console for west:**_
 skupper init
 ~~~
 
-_Sample output:_
-
-~~~ console
-$ skupper init
-Waiting for LoadBalancer IP or hostname...
-Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
-~~~
-
 _**Console for east:**_
 
 ~~~ shell
@@ -208,7 +174,7 @@ _Sample output:_
 ~~~ console
 $ skupper init
 Waiting for LoadBalancer IP or hostname...
-Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
+Skupper is now installed in namespace '<namespace>'.  Use 'skupper status' to get more information.
 ~~~
 
 ## Step 6: Check the status of your namespaces
@@ -222,15 +188,6 @@ _**Console for west:**_
 skupper status
 ~~~
 
-_Sample output:_
-
-~~~ console
-$ skupper status
-Skupper is enabled for namespace "west" in interior mode. It is connected to 1 other site. It has 1 exposed service.
-The site console url is: <console-url>
-The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
-~~~
-
 _**Console for east:**_
 
 ~~~ shell
@@ -240,8 +197,7 @@ skupper status
 _Sample output:_
 
 ~~~ console
-$ skupper status
-Skupper is enabled for namespace "east" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+Skupper is enabled for namespace "<namespace>" in interior mode. It is connected to 1 other site. It has 1 exposed service.
 The site console url is: <console-url>
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 ~~~
@@ -338,9 +294,11 @@ no services are exposed on it.  Skupper uses the `skupper
 expose` command to select a service from one namespace for
 exposure on all the linked namespaces.
 
-**Note:** You can expose services that are not in the same namespace 
-where you installed Skupper as described in the [Exposing 
-services from a different namespace](https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns) documentation.
+**Note:** You can expose services that are not in the same namespace
+where you installed Skupper as described in the [Exposing services
+from a different namespace][different] documentation.
+
+[different]: https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns
 
 Use `skupper expose` to expose the backend service to the
 frontend service.
@@ -497,9 +455,9 @@ documenting and testing Skupper examples.
 
 [skewer]: https://github.com/skupperproject/skewer
 
-Skewer provides some utilities for generating the README and running
-the example steps.  Use the `./plano` command in the project root to
-see what is available.
+Skewer provides utility functions for generating the README and
+running the example steps.  Use the `./plano` command in the project
+root to see what is available.
 
 To quickly stand up the example using Minikube, try the `./plano demo`
 command.
