@@ -60,7 +60,7 @@ services without exposing the backend to the public internet.
   choose][kube-providers]
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[kube-providers]: https://skupper.io/start/index.html#prerequisites
+[kube-providers]: https://skupper.io/start/kubernetes.html
 
 ## Step 1: Install the Skupper command-line tool
 
@@ -294,11 +294,12 @@ no services are exposed on it.  Skupper uses the `skupper
 expose` command to select a service from one namespace for
 exposure on all the linked namespaces.
 
-**Note:** You can expose services that are not in the same namespace
-where you installed Skupper as described in the [Exposing services
-from a different namespace][different] documentation.
+**Note:** You can expose services that are not in the same
+namespace where you installed Skupper as described in the
+[Exposing services from a different namespace][different-ns]
+documentation.
 
-[different]: https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns
+[different-ns]: https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns
 
 Use `skupper expose` to expose the backend service to the
 frontend service.

@@ -52,9 +52,12 @@ steps:
       expose` command to select a service from one namespace for
       exposure on all the linked namespaces.
 
-      **Note:** You can expose services that are not in the same namespace 
-      where you installed Skupper as described in the [Exposing 
-      services from a different namespace](https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns) documentation.
+      **Note:** You can expose services that are not in the same
+      namespace where you installed Skupper as described in the
+      [Exposing services from a different namespace][different-ns]
+      documentation.
+
+      [different-ns]: https://skupper.io/docs/cli/index.html#exposing-services-from-different-ns
 
       Use `skupper expose` to expose the backend service to the
       frontend service.
@@ -63,7 +66,6 @@ steps:
         - await: deployment/backend
         - run: skupper expose deployment/backend --port 8080
           output: deployment backend exposed as backend
-    # curl --verbose -H "Content-Type: application/json" -d '{"name": "Hubert"}' http://<service-name>:8080/api/hello
   - title: Expose the frontend service
     preamble: |
       We have established connectivity between the two namespaces and
