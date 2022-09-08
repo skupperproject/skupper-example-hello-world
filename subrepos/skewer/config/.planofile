@@ -26,18 +26,59 @@ def generate():
     """
     generate_readme("skewer.yaml", "README.md")
 
+render_template = """
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css"
+          integrity="sha512-KUoB3bZ1XRBYj1QcH4BHCQjurAZnCO3WdrswyLDtp7BMwCw7dPZngSLqILf68SGgvnWHTD5pPaYrXi6wiRJ65g=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (max-width: 767px) {
+           .markdown-body {
+               padding: 15px;
+           }
+        }
+    </style>
+  </head>
+  <body>
+    <article class="markdown-body">
+
+@content@
+
+    </article>
+  </body>
+</html>
+""".strip()
+
 @command
 def render():
     """
     Render README.html from the data in skewer.yaml
     """
-    check_program("pandoc")
-
     generate()
 
-    run(f"pandoc -o README.html README.md")
+    markdown = read("README.md")
+    data = {"text": markdown}
+    json = emit_json(data)
+    content = http_post("https://api.github.com/markdown", json, content_type="application/json")
+    html = render_template.replace("@content@", content)
+
+    write("README.html", html)
 
     print(f"file:{get_real_path('README.html')}")
+
+@command
+def clean():
+    remove(find(".", "__pycache__"))
+    remove("README.html")
 
 @command
 def run_(debug=False):
