@@ -31,9 +31,9 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      - uses: manusa/actions-setup-minikube@v2.6.0
+      - uses: manusa/actions-setup-minikube@v2.6.1
         with:
-          minikube version: "v1.25.2"
+          minikube version: "v1.26.0"
           kubernetes version: "v1.24.1"
           github token: ${{secrets.GITHUB_TOKEN}}
       - run: curl https://skupper.io/install.sh | sh
