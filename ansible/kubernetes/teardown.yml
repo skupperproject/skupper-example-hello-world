@@ -1,0 +1,8 @@
+---
+- hosts: all
+  collections:
+    - skupper.network
+  tasks:
+  - import_role:
+      name: skupper_delete
+  - ansible.builtin.include_tasks: "teardown-kubernetes.yml"

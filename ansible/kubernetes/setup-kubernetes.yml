@@ -1,0 +1,15 @@
+---
+- name: Creating the namespaces
+  command: "kubectl create namespace {{ namespace }}"
+  register: out
+  failed_when: out.failed and 'already exists' not in out.stderr_lines[0]
+- name: Deploying the frontend service
+  command: "kubectl -n {{ namespace }} create deployment frontend --image quay.io/skupper/hello-world-frontend"
+  register: out
+  failed_when: out.failed and 'already exists' not in out.stderr_lines[0]
+  when: inventory_hostname == 'west'
+- name: Deploying the backend service
+  command: "kubectl -n {{ namespace }} create deployment backend --image quay.io/skupper/hello-world-backend --replicas=3"
+  when: inventory_hostname == 'east'
+  register: out
+  failed_when: out.failed and 'already exists' not in out.stderr_lines[0]

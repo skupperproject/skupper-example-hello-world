@@ -1,0 +1,5 @@
+---
+- name: Deploying frontend
+  command: "podman run -d --name hello-world-frontend --network {{ containerNetwork }} quay.io/skupper/hello-world-frontend"
+  register: out
+  failed_when: out.failed and 'is already in use' not in out.stderr_lines[0]

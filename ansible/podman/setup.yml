@@ -1,0 +1,16 @@
+---
+- hosts: all
+  tasks:
+  - ansible.builtin.include_tasks: "setup-podman.yml"
+- hosts: west
+  tasks:
+  - ansible.builtin.include_tasks: "setup-west.yml"
+- hosts: east
+  tasks:
+  - ansible.builtin.include_tasks: "setup-east.yml"
+- hosts: all
+  collections:
+    - skupper.network
+  tasks:
+  - import_role:
+      name: skupper

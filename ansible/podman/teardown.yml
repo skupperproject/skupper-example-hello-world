@@ -1,0 +1,16 @@
+---
+- hosts: all
+  collections:
+    - skupper.network
+  tasks:
+  - import_role:
+      name: skupper_delete
+- hosts: west
+  tasks:
+  - ansible.builtin.include_tasks: "teardown-west.yml"
+- hosts: east
+  tasks:
+  - ansible.builtin.include_tasks: "teardown-east.yml"
+- hosts: all
+  tasks:
+  - ansible.builtin.include_tasks: "teardown-podman.yml"

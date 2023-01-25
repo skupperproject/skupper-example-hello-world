@@ -1,0 +1,3 @@
+---
+- name: Undeploying backend
+  command: "podman rm --force hello-world-backend"

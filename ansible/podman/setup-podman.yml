@@ -1,0 +1,13 @@
+---
+- name: Enabling systemd user instance
+  command: "loginctl enable-linger {{ ansible_user }}"
+- name: Enabling and starting podman.socket systemd user service
+  ansible.builtin.systemd:
+    name: podman.socket
+    state: started
+    enabled: true
+    scope: user
+- name: Creating podman network
+  command: "podman network create {{ containerNetwork }}"
+  register: out
+  failed_when: out.failed and 'network already exists' not in out.stderr_lines[0]

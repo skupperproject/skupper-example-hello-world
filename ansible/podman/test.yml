@@ -1,0 +1,11 @@
+---
+- hosts: west
+  tasks: 
+    - name: "Validating backend endpoint from podman network"
+      command: "podman run --rm --network {{ containerNetwork }} docker.io/curlimages/curl curl -s -v http://backend:8080/api/hello"
+      register: out
+      failed_when: out.failed or "HTTP/1.1 200 OK" not in out.stderr
+    - name: "Validating front endpoint from host network"
+      command: "curl -s -v http://{{ west_ip }}:8080"
+      register: out
+      failed_when: out.failed or "HTTP/1.1 200 OK" not in out.stderr

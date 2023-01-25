@@ -1,0 +1,51 @@
+all:
+  vars:
+    platform: podman
+    containerNetwork: helloworld
+    west_user: west
+    west_ip: 192.168.124.1
+    east_user: east
+    east_ip: 192.168.124.1
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+  children:
+    public:
+      hosts:
+        west:
+          ansible_user: "{{ west_user }}"
+          ansible_host: "{{ west_ip }}"
+          init:
+            siteName: west
+            enableServiceSync: 'false'
+            ingressHosts: ["{{ west_ip }}"]
+            containerNetwork: "{{ containerNetwork }}"
+          services:
+            frontend:
+              ports:
+                - 8080
+              hostPorts:
+                - 8080:8080
+              targets:
+                - type: "host"
+                  name: "hello-world-frontend"
+            backend:
+              ports:
+                - 8080
+        east:
+          ansible_user: "{{ east_user }}"
+          ansible_host: "{{ east_ip }}"
+          init:
+            siteName: east
+            enableServiceSync: 'false'
+            ingressHosts: ["{{ east_ip }}"]
+            bindPort: 55673
+            bindPortEdge: 45673
+            containerNetwork: "{{ containerNetwork }}"
+          links:
+            - host: west
+          services:
+            backend:
+              ports:
+                - 8080
+              targets:
+                - type: "host"
+                  name: "hello-world-backend"

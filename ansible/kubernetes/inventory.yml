@@ -1,0 +1,36 @@
+all:
+  vars:
+    platform: kubernetes
+    ansible_connection: local
+  children:
+    public:
+      hosts:
+        west:
+          namespace: west
+          init:
+            siteName: west
+            enableServiceSync: 'false'
+          services:
+            frontend:
+              ports:
+                - 8080
+              targets:
+                - type: "deployment"
+                  name: "frontend"
+            backend:
+              ports:
+                - 8080
+        east:
+          namespace: east
+          init:
+            siteName: east
+            enableServiceSync: 'false'
+          links:
+            - host: west
+          services:
+            backend:
+              ports:
+                - 8080
+              targets:
+                - type: "deployment"
+                  name: "backend"
