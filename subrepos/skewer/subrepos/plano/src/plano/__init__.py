@@ -19,3 +19,6 @@
 
 from .main import *
 from .main import _default_sigterm_handler
+
+from .command import *
+from .test import *

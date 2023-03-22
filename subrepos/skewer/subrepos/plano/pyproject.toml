@@ -3,7 +3,7 @@ requires = [ "setuptools", "setuptools-scm" ]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "plano"
+name = "ssorj-plano"
 version = "1.0.0"
 authors = [ { name = "Justin Ross", email = "jross@apache.org" } ]
 description = "Python functions for writing shell-style system scripts"
@@ -14,10 +14,9 @@ requires-python = ">=3.7"
 dependencies = [ "PyYAML" ]
 
 [project.scripts]
-plano = "plano.commands:plano"
-planosh = "plano.commands:planosh"
-plano-test = "plano.commands:plano_test"
-plano-self-test = "plano.tests:main"
+plano = "plano.command:_main"
+plano-test = "plano.test:_main"
+plano-self-test = "plano._tests:main"
 
 [project.urls]
 "Homepage" = "https://github.com/ssorj/plano"

@@ -438,19 +438,20 @@ def _apply_standard_steps(skewer_data):
             if "commands" in standard_step_data:
                 step_data["commands"] = dict()
 
-                if "*" in standard_step_data["commands"]:
-                    assert len(standard_step_data["commands"]) == 1, standard_step_data["commands"]
+                for i, site in enumerate(skewer_data["sites"].items()):
+                    site_key, site_data = site
 
-                    for site_key, site_data in skewer_data["sites"].items():
+                    if str(i) in standard_step_data["commands"]:
+                        # Is a specific index in the standard commands?
+                        commands = standard_step_data["commands"][str(i)]
+                        step_data["commands"][site_key] = _resolve_commands(commands, site_data)
+                    elif "*" in standard_step_data["commands"]:
+                        # Is "*" in the standard commands?
                         commands = standard_step_data["commands"]["*"]
-
                         step_data["commands"][site_key] = _resolve_commands(commands, site_data)
-                else:
-                    for site_index in standard_step_data["commands"]:
-                        commands = standard_step_data["commands"][site_index]
-                        site_key, site_data = list(skewer_data["sites"].items())[int(site_index)]
-
-                        step_data["commands"][site_key] = _resolve_commands(commands, site_data)
+                    else:
+                        # Otherwise, omit commands for this site
+                        continue
 
 def _resolve_commands(commands, site_data):
     resolved_commands = list()

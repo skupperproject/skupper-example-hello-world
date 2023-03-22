@@ -24,7 +24,7 @@ def check_environment_():
     check_environment()
 
 @test
-def planofile():
+def plano_():
     with working_dir("test-example"):
         run("./plano")
         run("./plano generate")
@@ -63,7 +63,6 @@ def run_steps_():
                 run_steps_minikube("skewer.yaml", debug=True)
 
 if __name__ == "__main__":
-    from plano.commands import PlanoTestCommand
-    from . import tests
+    import sys
 
-    PlanoTestCommand(tests).main()
+    PlanoTestCommand(sys.modules[__name__]).main()

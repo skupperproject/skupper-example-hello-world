@@ -155,7 +155,7 @@ tunnel`][minikube-tunnel] before you install Skupper.
 _**Console for west:**_
 
 ~~~ shell
-skupper init
+skupper init --enable-console --enable-flow-collector
 ~~~
 
 _**Console for east:**_

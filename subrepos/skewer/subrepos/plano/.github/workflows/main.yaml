@@ -19,7 +19,7 @@ jobs:
           python-version: ${{matrix.version}}
       - run: pip install build wheel
       - run: python -m build
-      - run: pip install dist/plano-1.0.0-py3-none-any.whl
+      - run: pip install dist/ssorj_plano-1.0.0-py3-none-any.whl
       - run: plano-self-test
   cygwin:
     runs-on: windows-latest
