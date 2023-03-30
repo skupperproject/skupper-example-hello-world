@@ -34,12 +34,10 @@ Do not use localhost/127.0.0.1 as the IP addresses.
 
 * SSH connection using authorized keys
 * Podman v4+
-* Skupper (binary) installed on the target machines
+* Skupper 1.3.0+ (binary) installed on the target machines
     ```
-    Once podman support is officially released, the binary installation
-    can be automated as well, but till then, you have to manually build
-    (from: https://github.com/fgiorgetti/skupper/tree/podman) and install
-    the `skupper` binary at the destination hosts.
+    The binary can also be installed by the skupper.network Ansible collection,
+    by including the skupper_cli_install role.
     ```
 
 ## Deploying
