@@ -405,6 +405,181 @@ $ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
 Navigate to `<console-url>` in your browser.  When prompted, log
 in as user `admin` and enter the password.
 
+## Using Skupper Cluster Policies (optional)
+
+This optional step describes how to enable Skupper Cluster Policies, so that Skupper
+controls what resources can be exposed, which sites can accept incoming link connections
+or what are the allowed outgoing hostnames for linking Skupper sites.
+
+To enable Skupper Cluster Policies, all you need to do is simply install a Custom Resource Definition (CRD)
+named `SkupperClusterPolicy`, and for that you need cluster admin privileges.
+
+_**Important:**_ Once Skupper Cluster Policies are enabled, existing Skupper installations will
+stop working, as everything is considered as denied, unless defined otherwise. Be **careful** to enable
+Skupper Cluster Policies on a cluster with active sites, or it might break active service networks.
+
+### Enabling Skupper Cluster Policies on a cluster
+
+**_WARNING:_** _Once the CRD is installed all existing sites will stop working._
+
+Apply the CRD to your cluster, by running:
+
+```shell
+kubectl apply -f https://raw.githubusercontent.com/skupperproject/skupper/main/api/types/crds/skupper_cluster_policy_crd.yaml
+```
+
+Now check the status of both sites (west and east):
+
+_**Console for west:**_
+
+~~~ shell
+skupper status
+~~~
+
+_Sample output:_
+
+~~~ console
+$ skupper status
+Skupper is enabled for namespace "west" in interior mode (with policies). It is not connected to any other sites. It has no exposed services.
+The site console url is: <console-url>
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+~~~
+
+Notice that it shows that Skupper is enabled "with policies".
+
+The sites are now disconnected and no service is exposed.
+You can validate that by running the following command on the `east` namespace:
+
+~~~ shell
+skupper link status
+~~~
+
+_Sample output:_
+~~~ console
+Links created from this site:
+
+	 Link link1 not connected (Destination host is not allowed)
+~~~
+
+Let's restore your sites now.
+
+### Creating policies to allow the Skupper network to operate 
+
+On the `west` namespace, we need to allow incoming links to be accepted, and we also need to
+allow the `backend` service to be created. Let's create a policy for the `west` namespace.
+
+Create a file named `~/policy-west.yaml`, adding the following content:
+
+```yaml
+apiVersion: skupper.io/v1alpha1
+kind: SkupperClusterPolicy
+metadata:
+  name: west
+spec:
+  namespaces:
+    - "west"
+  allowIncomingLinks: true
+  allowedServices:
+    - "backend"
+```
+
+On the `east` namespace, we need to allow the `deployment/backend` workload to be exposed,
+as well as the `backend` service to be created locally, and we also need it to be allowed to
+create outgoing links to the `west` namespace.
+
+Create a file named `~/policy-east.yaml`, adding the following content:
+
+```yaml
+apiVersion: skupper.io/v1alpha1
+kind: SkupperClusterPolicy
+metadata:
+  name: east
+spec:
+  namespaces:
+    - "east"
+  allowedExposedResources:
+    - "deployment/backend"
+  allowedOutgoingLinksHostnames:
+    - "*"
+  allowedServices:
+    - "backend"
+```
+
+Notice that we are using an asterisk in the list of allowed outgoing link hostnames, but you
+could also define a list of regular expressions to narrow the allowed hostnames or IP addresses.
+
+Now create these two `SkupperClusterPolicy` resources into your cluster, by running:
+
+```bash
+kubectl apply -f ~/policy-west.yaml
+kubectl apply -f ~/policy-east.yaml
+```
+
+### Verifying that the link has been reestablished
+
+Now that the policies have been applied to both namespaces, you can verify that your sites
+are linked again, by running:
+
+_**Console for east:**_
+
+~~~ shell
+skupper link status
+~~~
+
+_Sample output:_
+~~~ console
+Links created from this site:
+
+	 Link link1 is connected
+~~~
+
+### Expose the backend service again
+
+Since the backend service was deleted as it was not authorized, at the time when the Skupper Cluster
+Policies CRD was installed, we need to expose it one more time.
+
+_**Console for east:**_
+
+~~~ shell
+skupper expose deployment/backend --port 8080
+~~~
+
+_Sample output:_
+
+~~~ console
+$ skupper expose deployment/backend --port 8080
+deployment backend exposed as backend
+~~~
+
+Now the `backend` service is restored and your Skupper network is operational again.
+
+### Disabling Skupper Cluster Policies
+
+Delete the CRD from your cluster, by running:
+
+```shell
+kubectl delete -f https://raw.githubusercontent.com/skupperproject/skupper/main/api/types/crds/skupper_cluster_policy_crd.yaml
+```
+
+Now check the status of both sites (west and east):
+
+_**Console for west:**_
+
+~~~ shell
+skupper status
+~~~
+
+_Sample output:_
+
+~~~ console
+$ skupper status
+Skupper is enabled for namespace "west" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+The site console url is: <console-url>
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+~~~
+
+Notice that it Skupper is enabled normally again (without policies).
+
 ## Cleaning up
 
 To remove Skupper and the other resources from this exercise, use
