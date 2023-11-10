@@ -115,6 +115,8 @@ check_the_status_of_your_namespaces:
   commands:
     "*":
       - await: [deployment/skupper-service-controller, deployment/skupper-router, configmap/skupper-network-status]
+      - run: sleep 15 # A temp hack for a 1.5.0 problem
+        apply: test
       - run: skupper status
   postamble: |
     _Sample output:_
