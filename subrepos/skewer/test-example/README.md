@@ -82,9 +82,9 @@ Skupper][install-docs].
 ## Step 2: Configure separate console sessions
 
 Skupper is designed for use with multiple namespaces, usually on
-different clusters.  The `skupper` command uses your
+different clusters.  The `skupper` and `kubectl` commands use your
 [kubeconfig][kubeconfig] and current context to select the
-namespace where it operates.
+namespace where they operate.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
@@ -143,7 +143,7 @@ kubectl config set-context --current --namespace east
 
 ## Step 5: Install Skupper in your namespaces
 
-The `skupper init` command installs the Skupper router and service
+The `skupper init` command installs the Skupper router and
 controller in the current namespace.  Run the `skupper init` command
 in each namespace.
 
@@ -391,7 +391,7 @@ _Sample output:_
 
 ~~~ console
 $ skupper status
-Skupper is enabled for namespace "west" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+Skupper is enabled for namespace "west". It is connected to 1 other site. It has 1 exposed service.
 The site console url is: <console-url>
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 

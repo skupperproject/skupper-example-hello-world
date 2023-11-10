@@ -70,16 +70,19 @@ def check_environment():
 # https://github.com/kubernetes/kubernetes/pull/87399
 # https://github.com/kubernetes/kubernetes/issues/80828
 # https://github.com/kubernetes/kubernetes/issues/83094
-def await_resource(group, name, timeout=180):
+def await_resource(group, name, timeout=240):
+    start_time = get_time()
+
     notice(f"Waiting for {group}/{name} to become available")
 
-    for i in range(timeout):
-        sleep(1)
-
+    while True:
         if run(f"kubectl get {group}/{name}", check=False).exit_code == 0:
             break
-    else:
-        fail(f"Timed out waiting for {group}/{name}")
+
+        if get_time() - start_time > timeout:
+            fail(f"Timed out waiting for {group}/{name}")
+
+        sleep(5)
 
     if group == "deployment":
         try:
@@ -88,16 +91,19 @@ def await_resource(group, name, timeout=180):
             run(f"kubectl logs {group}/{name}")
             raise
 
-def await_external_ip(group, name, timeout=180):
+def await_external_ip(group, name, timeout=240):
+    start_time = get_time()
+
     await_resource(group, name, timeout=timeout)
 
-    for i in range(timeout):
-        sleep(1)
-
+    while True:
         if call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress}}'") != "":
             break
-    else:
-        fail(f"Timed out waiting for external IP for {group}/{name}")
+
+        if get_time() - start_time > timeout:
+            fail(f"Timed out waiting for external IP for {group}/{name}")
+
+        sleep(5)
 
     return call(f"kubectl get {group}/{name} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'")
 
@@ -159,6 +165,7 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
                     run("kubectl get deployments", check=False)
                     run("kubectl get statefulsets", check=False)
                     run("kubectl get pods", check=False)
+                    run("kubectl get events", check=False)
                     run("skupper version", check=False)
                     run("skupper status", check=False)
                     run("skupper link status", check=False)
@@ -186,7 +193,7 @@ def _pause_for_demo(work_dir, skewer_data):
 
     with working_env(KUBECONFIG=first_site_kubeconfig):
         console_ip = await_external_ip("service", "skupper")
-        console_url = f"https://{console_ip}:8080/"
+        console_url = f"https://{console_ip}:8010/"
         password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'")
         password = base64_decode(password_data).decode("ascii")
 
@@ -231,6 +238,8 @@ def _run_step(work_dir, skewer_data, step_data, check=True):
         kubeconfig = skewer_data["sites"][site_name]["kubeconfig"].replace("~", work_dir)
 
         with working_env(KUBECONFIG=kubeconfig):
+            run(f"kubectl config set-context --current --namespace {site_name}")
+
             for command in commands:
                 if command.get("apply") == "readme":
                     continue
@@ -374,9 +383,10 @@ def _generate_readme_step(skewer_data, step_data):
         for i, item in enumerate(items):
             site_name, commands = item
             namespace = skewer_data["sites"][site_name]["namespace"]
+            title = skewer_data["sites"][site_name].get("title", namespace)
             outputs = list()
 
-            out.append(f"_**Console for {namespace}:**_")
+            out.append(f"_**Console for {title}:**_")
             out.append("")
             out.append("~~~ shell")
 
