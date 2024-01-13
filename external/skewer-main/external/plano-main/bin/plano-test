@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,4 +18,11 @@
 # under the License.
 #
 
-from skewer.planocommands import *
+import sys
+
+sys.path.insert(0, "python")
+
+from plano import PlanoTestCommand
+
+if __name__ == "__main__":
+    PlanoTestCommand().main()

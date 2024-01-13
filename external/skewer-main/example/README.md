@@ -1,6 +1,6 @@
 # Skupper Hello World
 
-[![main](https://github.com/skupperproject/skupper-example-hello-world/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-hello-world/actions/workflows/main.yaml)
+[![main](https://github.com/skupperproject/skewer/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skewer/actions/workflows/main.yaml)
 
 #### A minimal HTTP application deployed across Kubernetes clusters using Skupper
 
@@ -22,44 +22,23 @@ across cloud providers, data centers, and edge sites.
 * [Step 5: Install Skupper in your namespaces](#step-5-install-skupper-in-your-namespaces)
 * [Step 6: Check the status of your namespaces](#step-6-check-the-status-of-your-namespaces)
 * [Step 7: Link your namespaces](#step-7-link-your-namespaces)
-* [Step 8: Deploy and expose the backend](#step-8-deploy-and-expose-the-backend)
+* [Step 8: Fail on demand](#step-8-fail-on-demand)
 * [Step 9: Deploy and expose the frontend](#step-9-deploy-and-expose-the-frontend)
-* [Step 10: Test the application](#step-10-test-the-application)
+* [Step 10: Deploy and expose the backend](#step-10-deploy-and-expose-the-backend)
+* [Step 11: Test the application](#step-11-test-the-application)
 * [Accessing the web console](#accessing-the-web-console)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
+* [Next steps](#next-steps)
 * [About this example](#about-this-example)
 
 ## Overview
 
-This example is a very simple multi-service HTTP application
-deployed across Kubernetes clusters using Skupper.
-
-It contains two services:
-
-* A backend service that exposes an `/api/hello` endpoint.  It
-  returns greetings of the form `Hi, <your-name>.  I am <my-name>
-  (<pod-name>)`.
-
-* A frontend service that sends greetings to the backend and
-  fetches new greetings in response.
-
-With Skupper, you can place the backend in one cluster and the
-frontend in another and maintain connectivity between the two
-services without exposing the backend to the public internet.
-
-<img src="images/entities.svg" width="640"/>
+An overview
 
 ## Prerequisites
 
-* The `kubectl` command-line tool, version 1.15 or later
-  ([installation guide][install-kubectl])
-
-* Access to at least one Kubernetes cluster, from [any provider you
-  choose][kube-providers]
-
-[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[kube-providers]: https://skupper.io/start/kubernetes.html
+Some prerequisites
 
 ## Step 1: Install the Skupper command-line tool
 
@@ -257,32 +236,13 @@ to use `scp` or a similar tool to transfer the token securely.  By
 default, tokens expire after a single use or 15 minutes after
 creation.
 
-## Step 8: Deploy and expose the backend
+## Step 8: Fail on demand
 
-We now have two namespaces linked to form a Skupper network, but
-no services are exposed on it.  Skupper uses the `skupper
-expose` command to select a service from one namespace for
-exposure on all the linked namespaces.
-
-Use `kubectl create deployment` to deploy the backend service in
-East.  Use `skupper expose` to expose the backend service to the
-frontend service.
-
-_**Console for East:**_
+_**Console for West:**_
 
 ~~~ shell
-kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
-skupper expose deployment/backend --port 8080
-~~~
+if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
 
-_Sample output:_
-
-~~~ console
-$ kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
-deployment.apps/backend created
-
-$ skupper expose deployment/backend --port 8080
-deployment backend exposed as backend
 ~~~
 
 ## Step 9: Deploy and expose the frontend
@@ -313,7 +273,35 @@ $ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
 service/frontend exposed
 ~~~
 
-## Step 10: Test the application
+## Step 10: Deploy and expose the backend
+
+We now have two namespaces linked to form a Skupper network, but
+no services are exposed on it.  Skupper uses the `skupper
+expose` command to select a service from one namespace for
+exposure on all the linked namespaces.
+
+Use `kubectl create deployment` to deploy the backend service in
+East.  Use `skupper expose` to expose the backend service to the
+frontend service.
+
+_**Console for East:**_
+
+~~~ shell
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+skupper expose deployment/backend --port 8080
+~~~
+
+_Sample output:_
+
+~~~ console
+$ kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+deployment.apps/backend created
+
+$ skupper expose deployment/backend --port 8080
+deployment backend exposed as backend
+~~~
+
+## Step 11: Test the application
 
 Now we're ready to try it out.  Use `kubectl get service/frontend`
 to look up the external IP of the frontend service.  Then use
@@ -400,27 +388,11 @@ kubectl delete deployment/backend
 
 ## Summary
 
-This example locates the frontend and backend services in different
-namespaces, on different clusters.  Ordinarily, this means that they
-have no way to communicate unless they are exposed to the public
-internet.
-
-Introducing Skupper into each namespace allows us to create a virtual
-application network that can connect services in different clusters.
-Any service exposed on the application network is represented as a
-local service in all of the linked namespaces.
-
-The backend service is located in `east`, but the frontend service
-in `west` can "see" it as if it were local.  When the frontend
-sends a request to the backend, Skupper forwards the request to the
-namespace where the backend is running and routes the response back to
-the frontend.
-
-<img src="images/sequence.svg" width="640"/>
+A summary
 
 ## Next steps
 
-Check out the other [examples][examples] on the Skupper website.
+Some next steps
 
 ## About this example
 
