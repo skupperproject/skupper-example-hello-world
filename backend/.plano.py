@@ -1,3 +1,5 @@
+from plano import *
+
 image_tag = "quay.io/skupper/hello-world-backend"
 
 @command
