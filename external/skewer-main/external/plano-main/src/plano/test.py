@@ -61,6 +61,15 @@ class PlanoTestCommand(BaseCommand):
     def parse_args(self, args):
         return self.parser.parse_args(args)
 
+    def configure_logging(self, args):
+        if args.verbose:
+            return "notice", None
+
+        if args.quiet:
+            return "error", None
+
+        return "warning", None
+
     def init(self, args):
         self.list_only = args.list
         self.include_patterns = args.include
@@ -231,7 +240,12 @@ def run_tests(modules, include="*", exclude=(), enable=(), unskip=(), test_timeo
         print_properties(props)
         print()
 
+    stop = False
+
     for module in modules:
+        if stop:
+            break
+
         if verbose:
             notice("Running tests from module {} (file {})", repr(module.__name__), repr(module.__file__))
         elif not quiet:
@@ -242,6 +256,9 @@ def run_tests(modules, include="*", exclude=(), enable=(), unskip=(), test_timeo
             continue
 
         for test in module._plano_tests:
+            if stop:
+                break
+
             if test.disabled and not any([_fnmatch.fnmatchcase(test.name, x) for x in enable]):
                 continue
 
@@ -251,7 +268,7 @@ def run_tests(modules, include="*", exclude=(), enable=(), unskip=(), test_timeo
 
             if included and not excluded:
                 test_run.tests.append(test)
-                _run_test(test_run, test, unskipped)
+                stop = _run_test(test_run, test, unskipped)
 
         if not verbose and not quiet:
             print()

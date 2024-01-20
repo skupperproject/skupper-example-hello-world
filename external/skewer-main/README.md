@@ -76,11 +76,10 @@ options:
 commands:
   {command}
     generate            Generate README.md from the data in skewer.yaml
-    render              Render README.html from the data in skewer.yaml
+    render              Render README.html from README.md
     clean               Clean up the source tree
-    run                 Run the example steps using Minikube
-    run-external        Run the example steps with user-provided kubeconfigs
-    demo                Run the example steps and pause before cleaning up
+    run                 Run the example steps
+    demo                Run the example steps and pause for a demo before cleaning up
     test                Test README generation and run the steps on Minikube
     update-skewer       Update the embedded Skewer repo and GitHub workflow
 ~~~
@@ -92,7 +91,7 @@ The top level:
 ~~~ yaml
 title:              # Your example's title (required)
 subtitle:           # Your chosen subtitle (required)
-github_actions_url: # The URL of your workflow (optional)
+workflow:           # The filename of your GitHub workflow (optional, default 'main.yaml')
 overview:           # Text introducing your example (optional)
 prerequisites:      # Text describing prerequisites (optional, has default text)
 sites:              # A map of named sites (see below)
@@ -200,15 +199,25 @@ steps:
   - standard: check_the_status_of_your_namespaces
   - standard: link_your_namespaces
   <your-custom-steps>
-  - standard: test_the_application
   - standard: accessing_the_web_console
   - standard: cleaning_up
 ~~~
 
-Note that the `link_your_namespaces` and `test_the_application` steps
-are less generic than the other steps, so check that the text and
-commands they produce are doing what you need.  If not, you'll need to
+Note that the `link_your_namespaces` step is less generic than the
+other steps (it assumes only two sites), so check that the text and
+commands it produces are doing what you need.  If not, you'll need to
 provide a custom step.
+
+There are also some standard steps for examples based on the Skupper
+Hello World application:
+
+~~~ yaml
+steps:
+  - standard: hello_world/deploy_the_application
+  - standard: hello_world/expose_the_backend_service
+  - standard: hello_world/test_the_application
+  - standard: hello_world/cleaning_up
+~~~
 
 The step commands are separated into named groups corresponding to the
 sites.  Each named group contains a list of command entries.  Each

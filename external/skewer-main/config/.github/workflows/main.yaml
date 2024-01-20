@@ -25,6 +25,10 @@ on:
     - cron: "0 0 * * 0"
 jobs:
   main:
+    strategy:
+      fail-fast: false
+      matrix:
+        skupper-version: [latest, main]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +40,7 @@ jobs:
           minikube version: "v1.32.0"
           kubernetes version: "v1.29.0"
           github token: ${{secrets.GITHUB_TOKEN}}
-      - run: curl https://skupper.io/install.sh | sh
+      - run: curl https://skupper.io/install.sh | bash -s -- --version ${{matrix.skupper-version}}
       - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: ./plano test
         env:

@@ -57,10 +57,11 @@ class BaseCommand:
                 pass
             except PlanoError as e:
                 if PLANO_DEBUG:
-                    _traceback.print_exc()
-                    exit(1)
+                    error(e)
                 else:
-                    exit(str(e))
+                    error(str(e))
+
+                exit(1)
 
 class BaseArgumentParser(_argparse.ArgumentParser):
     def __init__(self, **kwargs):

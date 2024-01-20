@@ -37,8 +37,8 @@ install_the_skupper_command_line_tool:
     For Windows and other installation options, see [Installing
     Skupper][install-docs].
 
-    [install-script]: https://github.com/skupperproject/skupper-website/blob/main/docs/install.sh
-    [install-docs]: https://skupper.io/install/index.html
+    [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
+    [install-docs]: https://skupper.io/install/
 configure_separate_console_sessions:
   title: Configure separate console sessions
   preamble: |
@@ -183,6 +183,7 @@ accessing_the_web_console:
           Skupper is enabled for namespace "@namespace@". It is connected to 1 other site. It has 1 exposed service.
           The site console url is: <console-url>
           The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+      - await_resource: secret/skupper-console-users
       - run: kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
         output: <password>
       - await_console_ok:
@@ -190,7 +191,7 @@ accessing_the_web_console:
     Navigate to `<console-url>` in your browser.  When prompted, log
     in as user `admin` and enter the password.
 cleaning_up:
-  id: cleaning_up
+  name: cleaning_up
   title: Cleaning up
   numbered: false
   preamble: |
@@ -199,54 +200,54 @@ cleaning_up:
   commands:
     "*":
       - run: skupper delete
-hello_world/deploy_and_expose_the_backend:
-  title: Deploy and expose the backend
+hello_world/deploy_the_application:
+  title: Deploy the application
+  preamble: |
+    Use `kubectl create deployment` to deploy the frontend and backend
+    services.
+  commands:
+    "0":
+      - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+    "1":
+      - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+hello_world/expose_the_backend_service:
+  title: Expose the backend service
   preamble: |
     We now have two namespaces linked to form a Skupper network, but
     no services are exposed on it.  Skupper uses the `skupper
     expose` command to select a service from one namespace for
-    exposure on all the linked namespaces.
+    exposure in all the linked namespaces.
 
-    Use `kubectl create deployment` to deploy the backend service in
-    East.  Use `skupper expose` to expose the backend service to the
-    frontend service.
+    Use `skupper expose` to expose the backend service on the Skupper
+    network.
   commands:
     "1":
-      - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
-        output: deployment.apps/backend created
       - await_resource: deployment/backend
       - run: skupper expose deployment/backend --port 8080
         output: deployment backend exposed as backend
-hello_world/deploy_and_expose_the_frontend:
-  title: Deploy and expose the frontend
-  preamble: |
-    We have established connectivity between the two namespaces and
-    made the backend in `east` available to the frontend in `west`.
-    Before we can test the application, we need external access to the
-    frontend.
-
-    Use `kubectl create deployment` to deploy the frontend service in
-    West.  Use `kubectl expose` with `--type LoadBalancer` to open
-    network access to the frontend service.
-  commands:
-    "0":
-      - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
-        output: deployment.apps/frontend created
-      - await_resource: deployment/frontend
-      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-        output: service/frontend exposed
 hello_world/test_the_application:
   title: Test the application
   preamble: |
-    Now we're ready to try it out.  Use `kubectl get service/frontend`
-    to look up the external IP of the frontend service.  Then use
-    `curl` or a similar tool to request the `/api/health` endpoint at
-    that address.
+    We have established connectivity between the two namespaces and
+    made the backend available to the frontend.  Before we can test
+    the application, we need external access to the frontend.
+
+    Use `kubectl expose` with `--type LoadBalancer` to open network
+    access to the frontend service.
+
+    Once the frontend is exposed, use `kubectl get service/frontend`
+    to look up the external IP of the frontend service.  If the
+    external IP is `<pending>`, try again after a moment.
+
+    Once you have the external IP, use `curl` or a similar tool to
+    request the `/api/health` endpoint at that address.
 
     **Note:** The `<external-ip>` field in the following commands is a
     placeholder.  The actual value is an IP address.
   commands:
     "0":
+      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
+        output: service/frontend exposed
       - await_resource: service/frontend
       - run: kubectl get service/frontend
         apply: readme
@@ -261,7 +262,7 @@ hello_world/test_the_application:
     If everything is in order, you can now access the web interface by
     navigating to `http://<external-ip>:8080/` in your browser.
 hello_world/cleaning_up:
-  id: cleaning_up
+  name: cleaning_up
   title: Cleaning up
   numbered: false
   preamble: |

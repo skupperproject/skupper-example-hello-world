@@ -19,6 +19,7 @@
 
 import skewer.tests
 
+from plano import *
 from skewer import *
 
 @command(passthrough=True)

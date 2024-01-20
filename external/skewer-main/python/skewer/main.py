@@ -17,48 +17,16 @@
 # under the License.
 #
 
+import inspect
+
 from plano import *
 
-standard_steps_yaml = read(join(get_parent_dir(__file__), "standardsteps.yaml"))
-standard_steps = parse_yaml(standard_steps_yaml)
+__all__ = [
+    "generate_readme", "run_steps", "Minikube",
+]
 
-example_suite_para = """
-This example is part of a [suite of examples][examples] showing the
-different ways you can use [Skupper][website] to connect services
-across cloud providers, data centers, and edge sites.
-
-[website]: https://skupper.io/
-[examples]: https://skupper.io/examples/index.html
-""".strip()
-
-standard_prerequisites = """
-* The `kubectl` command-line tool, version 1.15 or later
-  ([installation guide][install-kubectl])
-
-* Access to at least one Kubernetes cluster, from [any provider you
-  choose][kube-providers]
-
-[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[kube-providers]: https://skupper.io/start/kubernetes.html
-""".strip()
-
-standard_next_steps = """
-Check out the other [examples][examples] on the Skupper website.
-""".strip()
-
-about_this_example = """
-This example was produced using [Skewer][skewer], a library for
-documenting and testing Skupper examples.
-
-[skewer]: https://github.com/skupperproject/skewer
-
-Skewer provides utility functions for generating the README and
-running the example steps.  Use the `./plano` command in the project
-root to see what is available.
-
-To quickly stand up the example using Minikube, try the `./plano demo`
-command.
-""".strip()
+standard_text = read_yaml(join(get_parent_dir(__file__), "standardtext.yaml"))
+standard_steps = read_yaml(join(get_parent_dir(__file__), "standardsteps.yaml"))
 
 def check_environment():
     check_program("base64")
@@ -66,10 +34,12 @@ def check_environment():
     check_program("kubectl")
     check_program("skupper")
 
-# Eventually Kubernetes will make this nicer:
-# https://github.com/kubernetes/kubernetes/pull/87399
-# https://github.com/kubernetes/kubernetes/issues/80828
-# https://github.com/kubernetes/kubernetes/issues/83094
+def resource_exists(resource):
+    return run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0
+
+def get_resource_jsonpath(resource, jsonpath):
+    return call(f"kubectl get {resource} -o jsonpath='{{{jsonpath}}}'", quiet=True)
+
 def await_resource(resource, timeout=240):
     assert "/" in resource, resource
 
@@ -78,7 +48,7 @@ def await_resource(resource, timeout=240):
     while True:
         notice(f"Waiting for {resource} to become available")
 
-        if run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0:
+        if resource_exists(resource):
             break
 
         if get_time() - start_time > timeout:
@@ -103,7 +73,7 @@ def await_external_ip(service, timeout=240):
     while True:
         notice(f"Waiting for external IP from {service} to become available")
 
-        if call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress}}'", quiet=True) != "":
+        if get_resource_jsonpath(service, ".status.loadBalancer.ingress") != "":
             break
 
         if get_time() - start_time > timeout:
@@ -111,7 +81,7 @@ def await_external_ip(service, timeout=240):
 
         sleep(5, quiet=True)
 
-    return call(f"kubectl get {service} -o jsonpath='{{.status.loadBalancer.ingress[0].ip}}'", quiet=True)
+    return get_resource_jsonpath(service, ".status.loadBalancer.ingress[0].ip")
 
 def await_http_ok(service, url_template, user=None, password=None, timeout=240):
     assert service.startswith("service/"), service
@@ -136,403 +106,343 @@ def await_http_ok(service, url_template, user=None, password=None, timeout=240):
             break
 
 def await_console_ok():
-    password = call("kubectl get secret/skupper-console-users -o jsonpath={.data.admin}", quiet=True)
+    await_resource("secret/skupper-console-users")
+
+    password = get_resource_jsonpath("secret/skupper-console-users", ".data.admin")
     password = base64_decode(password)
 
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
 
-def run_steps_minikube(skewer_file, debug=False):
-    notice("Running steps on Minikube")
-
-    check_environment()
-    check_program("minikube")
-
-    skewer_data = read_yaml(skewer_file)
-
-    for site in get_sites(skewer_data):
-        site.check()
-
-    kube_sites = [x for x in get_sites(skewer_data) if x.platform == "kubernetes"]
-    kubeconfigs = list()
-
-    try:
-        run("minikube -p skewer start")
-
-        make_dir("/tmp/skewer", quiet=True)
-
-        for site in kube_sites:
-            kubeconfig = site.env["KUBECONFIG"].replace("~", "/tmp/skewer")
-            site.env["KUBECONFIG"] = kubeconfig
-
-            kubeconfigs.append(kubeconfig)
-
-            with site:
-                run("minikube -p skewer update-context")
-                check_file(ENV["KUBECONFIG"])
-
-        with open("/tmp/minikube-tunnel-output", "w") as tunnel_output_file:
-            with start("minikube -p skewer tunnel", output=tunnel_output_file):
-                run_steps(skewer_file, kubeconfigs=kubeconfigs, debug=debug)
-    finally:
-        run("minikube -p skewer delete")
-
-def run_steps(skewer_file, kubeconfigs=None, debug=False):
+def run_steps(skewer_file, kubeconfigs=[], work_dir=None, debug=False):
     notice(f"Running steps (skewer_file='{skewer_file}')")
 
     check_environment()
 
-    skewer_data = read_yaml(skewer_file)
+    model = Model(skewer_file, kubeconfigs)
+    model.check()
 
-    if kubeconfigs is not None:
-        apply_kubeconfigs(skewer_data, kubeconfigs)
-
-    apply_standard_steps(skewer_data)
-
-    for site in get_sites(skewer_data):
-        site.check()
-
-    for step in get_steps(skewer_data):
-        step.check()
+    if work_dir is None:
+        work_dir = join(get_user_temp_dir(), "skewer")
+        remove(work_dir, quiet=True)
+        make_dir(work_dir, quiet=True)
 
     try:
-        for step in skewer_data["steps"]:
-            if step.get("id") == "cleaning_up":
+        for step in model.steps:
+            if step.name == "cleaning_up":
                 continue
 
-            run_step(skewer_data, step)
+            run_step(model, step, work_dir)
 
         if "SKEWER_DEMO" in ENV:
-            pause_for_demo(skewer_data)
+            pause_for_demo(model)
     except:
         if debug:
-            print("TROUBLE!")
-            print("-- Start of debug output")
-
-            for site in get_sites(skewer_data):
-                print(f"---- Debug output for site '{site.name}'")
-
-                with site:
-                    if site.platform == "kubernetes":
-                        run("kubectl get services", check=False)
-                        run("kubectl get deployments", check=False)
-                        run("kubectl get statefulsets", check=False)
-                        run("kubectl get pods", check=False)
-                        run("kubectl get events", check=False)
-
-                    run("skupper version", check=False)
-                    run("skupper status", check=False)
-                    run("skupper link status", check=False)
-                    run("skupper service status", check=False)
-                    run("skupper network status", check=False)
-                    run("skupper debug events", check=False)
-
-                    if site.platform == "kubernetes":
-                        run("kubectl logs deployment/skupper-router", check=False)
-                        run("kubectl logs deployment/skupper-service-controller", check=False)
-
-            print("-- End of debug output")
+            print_debug_output(model)
 
         raise
     finally:
-        for step in skewer_data["steps"]:
-            if step.get("id") == "cleaning_up":
-                run_step(skewer_data, step, check=False)
+        for step in model.steps:
+            if step.name == "cleaning_up":
+                run_step(model, step, work_dir, check=False)
                 break
 
-def run_step(skewer_data, step_data, check=True):
-    if "commands" not in step_data:
+def run_step(model, step, work_dir, check=True):
+    if not step.commands:
         return
 
-    if "title" in step_data:
-        notice("Running step '{}'", step_data["title"])
+    notice(f"Running {step}")
 
-    for site_name, commands in step_data["commands"].items():
-        with get_site(skewer_data, site_name) as site:
+    for site_name, commands in step.commands:
+        with dict(model.sites)[site_name] as site:
             if site.platform == "kubernetes":
                 run(f"kubectl config set-context --current --namespace {site.namespace}", stdout=DEVNULL, quiet=True)
 
             for command in commands:
-                if command.get("apply") == "readme":
+                if command.apply == "readme":
                     continue
 
-                if "run" in command:
-                    make_dir("/tmp/skewer", quiet=True)
-                    run(command["run"].replace("~", "/tmp/skewer"), shell=True, check=check)
+                if command.await_resource:
+                    await_resource(command.await_resource)
 
-                if "await_resource" in command:
-                    resource = command["await_resource"]
-                    await_resource(resource)
+                if command.await_external_ip:
+                    await_external_ip(command.await_external_ip)
 
-                if "await_external_ip" in command:
-                    service = command["await_external_ip"]
-                    await_external_ip(service)
+                if command.await_http_ok:
+                    await_http_ok(*command.await_http_ok)
 
-                if "await_http_ok" in command:
-                    service, url_template = command["await_http_ok"]
-                    await_http_ok(service, url_template)
-
-                if "await_console_ok" in command:
+                if command.await_console_ok:
                     await_console_ok()
 
-def pause_for_demo(skewer_data):
+                if command.run:
+                    run(command.run.replace("~", work_dir), shell=True, check=check)
+
+def pause_for_demo(model):
     notice("Pausing for demo time")
 
-    sites = list(get_sites(skewer_data))
+    first_site = list([x for _, x in model.sites])[0]
+    console_url = None
+    password = None
     frontend_url = None
 
-    if sites[0].platform == "kubernetes":
-        with sites[0]:
-            console_ip = await_external_ip("service/skupper")
-            console_url = f"https://{console_ip}:8010/"
-            password_data = call("kubectl get secret skupper-console-users -o jsonpath='{.data.admin}'", quiet=True)
-            password = base64_decode(password_data).decode("ascii")
-
-            if run("kubectl get service/frontend", check=False, output=DEVNULL, quiet=True).exit_code == 0:
-                if call("kubectl get service/frontend -o jsonpath='{.spec.type}'", quiet=True) == "LoadBalancer":
+    if first_site.platform == "kubernetes":
+        with first_site:
+            if resource_exists("service/frontend"):
+                if rsource_jsonpath("service/frontend", ".spec.type") == "LoadBalancer":
                     frontend_ip = await_external_ip("service/frontend")
                     frontend_url = f"http://{frontend_ip}:8080/"
+
+            if resource_exists("secret/skupper-console-users"):
+                console_ip = await_external_ip("service/skupper")
+                console_url = f"https://{console_ip}:8010/"
+
+                await_resource("secret/skupper-console-users")
+                password = get_resource_jsonpath("secret/skupper-console-users", ".data.admin")
+                password = base64_decode(password).decode("ascii")
 
     print()
     print("Demo time!")
     print()
     print("Sites:")
+    print()
 
-    for site in sites:
+    for _, site in model.sites:
         if site.platform == "kubernetes":
             kubeconfig = site.env["KUBECONFIG"]
             print(f"  {site.name}: export KUBECONFIG={kubeconfig}")
+        elif site.platform == "podman":
+            print(f"  {site.name}: export SKUPPER_PLATFORM=podman")
+
+    print()
 
     if frontend_url:
-        print()
         print(f"Frontend URL:     {frontend_url}")
+        print()
 
-    print()
-    print(f"Console URL:      {console_url}")
-    print( "Console user:     admin")
-    print(f"Console password: {password}")
-    print()
+    if console_url:
+        print(f"Console URL:      {console_url}")
+        print( "Console user:     admin")
+        print(f"Console password: {password}")
+        print()
 
     if "SKEWER_DEMO_NO_WAIT" not in ENV:
         while input("Are you done (yes)? ") != "yes": # pragma: nocover
             pass
 
+def print_debug_output(model):
+    print("TROUBLE!")
+    print("-- Start of debug output")
+
+    for _, site in model.sites:
+        print(f"---- Debug output for site '{site.name}'")
+
+        with site:
+            if site.platform == "kubernetes":
+                run("kubectl get services", check=False)
+                run("kubectl get deployments", check=False)
+                run("kubectl get statefulsets", check=False)
+                run("kubectl get pods", check=False)
+                run("kubectl get events", check=False)
+
+            run("skupper version", check=False)
+            run("skupper status", check=False)
+            run("skupper link status", check=False)
+            run("skupper service status", check=False)
+            run("skupper network status", check=False)
+            run("skupper debug events", check=False)
+
+            if site.platform == "kubernetes":
+                run("kubectl logs deployment/skupper-router", check=False)
+                run("kubectl logs deployment/skupper-service-controller", check=False)
+
+    print("-- End of debug output")
+
 def generate_readme(skewer_file, output_file):
     notice(f"Generating the readme (skewer_file='{skewer_file}', output_file='{output_file}')")
 
-    skewer_data = read_yaml(skewer_file)
-
-    for site in get_sites(skewer_data):
-        site.check()
+    model = Model(skewer_file)
+    model.check()
 
     out = list()
 
-    out.append(f"# {skewer_data['title']}")
-    out.append("")
+    def generate_workflow_url(workflow):
+        result = parse_url(workflow)
 
-    if "github_actions_url" in skewer_data:
-        url = skewer_data["github_actions_url"]
-        out.append(f"[![main]({url}/badge.svg)]({url})")
-        out.append("")
+        if result.scheme:
+            return workflow
 
-    if "subtitle" in skewer_data:
-        out.append(f"#### {skewer_data['subtitle']}")
-        out.append("")
+        owner, repo = get_github_owner_repo()
 
-    out.append(example_suite_para)
-    out.append("")
-    out.append("#### Contents")
-    out.append("")
+        return f"https://github.com/{owner}/{repo}/actions/workflows/{workflow}"
 
-    if "overview" in skewer_data:
-        out.append("* [Overview](#overview)")
-
-    out.append("* [Prerequisites](#prerequisites)")
-
-    apply_standard_steps(skewer_data)
-
-    for i, step_data in enumerate(skewer_data["steps"], 1):
-        if step_data.get("numbered", True):
-            title = f"Step {i}: {step_data['title']}"
+    def generate_step_heading(step):
+        if step.numbered:
+            return f"Step {step.number}: {step.title}"
         else:
-            title = step_data['title']
+            return step.title
 
-        fragment = replace(title, r"[ -]", "_")
+    def append_toc_entry(heading, condition=True):
+        if not condition:
+            return
+
+        fragment = replace(heading, r"[ -]", "_")
         fragment = replace(fragment, r"[\W]", "")
         fragment = replace(fragment, "_", "-")
         fragment = fragment.lower()
 
-        out.append(f"* [{title}](#{fragment})")
+        out.append(f"* [{heading}](#{fragment})")
 
-    if "summary" in skewer_data:
-        out.append("* [Summary](#summary)")
+    def append_section(heading, text):
+        if not text:
+            return
 
-    if "next_steps" in skewer_data:
-        out.append("* [Next steps](#next-steps)")
-
-    out.append("* [About this example](#about-this-example)")
-    out.append("")
-
-    if "overview" in skewer_data:
-        out.append("## Overview")
+        out.append(f"## {heading}")
         out.append("")
-        out.append(skewer_data["overview"].strip())
+        out.append(text.strip())
         out.append("")
 
-    prerequisites = standard_prerequisites
-
-    if "prerequisites" in skewer_data:
-        prerequisites = skewer_data["prerequisites"].strip()
-
-    out.append("## Prerequisites")
-    out.append("")
-    out.append(prerequisites)
+    out.append(f"# {model.title}")
     out.append("")
 
-    for i, step_data in enumerate(skewer_data["steps"], 1):
-        notice("Generating step '{}'", step_data["title"])
-
-        if step_data.get("numbered", True):
-            title = f"Step {i}: {step_data['title']}"
-        else:
-            title = step_data["title"]
-
-        out.append(f"## {title}")
-        out.append("")
-        out.append(generate_readme_step(skewer_data, step_data))
+    if model.workflow:
+        url = generate_workflow_url(model.workflow)
+        out.append(f"[![main]({url}/badge.svg)]({url})")
         out.append("")
 
-    if "summary" in skewer_data:
-        out.append("## Summary")
-        out.append("")
-        out.append(skewer_data["summary"].strip())
+    if model.subtitle:
+        out.append(f"#### {model.subtitle}")
         out.append("")
 
-    next_steps = standard_next_steps
-
-    if "next_steps" in skewer_data:
-        next_steps = skewer_data["next_steps"].strip()
-
-    out.append("## Next steps")
+    out.append(standard_text["example_suite"].strip())
     out.append("")
-    out.append(next_steps)
+    out.append("#### Contents")
     out.append("")
 
-    out.append("## About this example")
+    append_toc_entry("Overview", model.overview)
+    append_toc_entry("Prerequisites")
+
+    for step in model.steps:
+        append_toc_entry(generate_step_heading(step))
+
+    append_toc_entry("Summary")
+    append_toc_entry("Next steps")
+    append_toc_entry("About this example")
+
     out.append("")
-    out.append(about_this_example)
-    out.append("")
+
+    append_section("Overview", model.overview)
+    append_section("Prerequisites", model.prerequisites)
+
+    for step in model.steps:
+        heading = generate_step_heading(step)
+        text = generate_readme_step(model, step)
+
+        append_section(heading, text)
+
+    append_section("Summary", model.summary)
+    append_section("Next steps", model.next_steps)
+    append_section("About this example", standard_text["about_this_example"].strip())
 
     write(output_file, "\n".join(out).strip() + "\n")
 
-def generate_readme_step(skewer_data, step_data):
+def generate_readme_step(model, step):
+    notice(f"Generating {step}")
+
     out = list()
 
-    if "preamble" in step_data:
-        out.append(step_data["preamble"].strip())
+    if step.preamble:
+        out.append(step.preamble.strip())
         out.append("")
 
-    if "commands" in step_data:
-        items = step_data["commands"].items()
+    for site_name, commands in step.commands:
+        site = dict(model.sites)[site_name]
+        outputs = list()
 
-        for i, item in enumerate(items):
-            site_name, commands = item
-            namespace = skewer_data["sites"][site_name].get("namespace")
-            title = skewer_data["sites"][site_name].get("title", namespace)
+        out.append(f"_**Console for {site.title}:**_")
+        out.append("")
+        out.append("~~~ shell")
 
-            if title is None:
-                fail(f"Site '{site_name}' has no namespace or title")
+        for command in commands:
+            if command.apply == "test":
+                continue
 
-            outputs = list()
+            if command.run:
+                out.append(command.run)
 
-            out.append(f"_**Console for {title}:**_")
+            if command.output:
+                assert command.run
+
+                outputs.append((command.run, command.output))
+
+        out.append("~~~")
+        out.append("")
+
+        if outputs:
+            out.append("_Sample output:_")
             out.append("")
-            out.append("~~~ shell")
-
-            for command in commands:
-                if command.get("apply") == "test":
-                    continue
-
-                if "run" in command:
-                    out.append(command["run"])
-
-                if "output" in command:
-                    assert "run" in command, command
-
-                    outputs.append((command["run"], command["output"]))
-
+            out.append("~~~ console")
+            out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
             out.append("~~~")
             out.append("")
 
-            if outputs:
-                out.append("_Sample output:_")
-                out.append("")
-                out.append("~~~ console")
-                out.append("\n\n".join((f"$ {run}\n{output.strip()}" for run, output in outputs)))
-                out.append("~~~")
-                out.append("")
-
-    if "postamble" in step_data:
-        out.append(step_data["postamble"].strip())
+    if step.postamble:
+        out.append(step.postamble.strip())
 
     return "\n".join(out).strip()
 
-def apply_kubeconfigs(skewer_data, kubeconfigs):
-    notice("Applying kubeconfigs")
+def apply_kubeconfigs(model, kubeconfigs):
+    kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
 
-    kube_sites = [x for x in get_sites(skewer_data) if x.platform == "kubernetes"]
-
-    if len(kube_sites) != len(kubeconfigs):
+    if kubeconfigs and len(kubeconfigs) < len(kube_sites):
         fail("The provided kubeconfigs are fewer than the number of Kubernetes sites")
 
     for site, kubeconfig in zip(kube_sites, kubeconfigs):
         site.env["KUBECONFIG"] = kubeconfig
 
-def apply_standard_steps(skewer_data):
+def apply_standard_steps(model):
     notice("Applying standard steps")
 
-    for step_data in skewer_data["steps"]:
-        if "standard" not in step_data:
+    for step in model.steps:
+        if "standard" not in step.data:
             continue
 
-        standard_step_data = standard_steps[step_data["standard"]]
+        standard_step_name = step.data["standard"]
 
-        if "id" not in step_data:
-            step_data["id"] = standard_step_data.get("id")
+        try:
+            standard_step_data = standard_steps[standard_step_name]
+        except KeyError:
+            fail(f"Standard step '{standard_step_name}' not found")
 
-        if "title" not in step_data:
-            step_data["title"] = standard_step_data["title"]
+        del step.data["standard"]
 
-        if "numbered" not in step_data:
-            step_data["numbered"] = standard_step_data.get("numbered", True)
+        def apply_attribute(name, default=None):
+            if name not in step.data:
+                step.data[name] = standard_step_data.get(name, default)
 
-        if "preamble" not in step_data:
-            if "preamble" in standard_step_data:
-                step_data["preamble"] = standard_step_data["preamble"]
+        apply_attribute("name")
+        apply_attribute("title")
+        apply_attribute("numbered", True)
+        apply_attribute("preamble")
+        apply_attribute("postamble")
 
-        if "postamble" not in step_data:
-            if "postamble" in standard_step_data:
-                step_data["postamble"] = standard_step_data["postamble"]
+        if "commands" not in step.data and "commands" in standard_step_data:
+            step.data["commands"] = dict()
 
-        if "commands" not in step_data:
-            if "commands" in standard_step_data:
-                step_data["commands"] = dict()
+            for i, item in enumerate(dict(model.sites).items()):
+                site_name, site = item
 
-                for i, site_item in enumerate(skewer_data["sites"].items()):
-                    site_name, site = site_item
+                if str(i) in standard_step_data["commands"]:
+                    # Is a specific index in the standard commands?
+                    commands = standard_step_data["commands"][str(i)]
+                    step.data["commands"][site_name] = resolve_command_variables(commands, site)
+                elif "*" in standard_step_data["commands"]:
+                    # Is "*" in the standard commands?
+                    commands = standard_step_data["commands"]["*"]
+                    step.data["commands"][site_name] = resolve_command_variables(commands, site)
+                else:
+                    # Otherwise, omit commands for this site
+                    continue
 
-                    if str(i) in standard_step_data["commands"]:
-                        # Is a specific index in the standard commands?
-                        commands = standard_step_data["commands"][str(i)]
-                        step_data["commands"][site_name] = resolve_commands(commands, site)
-                    elif "*" in standard_step_data["commands"]:
-                        # Is "*" in the standard commands?
-                        commands = standard_step_data["commands"]["*"]
-                        step_data["commands"][site_name] = resolve_commands(commands, site)
-                    else:
-                        # Otherwise, omit commands for this site
-                        continue
-
-def resolve_commands(commands, site):
+def resolve_command_variables(commands, site):
     resolved_commands = list()
 
     for command in commands:
@@ -541,38 +451,111 @@ def resolve_commands(commands, site):
         if "run" in command:
             resolved_command["run"] = command["run"]
 
-            if site["platform"] == "kubernetes":
-                resolved_command["run"] = resolved_command["run"].replace("@kubeconfig@", site["env"]["KUBECONFIG"])
-                resolved_command["run"] = resolved_command["run"].replace("@namespace@", site["namespace"])
+            if site.platform == "kubernetes":
+                resolved_command["run"] = resolved_command["run"].replace("@kubeconfig@", site.env["KUBECONFIG"])
+                resolved_command["run"] = resolved_command["run"].replace("@namespace@", site.namespace)
 
         if "output" in command:
             resolved_command["output"] = command["output"]
 
-            if site["platform"] == "kubernetes":
-                resolved_command["output"] = resolved_command["output"].replace("@kubeconfig@", site["env"]["KUBECONFIG"])
-                resolved_command["output"] = resolved_command["output"].replace("@namespace@", site["namespace"])
+            if site.platform == "kubernetes":
+                resolved_command["output"] = resolved_command["output"].replace("@kubeconfig@", site.env["KUBECONFIG"])
+                resolved_command["output"] = resolved_command["output"].replace("@namespace@", site.namespace)
 
         resolved_commands.append(resolved_command)
 
     return resolved_commands
 
-def get_sites(skewer_data):
-    for site_name, site_data in skewer_data["sites"].items():
-        yield Site(site_name, site_data)
+def get_github_owner_repo():
+    check_program("git")
 
-def get_site(skewer_data, name):
-    data = skewer_data["sites"][name]
-    return Site(name, data)
+    url = call("git remote get-url origin", quiet=True)
+    result = parse_url(url)
+
+    if result.scheme == "" and result.path.startswith("git@github.com:"):
+        path = remove_prefix(result.path, "git@github.com:")
+        path = remove_suffix(path, ".git")
+
+        return path.split("/", 1)
+
+    if result.scheme in ("http", "https") and result.netloc == "github.com":
+        path = remove_prefix(result.path, "/")
+
+        return path.split("/", 1)
+
+    fail("Unknown origin URL format")
+
+def object_property(name, default=None):
+    def get(obj):
+        return obj.data.get(name, default)
+
+    return property(get)
+
+def check_required_attributes(obj, *names):
+    for name in names:
+        if name not in obj.data:
+            fail(f"{obj} is missing required attribute '{name}'")
+
+def check_unknown_attributes(obj):
+    known_attributes = dict(inspect.getmembers(obj.__class__, lambda x: isinstance(x, property)))
+
+    for name in obj.data:
+        if name not in known_attributes:
+            fail(f"{obj} has unknown attribute '{name}'")
+
+class Model:
+    title = object_property("title")
+    subtitle = object_property("subtitle")
+    workflow = object_property("workflow", "main.yaml")
+    overview = object_property("overview")
+    prerequisites = object_property("prerequisites", standard_text["prerequisites"].strip())
+    summary = object_property("summary")
+    next_steps = object_property("next_steps", standard_text["next_steps"].strip())
+
+    def __init__(self, skewer_file, kubeconfigs=[]):
+        self.skewer_file = skewer_file
+        self.data = read_yaml(self.skewer_file)
+
+        apply_kubeconfigs(self, kubeconfigs)
+        apply_standard_steps(self)
+
+    def __repr__(self):
+        return f"model '{self.skewer_file}'"
+
+    def check(self):
+        check_required_attributes(self, "title", "subtitle", "sites", "steps")
+        check_unknown_attributes(self)
+
+        for _, site in self.sites:
+            site.check()
+
+        for step in self.steps:
+            step.check()
+
+    @property
+    def sites(self):
+        for name, data in self.data["sites"].items():
+            yield name, Site(self, data, name)
+
+    @property
+    def steps(self):
+        for data in self.data["steps"]:
+            yield Step(self, data)
 
 class Site:
-    def __init__(self, name, data):
+    platform = object_property("platform")
+    namespace = object_property("namespace")
+    env = object_property("env", dict())
+
+    def __init__(self, model, data, name):
         assert name is not None
 
+        self.model = model
+        self.data = data
         self.name = name
-        self.title = data.get("title", capitalize(self.name))
-        self.platform = data.get("platform")
-        self.namespace = data.get("namespace")
-        self.env = data.get("env")
+
+    def __repr__(self):
+        return f"site '{self.name}'"
 
     def __enter__(self):
         self._logging_context = logging_context(self.name)
@@ -588,15 +571,14 @@ class Site:
         self._logging_context.__exit__(exc_type, exc_value, traceback)
 
     def check(self):
-        if self.platform is None:
-            fail(f"{self} has no 'platform' attribute")
+        check_required_attributes(self, "platform")
+        check_unknown_attributes(self)
 
         if self.platform not in ("kubernetes", "podman"):
             fail(f"{self} attribute 'platform' has an illegal value: {self.platform}")
 
         if self.platform == "kubernetes":
-            if self.namespace is None:
-                fail(f"Kubernetes {self} has no 'namespace' attribute")
+            check_required_attributes(self, "namespace")
 
             if "KUBECONFIG" not in self.env:
                 fail(f"Kubernetes {self} has no KUBECONFIG environment variable")
@@ -610,19 +592,114 @@ class Site:
             if platform != "podman":
                 fail(f"Podman {self} environment variable SKUPPER_PLATFORM has an illegal value: {platform}")
 
-    def __repr__(self):
-        return f"site '{self.name}'"
-
-def get_steps(skewer_data):
-    for step_data in skewer_data["steps"]:
-        yield Step(step_data)
+    @property
+    def title(self):
+        return self.data.get("title", capitalize(self.name))
 
 class Step:
-    def __init__(self, data):
-        self.title = data["title"]
-        self.preamble = data.get("preamble")
-        self.commands = data.get("commands")
-        self.postamble = data.get("postamble")
+    numbered = object_property("numbered", True)
+    name = object_property("name")
+    title = object_property("title")
+    preamble = object_property("preamble")
+    postamble = object_property("postamble")
+
+    def __init__(self, model, data):
+        self.model = model
+        self.data = data
+
+    def __repr__(self):
+        return f"step {self.number} '{self.title}'"
 
     def check(self):
-        pass
+        check_required_attributes(self, "title")
+        check_unknown_attributes(self)
+
+        site_names = [x.name for _, x in self.model.sites]
+
+        for site_name, commands in self.commands:
+            if site_name not in site_names:
+                fail(f"Unknown site name '{site_name}' in commands for {self}")
+
+            for command in commands:
+                command.check()
+
+    @property
+    def number(self):
+        return self.model.data["steps"].index(self.data) + 1
+
+    @property
+    def commands(self):
+        for site_name, commands in self.data.get("commands", dict()).items():
+            yield site_name, [Command(self.model, data) for data in commands]
+
+class Command:
+    run = object_property("run")
+    apply = object_property("apply")
+    output = object_property("output")
+    await_resource = object_property("await_resource")
+    await_external_ip = object_property("await_external_ip")
+    await_http_ok = object_property("await_http_ok")
+    await_console_ok = object_property("await_console_ok")
+
+    def __init__(self, model, data):
+        self.model = model
+        self.data = data
+
+    def __repr__(self):
+        if self.run:
+            return f"command '{self.run.splitlines()[0]}'"
+
+        return "command"
+
+    def check(self):
+        check_unknown_attributes(self)
+
+class Minikube:
+    def __init__(self, skewer_file):
+        self.skewer_file = skewer_file
+        self.kubeconfigs = list()
+        self.work_dir = join(get_user_temp_dir(), "skewer")
+
+    def __enter__(self):
+        notice("Starting Minikube")
+
+        check_environment()
+        check_program("minikube")
+
+        profile_data = parse_json(call("minikube profile list --output json", quiet=True))
+
+        for profile in profile_data.get("valid", []):
+            if profile["Name"] == "skewer":
+                fail("A Minikube profile 'skewer' already exists.  Delete it using 'minikube delete -p skewer'.")
+
+        remove(self.work_dir, quiet=True)
+        make_dir(self.work_dir, quiet=True)
+
+        run("minikube start -p skewer --auto-update-drivers false")
+
+        tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
+        self.tunnel = start("minikube tunnel -p skewer", output=tunnel_output_file)
+
+        model = Model(self.skewer_file)
+        model.check()
+
+        kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
+
+        for site in kube_sites:
+            kubeconfig = site.env["KUBECONFIG"].replace("~", self.work_dir)
+            site.env["KUBECONFIG"] = kubeconfig
+
+            self.kubeconfigs.append(kubeconfig)
+
+            with site:
+                run("minikube update-context -p skewer")
+                check_file(ENV["KUBECONFIG"])
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        notice("Stopping Minikube")
+
+        stop(self.tunnel)
+
+        run("minikube delete -p skewer")
