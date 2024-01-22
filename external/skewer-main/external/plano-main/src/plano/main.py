@@ -1478,11 +1478,11 @@ def make_temp_dir(prefix="plano-", suffix="", dir=None):
     return _tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=dir)
 
 class temp_file:
-    def __init__(self, suffix="", dir=None):
+    def __init__(self, prefix="plano-", suffix="", dir=None):
         if dir is None:
             dir = get_system_temp_dir()
 
-        self.fd, self.file = _tempfile.mkstemp(prefix="plano-", suffix=suffix, dir=dir)
+        self.fd, self.file = _tempfile.mkstemp(prefix=prefix, suffix=suffix, dir=dir)
 
     def __enter__(self):
         return self.file
@@ -1494,8 +1494,8 @@ class temp_file:
             remove(self.file, quiet=True)
 
 class temp_dir:
-    def __init__(self, suffix="", dir=None):
-        self.dir = make_temp_dir(suffix=suffix, dir=dir)
+    def __init__(self, prefix="plano-", suffix="", dir=None):
+        self.dir = make_temp_dir(prefix=prefix, suffix=suffix, dir=dir)
 
     def __enter__(self):
         return self.dir

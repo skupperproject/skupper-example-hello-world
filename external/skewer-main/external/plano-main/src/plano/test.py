@@ -23,8 +23,10 @@ from .command import *
 import argparse as _argparse
 import asyncio as _asyncio
 import fnmatch as _fnmatch
+import functools as _functools
 import importlib as _importlib
 import inspect as _inspect
+import sys as _sys
 import traceback as _traceback
 
 class PlanoTestCommand(BaseCommand):
@@ -103,15 +105,20 @@ class PlanoTestCommand(BaseCommand):
 class PlanoTestSkipped(Exception):
     pass
 
-def test(_function=None, name=None, timeout=None, disabled=False):
+def test(_function=None, name=None, module=None, timeout=None, disabled=False):
     class Test:
         def __init__(self, function):
             self.function = function
-            self.name = nvl(name, self.function.__name__.rstrip("_").replace("_", "-"))
+            self.name = name
+            self.module = module
             self.timeout = timeout
             self.disabled = disabled
 
-            self.module = _inspect.getmodule(self.function)
+            if self.name is None:
+                self.name = self.function.__name__.strip("_").replace("_", "-")
+
+            if self.module is None:
+                self.module = _inspect.getmodule(self.function)
 
             if not hasattr(self.module, "_plano_tests"):
                 self.module._plano_tests = list()
@@ -135,6 +142,9 @@ def test(_function=None, name=None, timeout=None, disabled=False):
         return Test
     else:
         return Test(_function)
+
+def add_test(name, func, *args, **kwargs):
+    test(_functools.partial(func, *args, **kwargs), name=name, module=_inspect.getmodule(func))
 
 def skip_test(reason=None):
     if _inspect.stack()[2].frame.f_locals["unskipped"]:

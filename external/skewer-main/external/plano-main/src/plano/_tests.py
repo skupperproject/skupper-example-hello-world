@@ -231,6 +231,8 @@ def env_operations():
         with open(out, "w") as f:
             print_env(file=f)
 
+    print_stack()
+
 @test
 def file_operations():
     with working_dir():
@@ -313,6 +315,11 @@ def file_operations():
 def http_operations():
     class Handler(_http.BaseHTTPRequestHandler):
         def do_GET(self):
+            if not self.path.startswith("/api"):
+                self.send_response(404)
+                self.end_headers()
+                return
+
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"[1]")
@@ -341,7 +348,8 @@ def http_operations():
             self.server.serve_forever()
 
     host, port = "localhost", get_random_port()
-    url = "http://{}:{}".format(host, port)
+    url = "http://{}:{}/api".format(host, port)
+    missing_url = "http://{}:{}/nono".format(host, port)
 
     try:
         server = _http.HTTPServer((host, port), Handler)
@@ -357,6 +365,9 @@ def http_operations():
         with working_dir():
             result = http_get(url)
             assert result == "[1]", result
+
+            with expect_error():
+                http_get(missing_url)
 
             result = http_get(url, insecure=True)
             assert result == "[1]", result
@@ -525,6 +536,9 @@ def logging_operations():
 
     with expect_error():
         fail("Error!")
+
+    with expect_error():
+        fail("Error! {}", "Let me elaborate")
 
     for level in ("debug", "notice", "warning", "error"):
         with expect_output(contains="Hello") as out:
@@ -970,6 +984,7 @@ def test_operations():
                 PlanoTestCommand(chucker.tests).main(args)
 
             run_command("--verbose")
+            run_command("--quiet")
             run_command("--list")
 
             with expect_system_exit():
@@ -1185,7 +1200,6 @@ def plano_command():
     with test_project():
         run_command()
         run_command("--help")
-        run_command("--quiet")
 
         with expect_system_exit():
             run_command("no-such-command")
@@ -1197,6 +1211,8 @@ def plano_command():
             run_command("--help", "no-such-command")
 
         run_command("extended-command", "a", "b", "--omega", "z")
+        run_command("extended-command", "a", "b", "--omega", "z", "--verbose")
+        run_command("extended-command", "a", "b", "--omega", "z", "--quiet")
 
         with expect_system_exit():
             run_command("echo")

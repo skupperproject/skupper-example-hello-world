@@ -12,7 +12,7 @@ To install plano globally for the current user:
 make install
 ~~~
 
-## Example 1
+## A self-contained command with subcommands
 
 `~/.local/bin/widget`:
 ~~~ python
@@ -37,7 +37,7 @@ Hello
 OK (0s)
 ~~~
 
-## Example 2
+## A self-contained test command
 
 `~/.local/bin/widget-test`:
 ~~~ python
@@ -46,7 +46,7 @@ from plano import *
 
 @test
 def check():
-    run("widget --message Yo")
+    run("widget greeting --message Yo")
 
 if __name__ == "__main__":
     PlanoTestCommand(sys.modules[__name__]).main()
@@ -69,6 +69,18 @@ Failed:    0
 
 === RESULT ===
 All tests passed
+~~~
+
+## Programmatic test definition
+
+~~~ python
+from plano import *
+
+def test_widget(message):
+    run(f"widget greeting --message {message}")
+
+for message in "hi", "lo", "in between":
+    add_test(f"message-{message}", test_widget, message)
 ~~~
 
 ## Things to know

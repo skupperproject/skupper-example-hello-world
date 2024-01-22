@@ -33,7 +33,7 @@ class BaseCommand:
     def configure_logging(self, args):
         return "warning", None
 
-    def init(self, args):
+    def init(self, args): # pragma: nocover
         raise NotImplementedError()
 
     def run(self): # pragma: nocover
@@ -56,7 +56,7 @@ class BaseCommand:
             except KeyboardInterrupt:
                 pass
             except PlanoError as e:
-                if PLANO_DEBUG:
+                if PLANO_DEBUG: # pragma: nocover
                     error(e)
                 else:
                     error(str(e))
@@ -80,6 +80,8 @@ class PlanoCommand(BaseCommand):
         self.bound_commands = dict()
         self.running_commands = list()
         self.passthrough_args = None
+        self.verbose = False
+        self.quiet = False
 
         assert self.module is None or _inspect.ismodule(self.module), self.module
 
@@ -135,7 +137,7 @@ class PlanoCommand(BaseCommand):
         return args
 
     def configure_logging(self, args):
-        if args.command is not None:
+        if args.command is not None and not self.bound_commands[args.command].passthrough:
             if args.verbose:
                 return "debug", None
 
@@ -152,9 +154,6 @@ class PlanoCommand(BaseCommand):
         self.command_kwargs = dict()
 
         if args.command is not None:
-            self.verbose = args.verbose
-            self.quiet = args.quiet
-
             for command in self.preceding_commands:
                 command()
 
@@ -253,10 +252,12 @@ class PlanoCommand(BaseCommand):
 
             subparser = subparsers.add_parser(command.name, help=help, add_help=add_help, description=description,
                                               formatter_class=_argparse.RawDescriptionHelpFormatter)
-            subparser.add_argument("--verbose", action="store_true",
-                                   help="Print detailed logging to the console")
-            subparser.add_argument("--quiet", action="store_true",
-                                   help="Print no logging to the console")
+
+            if not command.passthrough:
+                subparser.add_argument("--verbose", action="store_true",
+                                       help="Print detailed logging to the console")
+                subparser.add_argument("--quiet", action="store_true",
+                                       help="Print no logging to the console")
 
             for param in command.parameters.values():
                 if param.name in ("verbose", "quiet"):
@@ -302,6 +303,7 @@ _command_help = {
     "dist":     "Generate distribution artifacts",
     "install":  "Install the built artifacts on your system",
     "test":     "Run the tests",
+    "coverage": "Run the tests and measure code coverage",
 }
 
 def command(_function=None, name=None, parameters=None, parent=None, passthrough=False, hidden=False):
