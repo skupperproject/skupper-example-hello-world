@@ -260,7 +260,7 @@ class PlanoCommand(BaseCommand):
                                        help="Print no logging to the console")
 
             for param in command.parameters.values():
-                if param.name in ("verbose", "quiet"):
+                if not command.passthrough and param.name in ("verbose", "quiet"):
                     continue
 
                 if param.positional:
@@ -322,11 +322,13 @@ def command(_function=None, name=None, parameters=None, parent=None, passthrough
 
                 self.name = nvl(self.name, default)
                 self.parameters = self._process_parameters(parameters)
+                self.passthrough = passthrough
             else:
                 assert parameters is None
 
                 self.name = nvl(self.name, self.parent.name)
                 self.parameters = self.parent.parameters
+                self.passthrough = self.parent.passthrough
 
             doc = _inspect.getdoc(self.function)
 
@@ -341,7 +343,6 @@ def command(_function=None, name=None, parameters=None, parent=None, passthrough
                 self.help = nvl(self.help, self.parent.help)
                 self.description = nvl(self.description, self.parent.description)
 
-            self.passthrough = passthrough
             self.hidden = hidden
 
             debug("Defining {}", self)

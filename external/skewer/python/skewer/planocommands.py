@@ -18,39 +18,8 @@
 #
 
 from plano import *
+from plano.github import *
 from skewer import *
-
-_render_template = """
-<html>
-  <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css"
-          integrity="sha512-h/laqMqQKUXxFuu6aLAaSrXYwGYQ7qk4aYCQ+KJwHZMzAGaEoxMM6h8C+haeJTU1V6E9jrSUnjpEzX23OmV/Aw=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
-    <style>
-        .markdown-body {
-            box-sizing: border-box;
-            min-width: 200px;
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 45px;
-        }
-
-        @media (max-width: 767px) {
-           .markdown-body {
-               padding: 15px;
-           }
-        }
-    </style>
-  </head>
-  <body>
-    <article class="markdown-body">
-
-@content@
-
-    </article>
-  </body>
-</html>
-""".strip()
 
 _debug_param = CommandParameter("debug", help="Produce extra debug output on failure")
 
@@ -69,10 +38,7 @@ def render(quiet=False):
     generate()
 
     markdown = read("README.md")
-    data = {"text": markdown}
-    json = emit_json(data)
-    content = http_post("https://api.github.com/markdown", json, content_type="application/json")
-    html = _render_template.replace("@content@", content)
+    html = convert_github_markdown(markdown)
 
     write("README.html", html)
 
@@ -121,9 +87,5 @@ def update_skewer():
 
     This results in local changes to review and commit.
     """
-    check_program("curl")
-
-    make_dir("external")
-    remove("external/skewer-main")
-    run("curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz", shell=True)
-    copy("external/skewer-main/config/.github/workflows/main.yaml", ".github/workflows/main.yaml")
+    update_external_from_github("external/skewer", "skupperproject", "skewer")
+    copy("external/skewer/config/.github/workflows/main.yaml", ".github/workflows/main.yaml")

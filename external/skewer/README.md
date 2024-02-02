@@ -25,28 +25,31 @@ Change directory to the root of your example project:
 
     cd <project-dir>/
 
-Add the Skewer code as a subdirectory in your example project:
+Add the Skewer code as a subdirectory:
 
     mkdir -p external
     curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
+    mv external/skewer-main external/skewer
 
 Symlink the Skewer and Plano libraries into your `python` directory:
 
     mkdir -p python
-    ln -s ../external/skewer-main/python/skewer python/skewer
-    ln -s ../external/skewer-main/python/plano python/plano
+    ln -s ../external/skewer/python/skewer python/skewer
+    ln -s ../external/skewer/python/plano python/plano
 
 Copy the `plano` command into the root of your project:
 
-    cp external/skewer-main/plano plano
+    cp external/skewer/plano plano
 
-Copy the standard config files and workflow file into your project:
+Copy the standard config files:
 
-    cp external/skewer-main/config/.plano.py .plano.py
-    cp external/skewer-main/config/.gitignore .gitignore
+    cp external/skewer/config/.plano.py .plano.py
+    cp external/skewer/config/.gitignore .gitignore
+
+Copy the standard workflow file:
 
     mkdir -p .github/workflows
-    cp external/skewer-main/config/.github/workflows/main.yaml .github/workflows/main.yaml
+    cp external/skewer/config/.github/workflows/main.yaml .github/workflows/main.yaml
 
 Use your editor to create a `skewer.yaml` file in the root of your
 project:
@@ -90,7 +93,7 @@ The top level:
 
 ~~~ yaml
 title:              # Your example's title (required)
-subtitle:           # Your chosen subtitle (required)
+subtitle:           # Your chosen subtitle (optional)
 workflow:           # The filename of your GitHub workflow (optional, default 'main.yaml')
 overview:           # Text introducing your example (optional)
 prerequisites:      # Text describing prerequisites (optional, has default text)
@@ -99,6 +102,8 @@ steps:              # A list of steps (see below)
 summary:            # Text to summarize what the user did (optional)
 next_steps:         # Text linking to more examples (optional, has default text)
 ~~~
+
+To disable the GitHub workflow, set it to `null`.
 
 A **site**:
 
@@ -186,37 +191,42 @@ to `standard`:
      - run: skupper delete
 ~~~
 
-The initial steps are usually standard ones.  There are also some
-standard steps at the end.  You may be able to use something like
-this:
+A typical mix of standard and custom steps might look like this:
 
 ~~~ yaml
 steps:
-  - standard: configure_separate_console_sessions
-  - standard: access_your_clusters
-  - standard: set_up_your_namespaces
-  - standard: install_skupper_in_your_namespaces
-  - standard: check_the_status_of_your_namespaces
-  - standard: link_your_namespaces
-  <your-custom-steps>
-  - standard: accessing_the_web_console
+  - standard: install_the_skupper_command_line_tool
+  - standard: kubernetes/set_up_your_namespaces
+  <your-custom-deploy-step>
+  - standard: kubernetes/create_your_sites
+  - standard: link_your_sites
+  <your-custom-expose-step>
+  <your-custom-access-step>
   - standard: cleaning_up
 ~~~
 
-Note that the `link_your_namespaces` step is less generic than the
-other steps (it assumes only two sites), so check that the text and
-commands it produces are doing what you need.  If not, you'll need to
-provide a custom step.
+**Note:** The `link_your_sites`, `access_the_application`, and
+`cleaning_up` steps are less generic than the other steps.
+`link_your_sites` assumes just two sites.  `access_the_application`
+assumes you have a `frontend` service.  `cleaning_up` doesn't delete
+any application workoads.  Check that the text and commands these
+steps produce are doing what you need for your example.  If not, you
+need to provide a custom step.
 
-There are also some standard steps for examples based on the Skupper
+There are some standard steps for examples based on the Skupper
 Hello World application:
 
 ~~~ yaml
-steps:
-  - standard: hello_world/deploy_the_application
-  - standard: hello_world/expose_the_backend_service
-  - standard: hello_world/test_the_application
-  - standard: hello_world/cleaning_up
+- standard: hello_world/deploy_the_frontend_and_backend
+- standard: hello_world/expose_the_backend
+- standard: hello_world/access_the_frontend
+- standard: hello_world/cleaning_up
+~~~
+
+And finally there are some special cases:
+~~~ yaml
+- standard: kubernetes/set_up_your_kubernetes_namespace
+- standard: podman/set_up_your_podman_network
 ~~~
 
 The step commands are separated into named groups corresponding to the

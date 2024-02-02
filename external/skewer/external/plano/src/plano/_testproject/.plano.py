@@ -35,7 +35,7 @@ def extended_command(alpha, beta, omega="y"):
 @command(parameters=[CommandParameter("message_", help="The message to print", display_name="message"),
                      CommandParameter("count", help="Print the message COUNT times"),
                      CommandParameter("extra", default=1, short_option="e")])
-def echo(message_, count=1, extra=None, trouble=False):
+def echo(message_, count=1, extra=None, trouble=False, verbose=False):
     """
     Print a message to the console
     """

@@ -20,6 +20,7 @@
 import skewer.tests
 
 from plano import *
+from plano.github import *
 from skewer import *
 
 @command(passthrough=True)
@@ -44,9 +45,10 @@ def render(verbose=False, quiet=False):
     """
     Render README.html from README.md
     """
-    check_program("pandoc")
+    markdown = read("README.md")
+    html = convert_github_markdown(markdown)
 
-    run(f"pandoc -o README.html README.md")
+    write("README.html", html)
 
     if not quiet:
         print(f"file:{get_real_path('README.html')}")
@@ -63,8 +65,4 @@ def update_plano():
     """
     Update the embedded Plano repo
     """
-    check_program("curl")
-
-    make_dir("external")
-    remove("external/plano-main")
-    run("curl -sfL https://github.com/ssorj/plano/archive/main.tar.gz | tar -C external -xz", shell=True)
+    update_external_from_github("external/plano", "ssorj", "plano")

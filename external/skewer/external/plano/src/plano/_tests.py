@@ -25,6 +25,8 @@ import socket as _socket
 import sys as _sys
 import threading as _threading
 
+from .github import *
+
 try:
     import http.server as _http
 except ImportError: # pragma: nocover
@@ -52,15 +54,15 @@ def archive_operations():
         assert is_file("some-dir.tar.gz"), list_dir()
 
         extract_archive("some-dir.tar.gz", output_dir="some-subdir")
-        assert is_dir("some-subdir/some-dir")
-        assert is_file("some-subdir/some-dir/some-file")
+        assert is_dir("some-subdir/some-dir"), list_dir("some-subdir")
+        assert is_file("some-subdir/some-dir/some-file"), list_dir("some-subdir/some-dir")
 
         rename_archive("some-dir.tar.gz", "something-else")
-        assert is_file("something-else.tar.gz")
+        assert is_file("something-else.tar.gz"), list_dir()
 
         extract_archive("something-else.tar.gz")
-        assert is_dir("something-else")
-        assert is_file("something-else/some-file")
+        assert is_dir("something-else"), list_dir()
+        assert is_file("something-else/some-file"), list_dir("something-else")
 
 @test
 def command_operations():
@@ -94,6 +96,7 @@ def command_operations():
                 print("Hello")
 
     SomeCommand().main([])
+    SomeCommand().main(["--verbose"])
     SomeCommand().main(["--interrupt"])
 
     with expect_system_exit():
@@ -310,6 +313,15 @@ def file_operations():
         file = write("xes", "x" * 10)
         result = get_file_size(file)
         assert result == 10, result
+
+@test
+def github_operations():
+    result = convert_github_markdown("# Hello, Fritz")
+    assert "Hello, Fritz" in result, result
+
+    with working_dir():
+        update_external_from_github("temp", "ssorj", "plano")
+        assert is_file("temp/Makefile"), list_dir("temp")
 
 @test
 def http_operations():
@@ -944,6 +956,7 @@ def test_operations():
         with working_module_path("src"):
             import chucker
             import chucker.tests
+            import chucker.moretests
 
             print_tests(chucker.tests)
 
@@ -964,6 +977,9 @@ def test_operations():
 
                 with expect_error():
                     run_tests(chucker.tests, enable="*badbye*", fail_fast=True, verbose=verbose)
+
+                with expect_error():
+                    run_tests([chucker.tests, chucker.moretests], enable="*badbye2*", fail_fast=True, verbose=verbose)
 
                 with expect_exception(KeyboardInterrupt):
                     run_tests(chucker.tests, enable="keyboard-interrupt", verbose=verbose)
@@ -1288,6 +1304,8 @@ def plano_command():
         run_command("invisible")
         result = read_json("invisible.json")
         assert result == "nothing"
+
+
 
 def main():
     PlanoTestCommand(_sys.modules[__name__]).main()

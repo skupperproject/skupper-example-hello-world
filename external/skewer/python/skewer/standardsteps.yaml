@@ -1,0 +1,292 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+install_the_skupper_command_line_tool:
+  title: Install the Skupper command-line tool
+  preamble: |
+    This example uses the Skupper command-line tool to deploy Skupper.
+    You need to install the `skupper` command only once for each
+    development environment.
+
+    On Linux or Mac, you can use the install script (inspect it
+    [here][install-script]) to download and extract the command:
+
+    ~~~ shell
+    curl https://skupper.io/install.sh | sh
+    ~~~
+
+    The script installs the command under your home directory.  It
+    prompts you to add the command to your path if necessary.
+
+    For Windows and other installation options, see [Installing
+    Skupper][install-docs].
+
+    [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
+    [install-docs]: https://skupper.io/install/
+kubernetes/set_up_your_namespaces:
+  title: Set up your namespaces
+  platform: kubernetes
+  preamble: |
+    Skupper is designed for use with multiple Kubernetes namespaces,
+    usually on different clusters.  The `skupper` and `kubectl`
+    commands use your [kubeconfig][kubeconfig] and current context to
+    select the namespace where they operate.
+
+    [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+
+    Your kubeconfig is stored in a file in your home directory.  The
+    `skupper` and `kubectl` commands use the `KUBECONFIG` environment
+    variable to locate it.
+
+    A single kubeconfig supports only one active context per user.
+    Since you will be using multiple contexts at once in this
+    exercise, you need to create distinct kubeconfigs.
+
+    For each namespace, open a new terminal window.  In each terminal,
+    set the `KUBECONFIG` environment variable to a different path and
+    log in to your cluster.  Then create the namespace you wish to use
+    and set the namespace on your current context.
+
+    **Note:** The login procedure varies by provider.  See the
+    documentation for yours:
+
+    * [Minikube](https://skupper.io/start/minikube.html#cluster-access)
+    * [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html#cluster-access)
+    * [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html#cluster-access)
+    * [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#cluster-access)
+    * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#cluster-access)
+    * [OpenShift](https://skupper.io/start/openshift.html#cluster-access)
+  commands:
+    "*":
+      - run: export KUBECONFIG=@kubeconfig@
+      - run: "# Enter your provider-specific login command"
+      - run: kubectl create namespace @namespace@
+      - run: kubectl config set-context --current --namespace @namespace@
+kubernetes/set_up_your_kubernetes_namespace:
+  title: Set up your Kubernetes namespace
+  platform: kubernetes
+  preamble: |
+    Open a new terminal window and log in to your cluster.  Then
+    create the namespace you wish to use and set the namespace on your
+    current context.
+
+    **Note:** The login procedure varies by provider.  See the
+    documentation for your chosen providers:
+
+    * [Minikube](https://skupper.io/start/minikube.html#cluster-access)
+    * [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html#cluster-access)
+    * [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html#cluster-access)
+    * [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#cluster-access)
+    * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#cluster-access)
+    * [OpenShift](https://skupper.io/start/openshift.html#cluster-access)
+  commands:
+    "*":
+      - run: "# Enter your provider-specific login command"
+      - run: kubectl create namespace @namespace@
+      - run: kubectl config set-context --current --namespace @namespace@
+kubernetes/create_your_sites:
+  title: Create your sites
+  platform: kubernetes
+  preamble: |
+    A Skupper _site_ is a location where components of your
+    application are running.  Sites are linked together to form a
+    network for your application.  In Kubernetes, a site is associated
+    with a namespace.
+
+    For each namespace, use `skupper init` to create a site.  This
+    deploys the Skupper router and controller.  Then use `skupper
+    status` to see the outcome.
+
+    **Note:** If you are using Minikube, you need to [start minikube
+    tunnel][minikube-tunnel] before you run `skupper init`.
+
+    [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
+  commands:
+    "0":
+      - run: skupper init
+        output: |
+          Waiting for LoadBalancer IP or hostname...
+          Waiting for status...
+          Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
+      - run: skupper status
+        output: |
+          Skupper is enabled for namespace "west". It is not connected to any other sites. It has no exposed services.
+    "*":
+      - run: skupper init
+        output: |
+          Waiting for LoadBalancer IP or hostname...
+          Waiting for status...
+          Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
+      - run: skupper status
+        output: |
+          Skupper is enabled for namespace "east". It is not connected to any other sites. It has no exposed services.
+  postamble: |
+    As you move through the steps below, you can use `skupper status` at
+    any time to check your progress.
+podman/set_up_your_podman_network:
+  title: Set up your Podman network
+  platform: podman
+  preamble: |
+    Open a new terminal window and set the `SKUPPER_PLATFORM`
+    environment variable to `podman`.  This sets the Skupper platform
+    to Podman for this terminal session.
+
+    Use `podman network create` to create the Podman network that
+    Skupper will use.
+
+    Use `systemctl` to enable the Podman API service.
+  commands:
+    "*":
+      - run: export SKUPPER_PLATFORM=podman
+      - run: podman network create skupper
+        apply: readme
+      - run: if ! podman network exists skupper; then podman network create skupper; fi
+        apply: test
+      - run: systemctl --user enable --now podman.socket
+  postamble: |
+    If the `systemctl` command doesn't work, you can try the `podman
+    system service` command instead:
+
+    ~~~
+    podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
+    ~~~
+link_your_sites:
+  title: Link your sites
+  preamble: |
+    Creating a link requires use of two `skupper` commands in
+    conjunction, `skupper token create` and `skupper link create`.
+
+    The `skupper token create` command generates a secret token that
+    signifies permission to create a link.  The token also carries the
+    link details.  Then, in a remote site, The `skupper link
+    create` command uses the token to create a link to the site
+    that generated it.
+
+    **Note:** The link token is truly a *secret*.  Anyone who has the
+    token can link to your site.  Make sure that only those you trust
+    have access to it.
+
+    First, use `skupper token create` in site @site0@ to generate the
+    token.  Then, use `skupper link create` in site @site1@ to link
+    the sites.
+  commands:
+    "0":
+      - run: skupper token create ~/secret.token
+        output: Token written to ~/secret.token
+    "1":
+      - run: skupper link create ~/secret.token
+        output: |
+          Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
+          Check the status of the link using 'skupper link status'.
+      - run: skupper link status --wait 60
+        apply: test
+  postamble: |
+    If your terminal sessions are on different machines, you may need
+    to use `scp` or a similar tool to transfer the token securely.  By
+    default, tokens expire after a single use or 15 minutes after
+    creation.
+cleaning_up:
+  name: cleaning_up
+  title: Cleaning up
+  numbered: false
+  preamble: |
+    To remove Skupper and the other resources from this exercise, use
+    the following commands.
+  commands:
+    "*":
+      - run: skupper delete
+hello_world/deploy_the_frontend_and_backend:
+  title: Deploy the frontent and backend
+  preamble: |
+    This example runs the frontend and the backend in separate
+    Kubernetes namespaces, on different clusters.
+
+    Use `kubectl create deployment` to deploy the frontend in
+    namespace `@namespace0@` and the backend in namespace
+    `@namespace1@`.
+  commands:
+    "0":
+      - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+    "1":
+      - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+hello_world/expose_the_backend:
+  title: Expose the backend
+  preamble: |
+    We now have our sites linked to form a Skupper network, but no
+    services are exposed on it.  Skupper uses the `skupper expose`
+    command to select a service from one site for exposure in all the
+    linked sites.
+
+    Use `skupper expose` to expose the backend service in @site1@ to
+    the frontend in @site0@.
+  commands:
+    "1":
+      - await_resource: deployment/backend
+      - run: skupper expose deployment/backend --port 8080
+        output: deployment backend exposed as backend
+hello_world/access_the_frontend:
+  title: Access the frontend
+  preamble: |
+    In order to use and test the application, we need external access
+    to the frontend.
+
+    Use `kubectl expose` with `--type LoadBalancer` to open network
+    access to the frontend service.
+
+    Once the frontend is exposed, use `kubectl get service/frontend`
+    to look up the external IP of the frontend service.  If the
+    external IP is `<pending>`, try again after a moment.
+
+    Once you have the external IP, use `curl` or a similar tool to
+    request the `/api/health` endpoint at that address.
+
+    **Note:** The `<external-ip>` field in the following commands is a
+    placeholder.  The actual value is an IP address.
+  commands:
+    "0":
+      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
+        output: service/frontend exposed
+      - await_resource: service/frontend
+      - run: kubectl get service/frontend
+        apply: readme
+        output: |
+          NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+          frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
+      - run: curl http://<external-ip>:8080/api/health
+        apply: readme
+        output: OK
+      - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
+  postamble: |
+    If everything is in order, you can now access the web interface by
+    navigating to `http://<external-ip>:8080/` in your browser.
+hello_world/cleaning_up:
+  name: cleaning_up
+  title: Cleaning up
+  numbered: false
+  preamble: |
+    To remove Skupper and the other resources from this exercise, use
+    the following commands:
+  commands:
+    "0":
+      - run: skupper delete
+      - run: kubectl delete service/frontend
+      - run: kubectl delete deployment/frontend
+    "1":
+      - run: skupper delete
+      - run: kubectl delete deployment/backend
