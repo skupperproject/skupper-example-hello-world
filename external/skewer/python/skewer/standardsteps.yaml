@@ -77,6 +77,9 @@ kubernetes/set_up_your_namespaces:
       - run: export KUBECONFIG=@kubeconfig@
       - run: "# Enter your provider-specific login command"
       - run: kubectl create namespace @namespace@
+        apply: readme
+      - run: kubectl create namespace @namespace@ --dry-run=client -o yaml | kubectl apply -f -
+        apply: test
       - run: kubectl config set-context --current --namespace @namespace@
 kubernetes/set_up_your_kubernetes_namespace:
   title: Set up your Kubernetes namespace

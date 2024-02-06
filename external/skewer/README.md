@@ -257,8 +257,8 @@ used only for testing and do not impact the README.
 ~~~ yaml
 - await_resource:     # A resource for which to await readiness (optional)
                       # Example: await_resource: deployment/frontend
-- await_external_ip:  # A service for which to await an external IP (optional)
-                      # Example: await_service: service/frontend
+- await_ingress:      # A service for which to await an external hostname or IP (optional)
+                      # Example: await_ingress: service/frontend
 - await_http_ok:      # A service and URL template for which to await an HTTP OK response (optional)
                       # Example: await_http_ok: [service/frontend, "http://{}:8080/api/hello"]
 ~~~
@@ -268,9 +268,9 @@ Example commands:
 ~~~ yaml
 commands:
   east:
-    - run: kubectl expose deployment/backend --port 8080 --type LoadBalancer
+    - run: skupper expose deployment/backend --port 8080
       output: |
-        service/frontend exposed
+        deployment backend exposed as backend
   west:
     - await_resource: service/backend
     - run: kubectl get service/backend

@@ -314,6 +314,30 @@ def file_operations():
         result = get_file_size(file)
         assert result == 10, result
 
+        zeta_dir = make_dir("zeta-dir")
+        zeta_file = touch(join(zeta_dir, "zeta-file"))
+
+        eta_dir = make_dir("eta-dir")
+        eta_file = touch(join(eta_dir, "eta-file"))
+
+        replace(zeta_dir, eta_dir)
+        assert not exists(zeta_file)
+        assert exists(zeta_dir)
+        assert is_file(join(zeta_dir, "eta-file"))
+
+        with expect_exception():
+            replace(zeta_dir, "not-there")
+
+        assert exists(zeta_dir)
+        assert is_file(join(zeta_dir, "eta-file"))
+
+        theta_file = write("theta-file", "theta")
+        iota_file = write("iota-file", "iota")
+
+        replace(theta_file, iota_file)
+        assert not exists(iota_file)
+        assert read(theta_file) == "iota"
+
 @test
 def github_operations():
     result = convert_github_markdown("# Hello, Fritz")
@@ -479,7 +503,7 @@ def io_operations():
         assert is_file(file_c), file_c
 
         file_d = write("d", "front@middle@@middle@back")
-        path = replace_in_file(file_d, "@middle@", "M", count=1)
+        path = string_replace_file(file_d, "@middle@", "M", count=1)
         result = read(path)
         assert result == "frontM@middle@back", result
 
@@ -837,10 +861,10 @@ def process_operations():
 
 @test
 def string_operations():
-    result = replace("ab", "a", "b")
+    result = string_replace("ab", "a", "b")
     assert result == "bb", result
 
-    result = replace("aba", "a", "b", count=1)
+    result = string_replace("aba", "a", "b", count=1)
     assert result == "bba", result
 
     result = remove_prefix(None, "xxx")

@@ -543,6 +543,36 @@ def move(from_path, to_path, inside=True, quiet=False):
 
     return to_path
 
+def replace(path, replacement, quiet=False):
+    path = expand(path)
+    replacement = expand(replacement)
+
+    _notice(quiet, "Replacing {} with {}", repr(path), repr(replacement))
+
+    with temp_dir() as backup_dir:
+        backup = join(backup_dir, "backup")
+        backup_created = False
+
+        if exists(path):
+            move(path, backup, quiet=True)
+            backup_created = True
+
+        try:
+            move(replacement, path, quiet=True)
+        except OSError:
+            notice("Removing")
+            remove(path, quiet=True)
+
+            if backup_created:
+                move(backup, path, quiet=True)
+
+            raise
+
+        assert not exists(replacement), replacement
+        assert exists(path), path
+
+    return path
+
 def remove(paths, quiet=False):
     if is_string(paths):
         paths = (paths,)
@@ -649,9 +679,9 @@ def tail_lines(file, count):
 
     return lines[-count:]
 
-def replace_in_file(file, expr, replacement, count=0):
+def string_replace_file(file, expr, replacement, count=0):
     file = expand(file)
-    return write(file, replace(read(file), expr, replacement, count=count))
+    return write(file, string_replace(read(file), expr, replacement, count=count))
 
 def concatenate(file, input_files):
     file = expand(file)
@@ -1387,7 +1417,7 @@ _signal.signal(_signal.SIGTERM, _default_sigterm_handler)
 
 ## String operations
 
-def replace(string, expr, replacement, count=0):
+def string_replace(string, expr, replacement, count=0):
     return _re.sub(expr, replacement, string, count)
 
 def remove_prefix(string, prefix):

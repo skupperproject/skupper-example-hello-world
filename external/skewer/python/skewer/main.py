@@ -37,10 +37,10 @@ def check_environment():
 def resource_exists(resource):
     return run(f"kubectl get {resource}", output=DEVNULL, check=False, quiet=True).exit_code == 0
 
-def get_resource_jsonpath(resource, jsonpath):
+def get_resource_json(resource, jsonpath=""):
     return call(f"kubectl get {resource} -o jsonpath='{{{jsonpath}}}'", quiet=True)
 
-def await_resource(resource, timeout=240):
+def await_resource(resource, timeout=300):
     assert "/" in resource, resource
 
     start_time = get_time()
@@ -63,7 +63,7 @@ def await_resource(resource, timeout=240):
             run(f"kubectl logs {resource}")
             raise
 
-def await_external_ip(service, timeout=240):
+def await_ingress(service, timeout=300):
     assert service.startswith("service/"), service
 
     start_time = get_time()
@@ -71,24 +71,36 @@ def await_external_ip(service, timeout=240):
     await_resource(service, timeout=timeout)
 
     while True:
-        notice(f"Waiting for external IP from {service} to become available")
+        notice(f"Waiting for hostname or IP from {service} to become available")
 
-        if get_resource_jsonpath(service, ".status.loadBalancer.ingress") != "":
+        json = get_resource_json(service, ".status.loadBalancer.ingress")
+
+        if json != "":
             break
 
         if get_time() - start_time > timeout:
-            fail(f"Timed out waiting for external IP for {service}")
+            fail(f"Timed out waiting for hostnmae or external IP for {service}")
 
         sleep(5, quiet=True)
 
-    return get_resource_jsonpath(service, ".status.loadBalancer.ingress[0].ip")
+    data = parse_json(json)
 
-def await_http_ok(service, url_template, user=None, password=None, timeout=240):
+    if len(data):
+        if "hostname" in data[0]:
+            return data[0]["hostname"]
+
+        if "ip" in data[0]:
+            return data[0]["ip"]
+
+    fail(f"Failed to get hostname or IP from {service}")
+
+def await_http_ok(service, url_template, user=None, password=None, timeout=300):
     assert service.startswith("service/"), service
 
     start_time = get_time()
 
-    ip = await_external_ip(service, timeout=timeout)
+    ip = await_ingress(service, timeout=timeout)
+
     url = url_template.format(ip)
     insecure = url.startswith("https")
 
@@ -108,7 +120,7 @@ def await_http_ok(service, url_template, user=None, password=None, timeout=240):
 def await_console_ok():
     await_resource("secret/skupper-console-users")
 
-    password = get_resource_jsonpath("secret/skupper-console-users", ".data.admin")
+    password = get_resource_json("secret/skupper-console-users", ".data.admin")
     password = base64_decode(password)
 
     await_http_ok("service/skupper", "https://{}:8010/", user="admin", password=password)
@@ -164,8 +176,8 @@ def run_step(model, step, work_dir, check=True):
                 if command.await_resource:
                     await_resource(command.await_resource)
 
-                if command.await_external_ip:
-                    await_external_ip(command.await_external_ip)
+                if command.await_ingress:
+                    await_ingress(command.await_ingress)
 
                 if command.await_http_ok:
                     await_http_ok(*command.await_http_ok)
@@ -187,16 +199,16 @@ def pause_for_demo(model):
     if first_site.platform == "kubernetes":
         with first_site:
             if resource_exists("service/frontend"):
-                if get_resource_jsonpath("service/frontend", ".spec.type") == "LoadBalancer":
-                    frontend_ip = await_external_ip("service/frontend")
-                    frontend_url = f"http://{frontend_ip}:8080/"
+                if get_resource_json("service/frontend", ".spec.type") == "LoadBalancer":
+                    frontend_host = await_ingress("service/frontend")
+                    frontend_url = f"http://{frontend_host}:8080/"
 
             if resource_exists("secret/skupper-console-users"):
-                console_ip = await_external_ip("service/skupper")
-                console_url = f"https://{console_ip}:8010/"
+                console_host = await_ingress("service/skupper")
+                console_url = f"https://{console_host}:8010/"
 
                 await_resource("secret/skupper-console-users")
-                password = get_resource_jsonpath("secret/skupper-console-users", ".data.admin")
+                password = get_resource_json("secret/skupper-console-users", ".data.admin")
                 password = base64_decode(password).decode("ascii")
 
     print()
@@ -284,9 +296,9 @@ def generate_readme(skewer_file, output_file):
         if not condition:
             return
 
-        fragment = replace(heading, r"[ -]", "_")
-        fragment = replace(fragment, r"[\W]", "")
-        fragment = replace(fragment, "_", "-")
+        fragment = string_replace(heading, r"[ -]", "_")
+        fragment = string_replace(fragment, r"[\W]", "")
+        fragment = string_replace(fragment, "_", "-")
         fragment = fragment.lower()
 
         out.append(f"* [{heading}](#{fragment})")
@@ -651,7 +663,7 @@ class Command:
     apply = object_property("apply")
     output = object_property("output")
     await_resource = object_property("await_resource")
-    await_external_ip = object_property("await_external_ip")
+    await_ingress = object_property("await_ingress")
     await_http_ok = object_property("await_http_ok")
     await_console_ok = object_property("await_console_ok")
 
