@@ -19,19 +19,16 @@
 
 FROM python:alpine AS build
 
-RUN addgroup -S fritz && adduser -S fritz -G fritz
-USER fritz
-
-RUN pip install --user --no-cache-dir starlette uvicorn
-
-COPY --chown=fritz:fritz python /home/fritz/python
+RUN pip install --no-cache-dir starlette uvicorn
 
 FROM python:alpine AS run
 
-RUN addgroup -S fritz && adduser -S fritz -G fritz
+RUN adduser -S fritz -G root
 USER fritz
 
-COPY --chown=fritz:fritz --from=build /home/fritz /home/fritz
+COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY python /home/fritz/python
 
+EXPOSE 8080
 WORKDIR /home/fritz
 ENTRYPOINT ["python", "python/main.py"]
