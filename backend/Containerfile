@@ -17,17 +17,21 @@
 # under the License.
 #
 
-FROM registry.fedoraproject.org/fedora-minimal
+FROM python:alpine AS build
 
-EXPOSE 8080
+RUN addgroup -S fritz && adduser -S fritz -G fritz
+USER fritz
 
-RUN microdnf -y install python-pip && microdnf clean all
-RUN pip install starlette uvicorn
+RUN pip install --user --no-cache-dir starlette uvicorn
 
-USER 1001
+COPY --chown=fritz:fritz python /home/fritz/python
 
-COPY python /app/python
+FROM python:alpine AS run
 
-WORKDIR /app
+RUN addgroup -S fritz && adduser -S fritz -G fritz
+USER fritz
 
-CMD ["python", "python/main.py"]
+COPY --chown=fritz:fritz --from=build /home/fritz /home/fritz
+
+WORKDIR /home/fritz
+ENTRYPOINT ["python", "python/main.py"]

@@ -297,7 +297,6 @@ export class Page {
         const doc = parser.parseFromString(html, "text/html");
 
         this.body = doc.activeElement;
-
         this.router.routes[this.path] = this;
     }
 
@@ -317,9 +316,8 @@ export class Page {
 
         if (key !== this.router.previousContentKey) {
             this.updateContent();
+            this.router.previousContentKey = key;
         }
-
-        this.router.previousContentKey = key;
     }
 
     getContentKey() {
