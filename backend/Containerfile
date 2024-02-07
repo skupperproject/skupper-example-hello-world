@@ -27,7 +27,7 @@ RUN adduser -S fritz -G root
 USER fritz
 
 COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY python /home/fritz/python
+COPY --chown=fritz:root python /home/fritz/python
 
 EXPOSE 8080
 WORKDIR /home/fritz
