@@ -26,7 +26,7 @@ image_tag = "quay.io/skupper/hello-world-frontend"
 def build(no_cache=False):
     no_cache_arg = "--no-cache" if no_cache else ""
 
-    run(f"podman build {no_cache_arg} -t {image_tag} .")
+    run(f"podman build {no_cache_arg} --format docker -t {image_tag} .")
 
 @command
 def run_():

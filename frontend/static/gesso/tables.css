@@ -2,7 +2,11 @@ table {
     width: 100%;
 }
 
-table th,
-table td {
+th,
+td {
     text-align: left;
+}
+
+th {
+    padding-bottom: 0.4em;
 }

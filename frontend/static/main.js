@@ -12,7 +12,7 @@ const html = `
   </header>
   <section>
     <div>
-      <div>Your name is <b id="name"></b>.</div>
+      <div>Your name is <span id="name" class="name"></span>.</div>
 
       <form id="hello-form" style="margin-bottom: 2em;">
         <div class="form-field">
@@ -28,25 +28,29 @@ const html = `
 </body>
 `;
 
-function renderRequest(value, item, context) {
+function renderRequest(record, recordKey, context) {
     const elem = gesso.createElement(null, "div");
 
-    elem.innerHTML = item.request.text.replace(item.request.name, `<b>${item.request.name}</b>`);
+    elem.innerHTML = record.request.text.replace(record.request.name, `<span class="name">${record.request.name}</span>`);
 
     return elem;
 }
 
-function renderResponse(value, item, context) {
+function renderResponse(record, recordKey, context) {
     const elem = gesso.createElement(null, "div");
 
-    elem.innerHTML = item.response.text.replace(item.response.name, `<b>${item.response.name}</b>`);
+    if (record.error) {
+        elem.innerHTML = `<span class="error">Error: ${record.error}</span>`;
+    } else {
+        elem.innerHTML = record.response.text.replace(record.response.name, `<span class="name">${record.response.name}</span>`);
+    }
 
     return elem;
 }
 
 const helloTable = new gesso.Table("hello-table", [
-    ["Frontend requests", "request", renderRequest],
-    ["Backend responses", "response", renderResponse],
+    ["Frontend", "request", renderRequest],
+    ["Backend", "response", renderResponse],
 ]);
 
 class MainPage extends gesso.Page {
@@ -81,10 +85,10 @@ class MainPage extends gesso.Page {
     updateContent() {
         $("#name").textContent = this.name;
 
-        gesso.getJson("/api/data", data => {
-            const responses = Object.values(data).reverse();
+        gesso.getJson("/api/data", responseData => {
+            const responses = Object.values(responseData).reverse();
 
-            helloTable.update(responses, data);
+            helloTable.update(responses, responseData);
         });
     }
 }

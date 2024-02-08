@@ -1,1 +1,10 @@
 @import url("./gesso/gesso.css");
+
+span.name {
+    font-weight: 600;
+}
+
+span.error {
+    font-weight: 500;
+    color: red;
+}

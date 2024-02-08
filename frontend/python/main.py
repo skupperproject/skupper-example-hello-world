@@ -25,7 +25,7 @@ import uuid
 import uvicorn
 
 from animalid import generate_animal_id
-from httpx import AsyncClient
+from httpx import AsyncClient, HTTPError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
 from starlette.responses import FileResponse, JSONResponse, Response
@@ -73,11 +73,15 @@ async def generate_id(request):
 async def hello(request):
     request_data = await request.json()
 
-    backend_request, backend_response = await send_greeting(request_data["name"], request_data["text"])
+    name = request_data["name"]
+    text = request_data["text"]
+
+    backend_request, backend_response, backend_error = await send_greeting(name, text)
 
     record = {
         "request": backend_request,
         "response": backend_response,
+        "error": backend_error,
     }
 
     records.append(record);
@@ -94,11 +98,14 @@ async def send_greeting(name, text):
     }
 
     async with AsyncClient() as client:
-        response = await client.post(f"{backend_url}/api/hello", json=request_data)
+        try:
+            response = await client.post(f"{backend_url}/api/hello", json=request_data)
+        except HTTPError as e:
+            return request_data, None, str(e)
 
     response_data = response.json()
 
-    return request_data, response_data
+    return request_data, response_data, None
 
 @star.route("/api/health", methods=["GET"])
 async def health(request):

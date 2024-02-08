@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap');
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons+Outlined");
 
 :root {
@@ -32,7 +32,7 @@ br {
 }
 
 body {
-    font: 13pt/19pt "Source Sans Pro", sans-serif;
+    font: 13pt/19pt "Source Sans 3", sans-serif;
     font-weight: 400;
     color: var(--black);
     margin: 0;
@@ -57,5 +57,9 @@ h2 {
 }
 
 h1, h2, h3, h4, th, b {
+    font-weight: 500;
+}
+
+b {
     font-weight: 600;
 }

@@ -251,7 +251,7 @@ export function formatBoolean(value) {
     else return "No";
 }
 
-export function getJson(url, handler) {
+export function getJson(url, responseDataHandler, errorHandler) {
     console.log("Getting data from", url);
 
     fetch(url, {
@@ -260,16 +260,20 @@ export function getJson(url, handler) {
     })
         .then(response => response.json())
         .then(responseData => {
-            if (handler) {
-                handler(responseData);
+            if (responseDataHandler) {
+                responseDataHandler(responseData);
             }
         })
         .catch(error => {
-            console.log(error);
+            if (errorHandler) {
+                errorHandler(error);
+            } else {
+                console.log(error);
+            }
         });
 }
 
-export function postJson(url, requestData, handler) {
+export function postJson(url, requestData, responseDataHandler, errorHandler) {
     console.log("Posting data to", url);
 
     fetch(url, {
@@ -279,12 +283,16 @@ export function postJson(url, requestData, handler) {
     })
         .then(response => response.json())
         .then(responseData => {
-            if (handler) {
-                handler(responseData)
+            if (responseDataHandler) {
+                responseDataHandler(responseData)
             }
         })
         .catch(error => {
-            console.log(error);
+            if (errorHandler) {
+                errorHandler(error);
+            } else {
+                console.log(error);
+            }
         });
 }
 
@@ -374,8 +382,8 @@ export class Router {
     }
 }
 
-// One column: [title string, data key, optional rendering function]
-// Rendering function: render(value, item, context) => value
+// One column: [columnTitle, recordKey, cellRenderFunction (optional)]
+// cellRenderFunction: render(record, recordKey, context) => value or elem
 // Context is whatever the user chooses to pass into update()
 export class Table {
     constructor(id, columns) {
@@ -383,7 +391,7 @@ export class Table {
         this.columns = columns;
     }
 
-    update(items, context) {
+    update(records, context) {
         const headings = [];
         const rows = [];
         const div = createDiv(null, `#${this.id}`);
@@ -392,17 +400,18 @@ export class Table {
             headings.push(column[0]);
         }
 
-        for (const item of items) {
+        for (const record of records) {
             const row = [];
 
             for (const column of this.columns) {
-                let value = item[column[1]];
+                const recordKey = column[1];
+                const cellRenderFunction = column[2];
 
-                if (column.length === 3) {
-                    value = column[2](value, item, context);
+                if (cellRenderFunction) {
+                    row.push(cellRenderFunction(record, recordKey, context));
+                } else {
+                    row.push(record[recordKey]);
                 }
-
-                row.push(value);
             }
 
             rows.push(row);
