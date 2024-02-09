@@ -37,8 +37,6 @@ def test():
     # The backend must be running on port 8081
     check_port(8081)
 
-    build()
-
     with start(f"podman run --net host {image_tag} python python/main.py --host localhost --port 8080 --backend http://localhost:8081"):
         await_port(8080)
 
@@ -59,7 +57,6 @@ def debug():
 @command
 def push():
     run("podman login quay.io")
-    build()
     run(f"podman push {image_tag}")
 
 @command

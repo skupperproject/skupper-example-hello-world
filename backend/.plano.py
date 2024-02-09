@@ -38,5 +38,4 @@ def debug():
 @command
 def push():
     run("podman login quay.io")
-    build()
     run(f"podman push {image_tag}")
