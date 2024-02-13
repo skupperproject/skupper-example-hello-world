@@ -17,6 +17,7 @@
 # under the License.
 #
 
+import animalid
 import argparse
 import asyncio
 import os
@@ -24,7 +25,6 @@ import json
 import uuid
 import uvicorn
 
-from animalid import generate_animal_id
 from httpx import AsyncClient, HTTPError
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
@@ -60,7 +60,7 @@ async def notifications(request):
 
 @star.route("/api/generate-id", methods=["POST"])
 async def generate_id(request):
-    id = generate_animal_id()
+    id = animalid.generate_id()
 
     response_data = {
         "id": id,

@@ -19,13 +19,13 @@
 
 import argparse
 import os
+import thingid
 import uvicorn
 
-from thingid import generate_thing_id
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, Response
 
-name = generate_thing_id().replace("-", " ").title()
+name = thingid.generate_id().replace("-", " ").title()
 pod = os.environ.get("HOSTNAME", "backend")
 star = Starlette(debug=True)
 

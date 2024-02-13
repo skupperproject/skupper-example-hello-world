@@ -8,13 +8,12 @@ div.tabs > nav > a {
     display: inline-block;
     padding: 0.4em 0;
     margin-right: 2em;
-    color: #666;
+    color: var(--dark-gray);
 }
 
-div.tabs > nav > a:hover,
-div.tabs > nav > a.selected {
-    border-bottom: 1.5px solid black;
-    color: black;
+div.tabs > nav > a:hover, div.tabs > nav > a.selected {
+    border-bottom: 1.5px solid var(--dark-gray);
+    color: var(--black);
 }
 
 div.tabs > div {

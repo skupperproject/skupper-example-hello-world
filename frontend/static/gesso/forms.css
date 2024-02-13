@@ -1,12 +1,45 @@
 input, button, select {
-    padding: 0.4em 0.6em;
+    padding: 0.4em 0.8em;
     border: 1px solid var(--light-gray);
+    border-radius: 0.2em;
     font-family: inherit;
     font-size: inherit;
     background-color: inherit;
-    color: inherit;
+    font-weight: 400;
 }
 
-button {
-    border-radius: 0.2em;
+input:hover, button:hover, select:hover {
+    border-style: solid;
+    border-color: var(--black);
+}
+
+div.form-field {
+    display: flex;
+    padding: 1em 0;
+}
+
+div.form-field:last-child {
+    padding-bottom: 0;
+}
+
+div.form-field > div:nth-child(1) {
+    width: 25%;
+    padding-top: 0.4em;
+}
+
+div.form-field > div:nth-child(2) {
+    width: 40%;
+}
+
+div.form-field > div:nth-child(3) {
+    padding-top: 0.4em;
+    width: 35%;
+}
+
+div.form-buttons {
+    margin-top: 2em;
+}
+
+div.form-buttons button {
+    border-width: 2px;
 }

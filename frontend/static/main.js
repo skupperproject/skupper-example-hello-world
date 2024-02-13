@@ -1,4 +1,4 @@
-import * as gesso from "./gesso/gesso.js";
+import * as gesso from "./gesso/main.js";
 
 const html = `
 <body>
@@ -28,7 +28,7 @@ const html = `
 </body>
 `;
 
-function renderRequest(record, recordKey, context) {
+function renderRequest(value, record, context) {
     const elem = gesso.createElement(null, "div");
 
     elem.innerHTML = record.request.text.replace(record.request.name, `<span class="name">${record.request.name}</span>`);
@@ -36,7 +36,7 @@ function renderRequest(record, recordKey, context) {
     return elem;
 }
 
-function renderResponse(record, recordKey, context) {
+function renderResponse(value, record, context) {
     const elem = gesso.createElement(null, "div");
 
     if (record.error) {
@@ -60,7 +60,7 @@ class MainPage extends gesso.Page {
         this.body.$("#hello-form").addEventListener("submit", event => {
             event.preventDefault();
 
-            gesso.postJson("/api/hello", {
+            gesso.postJSON("/api/hello", {
                 text: `Hello! I am ${this.name}.`,
                 name: this.name,
             });
@@ -69,7 +69,7 @@ class MainPage extends gesso.Page {
 
     process() {
         if (!this.id) {
-            gesso.postJson("/api/generate-id", null, data => {
+            gesso.postJSON("/api/generate-id", null, data => {
                 this.id = data.id;
                 this.name = data.name;
 
@@ -85,7 +85,7 @@ class MainPage extends gesso.Page {
     updateContent() {
         $("#name").textContent = this.name;
 
-        gesso.getJson("/api/data", responseData => {
+        gesso.fetchJSON("/api/data", responseData => {
             const responses = Object.values(responseData).reverse();
 
             helloTable.update(responses, responseData);

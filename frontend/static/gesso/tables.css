@@ -2,11 +2,14 @@ table {
     width: 100%;
 }
 
-th,
-td {
+th, td {
     text-align: left;
 }
 
 th {
     padding-bottom: 0.4em;
+}
+
+td a.button {
+    margin: 0.3em;
 }

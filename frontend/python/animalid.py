@@ -1,3 +1,22 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
 import random as _random
 
 _adjectives = [
@@ -15,7 +34,9 @@ _adjectives = [
     "breathtaking",
     "brilliant",
     "busy",
+    ("calculating", "k"),
     ("candid", "k"),
+    ("capricious", "k"),
     ("captivating", "k"),
     ("careless", "k"),
     ("cautious", "k"),
@@ -23,15 +44,15 @@ _adjectives = [
     ("cheeky", "ch"),
     ("chic", "sh"),
     ("churlish", "ch"),
-    ("classy", "cl"),
-    ("clever", "cl"),
-    ("clumsy", "cl"),
+    ("classy", "kl"),
+    ("clever", "kl"),
+    ("clumsy", "kl"),
     ("cool", "k"),
-    ("crabby", "cr"),
-    ("cranky", "cr"),
-    ("creepy", "cr"),
-    ("crucial", "cr"),
-    ("cryptic", "cr"),
+    ("crabby", "kr"),
+    ("cranky", "kr"),
+    ("creepy", "kr"),
+    ("crucial", "kr"),
+    ("cryptic", "kr"),
     "dandy",
     "dazzling",
     "defiant",
@@ -115,6 +136,7 @@ _adjectives = [
     "pensive",
     "perfect",
     ("phenomenal", "f"),
+    ("philosophical", "f"),
     "pioneering",
     "polished",
     "posh",
@@ -132,11 +154,13 @@ _adjectives = [
     "rebellious",
     "remarkable",
     "riveting",
+    "robotic",
     "salty",
     "sassy",
     "saucy",
     ("scrappy", "sk"),
     "sensational",
+    "sentient",
     ("shabby", "sh"),
     ("shady", "sh"),
     ("shaven", "sh"),
@@ -198,7 +222,7 @@ _adjectives = [
     "zesty",
 ]
 
-_animals = [
+_nouns = [
     "aardvark",
     "albatross",
     "alligator",
@@ -230,16 +254,16 @@ _animals = [
     ("chimpanzee", "ch"),
     ("chinchilla", "ch"),
     ("chipmunk", "ch"),
-    ("clam", "cl"),
+    ("clam", "kl"),
     ("cobra", "k"),
     ("cockroach", "k"),
     ("cod", "k"),
     ("cormorant", "k"),
     ("coyote", "k"),
-    ("crab", "cr"),
-    ("crane", "cr"),
-    ("crocodile", "cr"),
-    ("crow", "cr"),
+    ("crab", "kr"),
+    ("crane", "kr"),
+    ("crocodile", "kr"),
+    ("crow", "kr"),
     "deer",
     "dinosaur",
     "dog",
@@ -406,15 +430,17 @@ _animals = [
     "zebra"
 ]
 
-def generate_animal_id():
+_generated_ids = set()
+
+def _generate_id():
     _random.seed()
 
-    animal = _random.choice(_animals)
+    noun = _random.choice(_nouns)
 
-    if type(animal) is tuple:
-        animal, animal_initial = animal
+    if type(noun) is tuple:
+        noun, noun_initial = noun
     else:
-        animal_initial = animal[0]
+        noun_initial = noun[0]
 
     def match(adjective):
         if type(adjective) is tuple:
@@ -422,7 +448,7 @@ def generate_animal_id():
         else:
             adjective_initial = adjective[0]
 
-        return adjective_initial == animal_initial
+        return adjective_initial == noun_initial
 
     try:
         adjective = _random.choice([x for x in _adjectives if match(x)])
@@ -432,8 +458,18 @@ def generate_animal_id():
     if type(adjective) is tuple:
         adjective, _ = adjective
 
-    return "-".join((adjective, animal))
+    return "-".join((adjective, noun))
+
+def generate_id():
+    id = _generate_id()
+
+    if id in _generated_ids:
+        id = _generate_id()
+
+    _generated_ids.add(id)
+
+    return id
 
 if __name__ == "__main__":
     for i in range(100):
-        print(generate_animal_id())
+        print(get_id())

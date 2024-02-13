@@ -1,10 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap');
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons+Outlined");
 
 :root {
-    --black: hsla(0, 0%, 0%, 0.9);
-    --dark-gray: hsla(0, 0%, 0%, 0.5);
+    --black: hsla(0, 0%, 0%, 0.95);
+    --dark-gray: hsla(0, 0%, 0%, 0.7);
+    --medium-gray: hsla(0, 0%, 0%, 0.5);
     --light-gray: hsla(0, 0%, 0%, 0.3);
+    --white: hsla(0, 100%, 100%, 1.0);
+    --link: hsla(240, 100%, 50%, 0.9);
 }
 
 * {
@@ -32,20 +35,30 @@ br {
 }
 
 body {
-    font: 13pt/19pt "Source Sans 3", sans-serif;
+    font: 12pt/18pt "Barlow", sans-serif;
     font-weight: 400;
     color: var(--black);
     margin: 0;
 }
 
-a {
+a, a:visited {
     text-decoration: none;
-    color: rgb(0, 0, 238); /* XXX */
+    color: var(--link);
 }
 
-a:visited {
-    color: inherit;
-    color: rgb(0, 0, 238); /* XXX */
+a.button {
+    display: inline-block;
+    padding: 0.4em 0.8em;
+    border: 1px solid var(--light-gray);
+    border-radius: 0.2em;
+    color: var(--black);
+    font-weight: 400;
+    font-size: 0.95em;
+    cursor: pointer;
+}
+
+a.button:hover {
+    border: 1px solid var(--black);
 }
 
 pre {
@@ -56,10 +69,28 @@ h2 {
     font-size: 1.15em;
 }
 
-h1, h2, h3, h4, th, b {
+h1, h2, h3, h4, th {
     font-weight: 500;
 }
 
 b {
     font-weight: 600;
+}
+
+hr {
+    border-top: 1px solid var(--light-gray);
+}
+
+span.material-icons-outlined {
+    vertical-align: -0.20em;
+}
+
+.hflex {
+    display: flex;
+}
+
+.hflex > * {
+    flex-grow: 1;
+    margin-top: 0;
+    margin-bottom: 0;
 }

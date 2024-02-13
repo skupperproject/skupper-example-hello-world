@@ -1,3 +1,22 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
 import random as _random
 
 _adjectives = [
@@ -15,7 +34,9 @@ _adjectives = [
     "breathtaking",
     "brilliant",
     "busy",
+    ("calculating", "k"),
     ("candid", "k"),
+    ("capricious", "k"),
     ("captivating", "k"),
     ("careless", "k"),
     ("cautious", "k"),
@@ -23,15 +44,15 @@ _adjectives = [
     ("cheeky", "ch"),
     ("chic", "sh"),
     ("churlish", "ch"),
-    ("classy", "cl"),
-    ("clever", "cl"),
-    ("clumsy", "cl"),
+    ("classy", "kl"),
+    ("clever", "kl"),
+    ("clumsy", "kl"),
     ("cool", "k"),
-    ("crabby", "cr"),
-    ("cranky", "cr"),
-    ("creepy", "cr"),
-    ("crucial", "cr"),
-    ("cryptic", "cr"),
+    ("crabby", "kr"),
+    ("cranky", "kr"),
+    ("creepy", "kr"),
+    ("crucial", "kr"),
+    ("cryptic", "kr"),
     "dandy",
     "dazzling",
     "defiant",
@@ -115,6 +136,7 @@ _adjectives = [
     "pensive",
     "perfect",
     ("phenomenal", "f"),
+    ("philosophical", "f"),
     "pioneering",
     "polished",
     "posh",
@@ -132,11 +154,13 @@ _adjectives = [
     "rebellious",
     "remarkable",
     "riveting",
+    "robotic",
     "salty",
     "sassy",
     "saucy",
     ("scrappy", "sk"),
     "sensational",
+    "sentient",
     ("shabby", "sh"),
     ("shady", "sh"),
     ("shaven", "sh"),
@@ -174,6 +198,7 @@ _adjectives = [
     ("swell", "sw"),
     ("swift", "sw"),
     "terrific",
+    "testy",
     "tiptop",
     "top-notch",
     "transcendent",
@@ -197,57 +222,111 @@ _adjectives = [
     "zesty",
 ]
 
-_things = [
+_nouns = [
+    "abacus",
+    "abstraction",
+    "algorithm",
     "android",
     "apparatus",
+    "appliance",
     "application",
+    "article",
+    "artifact",
     "automaton",
     "bot",
     "box",
+    ("calculator", "k"),
+    ("cipher", "s"),
+    ("circuit", "s"),
+    ("code", "k"),
     ("cog", "k"),
+    ("core", "k"),
     ("component", "k"),
+    ("concept", "k"),
+    ("constant", "k"),
+    ("construct", "k"),
     ("contraption", "k"),
+    ("contrivance", "k"),
+    ("cyborg", "s"),
+    ("creation", "kr"),
+    "daemon",
     "device",
     "dingus",
+    "directive",
     "doodad",
     "doohickey",
     "droid",
     "drone",
+    "element",
     "engine",
     "entity",
+    "enumeration",
+    "essence",
+    "factor",
+    "formula",
+    "framework",
+    "function",
     "gadget",
     "gizmo",
     "hardware",
+    "heuristic",
+    "implement",
+    "instruction",
     "instrument",
+    "intelligence",
     "item",
+    "loom",
+    "logic",
     "machine",
     "mechanism",
+    "memory-bank",
+    "method",
+    "model",
+    "module",
+    "monad",
+    "monolith",
+    "number-cruncher",
     "object",
+    "parameter",
+    "part",
+    "piece",
+    "procedure",
     "process",
     "processor",
     "program",
+    "protocol",
+    ("quantity", "kw"),
+    ("quantum", "kw"),
     "robot",
+    "routine",
+    ("script", "sk"),
+    "sector",
+    "segment",
+    "sentience",
+    "sequence",
     "server",
+    ("sprocket", "sp"),
     "system",
-    # "thing",
-    # "thingamajig",
-    # "thingamabob",
+    "symbol",
+    "variable",
     "widget",
     "worker",
     ("computer", "k"),
-    ("cyborg", "s"),
     ("unit", "y"),
+    ("utensil", "y"),
 ]
 
-def generate_thing_id():
+_generated_ids = set()
+
+def _generate_id():
     _random.seed()
 
-    thing = _random.choice(_things)
+    noun = _random.choice(_nouns)
 
-    if type(thing) is tuple:
-        thing, thing_initial = thing
+    if type(noun) is tuple:
+        noun, noun_initial = noun
     else:
-        thing_initial = thing[0]
+        noun_initial = noun[0]
 
     def match(adjective):
         if type(adjective) is tuple:
@@ -255,7 +334,7 @@ def generate_thing_id():
         else:
             adjective_initial = adjective[0]
 
-        return adjective_initial == thing_initial
+        return adjective_initial == noun_initial
 
     try:
         adjective = _random.choice([x for x in _adjectives if match(x)])
@@ -265,8 +344,18 @@ def generate_thing_id():
     if type(adjective) is tuple:
         adjective, _ = adjective
 
-    return "-".join((adjective, thing))
+    return "-".join((adjective, noun))
+
+def generate_id():
+    id = _generate_id()
+
+    if id in _generated_ids:
+        id = _generate_id()
+
+    _generated_ids.add(id)
+
+    return id
 
 if __name__ == "__main__":
     for i in range(100):
-        print(generate_thing_id())
+        print(get_id())

@@ -1,39 +1,43 @@
-html {
-    overflow-y: scroll;
+html, body, section {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
 }
 
 header,
-section,
 footer {
+    margin: 0;
     padding: 1em;
 }
 
-header > div,
-section > div,
-footer > div {
-    width: 960px;
-    margin: 0 auto;
+section {
+    margin: 0;
+    padding: 2em;
 }
 
-header > div,
-footer > div {
+header > div, section > div, footer > div {
+    width: 960px;
+    margin: 0 auto;
+    overflow: hidden;
+    height: 100%;
+}
+
+header > div, footer > div {
     display: flex;
     justify-content: space-between;
 }
 
-header a,
-header a:visited,
-footer a,
-footer a:visited {
+header a, header a:visited, footer a, footer a:visited {
     color: var(--black);
 }
 
 header {
-    border-bottom: 1px solid var(--light-gray);
+    border-bottom: 1px solid var(--medium-gray);
 }
 
 footer {
-    border-top: 1px solid var(--light-gray);
+    border-top: 1px solid var(--medium-gray);
 }
 
 a#logotype {
@@ -59,4 +63,19 @@ nav#top-nav > a.selected {
 
 nav#global-nav {
     color: inherit;
+}
+
+body.excursion {
+    background-color: var(--dark-gray);
+    height: auto;
+}
+
+body.excursion > section {
+    padding: 4em;
+}
+
+body.excursion > section > div {
+    background-color: var(--white);
+    border-radius: 0.2em;
+    padding: 3em;
 }

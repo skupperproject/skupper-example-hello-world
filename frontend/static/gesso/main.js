@@ -44,11 +44,15 @@ function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function nvl(value, replacement) {
+function nvl(value, replacement, otherwise) {
     if (value === null || value === undefined) {
         return replacement;
     } else {
-        return value;
+        if (otherwise) {
+            return otherwise;
+        } else {
+            return value;
+        }
     }
 }
 
@@ -70,7 +74,7 @@ export function createElement(parent, tag, options) {
             createText(elem, options);
         } else if (typeof options === "object") {
             if (options.hasOwnProperty("text")) {
-                let text = options["text"];
+                const text = options["text"];
 
                 if (text != null) {
                     createText(elem, text);
@@ -79,8 +83,9 @@ export function createElement(parent, tag, options) {
                 delete options["text"];
             }
 
-            for (let key of Object.keys(options)) {
-                elem.setAttribute(key, options[key]);
+            for (const key of Object.keys(options)) {
+                const name = String(key).replace(/_/g, "-");
+                elem.setAttribute(name, options[key]);
             }
         } else {
             throw `illegal argument: ${options}`;
@@ -112,26 +117,38 @@ function setSelector(elem, selector) {
     }
 }
 
-export function createDiv(parent, selector, options) {
-    const elem = createElement(parent, "div", options);
+export function createContainer(parent, tag, selector, options) {
+    const elem = createElement(parent, tag, options);
 
     setSelector(elem, selector);
 
     return elem;
 }
 
+export function createDiv(parent, selector, options) {
+    return createContainer(parent, "div", selector, options);
+}
+
 export function createSpan(parent, selector, options) {
-    const elem = createElement(parent, "span", options);
+    return createContainer(parent, "span", selector, options);
+}
 
-    setSelector(elem, selector);
+export function createUnorderedList(parent, selector, options) {
+    return createContainer(parent, "ul", selector, options);
+}
 
-    return elem;
+export function createOrderedList(parent, selector, options) {
+    return createContainer(parent, "ol", selector, options);
+}
+
+export function createNav(parent, selector, options) {
+    return createContainer(parent, "nav", selector, options);
 }
 
 export function createLink(parent, href, options) {
     const elem = createElement(parent, "a", options);
 
-    if (href != null) {
+    if (href) {
         elem.setAttribute("href", href);
     }
 
@@ -187,16 +204,22 @@ export function createFieldTable(parent, fields, options) {
     return elem;
 }
 
-export function replaceElement(oldElement, newElement) {
-    oldElement.parentNode.replaceChild(newElement, oldElement);
+// Unlike toISOString, this does not do any timezone conversions
+export function formatISODate(datetime) {
+    const year = datetime.getFullYear();
+    const month = String(datetime.getMonth() + 1).padStart(2, "0");
+    const day = String(datetime.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`
 }
 
-export function formatDate(date) {
-    return date.toISOString().slice(0, 10);
-}
+// Unlike toISOString, this does not do any timezone conversions
+export function formatISOTime(datetime) {
+    const hours = String(datetime.getHours()).padStart(2, "0");
+    const minutes = String(datetime.getMinutes()).padStart(2, "0");
+    const seconds = String(datetime.getSeconds()).padStart(2, "0");
 
-export function formatTime(date) {
-    return date.toISOString().slice(11, 16);
+    return `${hours}:${minutes}:${seconds}`
 }
 
 export function formatDuration(millis, suffixes) {
@@ -251,8 +274,24 @@ export function formatBoolean(value) {
     else return "No";
 }
 
-export function getJson(url, responseDataHandler, errorHandler) {
-    console.log("Getting data from", url);
+export function plural(noun, count, plural) {
+    if (count == 1) {
+        return noun;
+    }
+
+    if (!plural) {
+        if (noun.endsWith("s")) {
+            plural = `${noun}es`;
+        } else {
+            plural = `${noun}s`;
+        }
+    }
+
+    return plural;
+}
+
+export function fetchJSON(url, responseDataHandler, errorHandler) {
+    console.log("Fetching data from", url);
 
     fetch(url, {
         method: "GET",
@@ -273,8 +312,8 @@ export function getJson(url, responseDataHandler, errorHandler) {
         });
 }
 
-export function postJson(url, requestData, responseDataHandler, errorHandler) {
-    console.log("Posting data to", url);
+export function postJSON(url, requestData, responseDataHandler, errorHandler) {
+    console.log("Posting data to", url, "(data:", requestData, ")");
 
     fetch(url, {
         method: "POST",
@@ -309,12 +348,14 @@ export class Page {
     }
 
     process() {
+        console.log(`Processing page ${this.path}`);
+
         this.render();
         this.update();
     }
 
     render() {
-        replaceElement($("body"), this.body);
+        $("body").replaceWith(this.body);
     }
 
     update() {
@@ -382,8 +423,8 @@ export class Router {
     }
 }
 
-// One column: [columnTitle, recordKey, cellRenderFunction (optional)]
-// cellRenderFunction: render(record, recordKey, context) => value or elem
+// One column: [title, key, renderFunction (optional)]
+// renderFunction: render(value, record, context) => value or elem
 // Context is whatever the user chooses to pass into update()
 export class Table {
     constructor(id, columns) {
@@ -404,13 +445,14 @@ export class Table {
             const row = [];
 
             for (const column of this.columns) {
-                const recordKey = column[1];
-                const cellRenderFunction = column[2];
+                const key = column[1];
+                const renderFunction = column[2];
+                const value = record[key];
 
-                if (cellRenderFunction) {
-                    row.push(cellRenderFunction(record, recordKey, context));
+                if (renderFunction) {
+                    row.push(renderFunction(value, record, context));
                 } else {
-                    row.push(record[recordKey]);
+                    row.push(value);
                 }
             }
 
@@ -421,7 +463,7 @@ export class Table {
             createTable(div, headings, rows);
         }
 
-        replaceElement($(`#${this.id}`), div);
+        $(`#${this.id}`).replaceWith(div);
     }
 }
 
