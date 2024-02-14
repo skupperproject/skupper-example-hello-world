@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: "0 0 * * 0"
 jobs:
-  main:
+  test:
     strategy:
       fail-fast: false
       matrix:

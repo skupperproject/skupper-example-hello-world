@@ -143,6 +143,10 @@ def dir_operations():
             result = list_dir()
             assert result == [], result
 
+        print_dir()
+        print_dir(test_dir)
+        print_dir(test_dir, "*.not-there")
+
         result = find(test_dir)
         assert result == [test_file_1, test_file_2], (result, [test_file_1, test_file_2])
 

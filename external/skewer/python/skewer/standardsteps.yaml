@@ -215,7 +215,7 @@ cleaning_up:
     "*":
       - run: skupper delete
 hello_world/deploy_the_frontend_and_backend:
-  title: Deploy the frontent and backend
+  title: Deploy the frontend and backend
   preamble: |
     This example runs the frontend and the backend in separate
     Kubernetes namespaces, on different clusters.

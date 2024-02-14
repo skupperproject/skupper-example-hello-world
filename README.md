@@ -17,7 +17,7 @@ across cloud providers, data centers, and edge sites.
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
 * [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
-* [Step 3: Deploy the frontent and backend](#step-3-deploy-the-frontent-and-backend)
+* [Step 3: Deploy the frontend and backend](#step-3-deploy-the-frontend-and-backend)
 * [Step 4: Create your sites](#step-4-create-your-sites)
 * [Step 5: Link your sites](#step-5-link-your-sites)
 * [Step 6: Expose the backend](#step-6-expose-the-backend)
@@ -130,7 +130,7 @@ kubectl create namespace east
 kubectl config set-context --current --namespace east
 ~~~
 
-## Step 3: Deploy the frontent and backend
+## Step 3: Deploy the frontend and backend
 
 This example runs the frontend and the backend in separate
 Kubernetes namespaces, on different clusters.

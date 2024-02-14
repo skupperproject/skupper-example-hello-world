@@ -252,18 +252,18 @@ def print_properties(props, file=None):
 
 ## Directory operations
 
-def find(dirs=None, include="*", exclude=()):
+def find(dirs=None, include="*", exclude=[]):
     if dirs is None:
         dirs = "."
 
     if is_string(dirs):
-        dirs = (dirs,)
+        dirs = [dirs]
 
     if is_string(include):
-        include = (include,)
+        include = [include]
 
     if is_string(exclude):
-        exclude = (exclude,)
+        exclude = [exclude]
 
     found = set()
 
@@ -313,7 +313,7 @@ def change_dir(dir, quiet=False):
 
     return prev_dir
 
-def list_dir(dir=None, include="*", exclude=()):
+def list_dir(dir=None, include="*", exclude=[]):
     if dir is None:
         dir = get_current_dir()
     else:
@@ -322,10 +322,10 @@ def list_dir(dir=None, include="*", exclude=()):
     assert is_dir(dir), dir
 
     if is_string(include):
-        include = (include,)
+        include = [include]
 
     if is_string(exclude):
-        exclude = (exclude,)
+        exclude = [exclude]
 
     names = _os.listdir(dir)
 
@@ -337,6 +337,22 @@ def list_dir(dir=None, include="*", exclude=()):
                 names.remove(name)
 
     return sorted(names)
+
+def print_dir(dir=None, include="*", exclude=[]):
+    if dir is None:
+        dir = get_current_dir()
+    else:
+        dir = expand(dir)
+
+    names = list_dir(dir=dir, include=include, exclude=exclude)
+
+    print("{}:".format(get_absolute_path(dir)))
+
+    if names:
+        for name in names:
+            print(f"  {name}")
+    else:
+        print("  [none]")
 
 # No args constructor gets a temp dir
 class working_dir:
@@ -575,7 +591,7 @@ def replace(path, replacement, quiet=False):
 
 def remove(paths, quiet=False):
     if is_string(paths):
-        paths = (paths,)
+        paths = [paths]
 
     for path in paths:
         path = expand(path)
@@ -707,7 +723,7 @@ def unique(iterable):
 
 def skip(iterable, values=(None, "", (), [], {})):
     if is_scalar(values):
-        values = (values,)
+        values = [values]
 
     items = list()
 
