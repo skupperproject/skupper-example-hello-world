@@ -309,7 +309,7 @@ def generate_readme(skewer_file, output_file):
 
         out.append(f"## {heading}")
         out.append("")
-        out.append(text.strip())
+        out.append(text)
         out.append("")
 
     out.append(f"# {model.title}")
@@ -352,7 +352,7 @@ def generate_readme(skewer_file, output_file):
 
     append_section("Summary", model.summary)
     append_section("Next steps", model.next_steps)
-    append_section("About this example", standard_text["about_this_example"].strip())
+    append_section("About this example", model.about_this_example)
 
     write(output_file, "\n".join(out).strip() + "\n")
 
@@ -427,9 +427,15 @@ def apply_standard_steps(model):
         del step.data["standard"]
 
         def apply_attribute(name, default=None):
-            if name not in step.data:
-                value = standard_step_data.get(name, default)
+            value = standard_step_data.get(name, default)
 
+            if name in step.data:
+                if name in ("title", "preamble", "postamble"):
+                    if value:
+                        step.data[name] = step.data[name].replace("@default@", value)
+                    else:
+                        step.data[name] = step.data[name].replace("@default@", "")
+            else:
                 if value and name in ("title", "preamble", "postamble"):
                     for i, site in enumerate([x for _, x in model.sites]):
                         value = value.replace(f"@site{i}@", site.title)
@@ -513,7 +519,17 @@ def get_github_owner_repo():
 
 def object_property(name, default=None):
     def get(obj):
-        return obj.data.get(name, default)
+        value = obj.data.get(name, default)
+
+        try:
+            if default is None:
+                value = value.replace("@default@", "")
+            else:
+                value = value.replace("@default@", default)
+        except AttributeError:
+            pass
+
+        return value
 
     return property(get)
 
@@ -537,6 +553,7 @@ class Model:
     prerequisites = object_property("prerequisites", standard_text["prerequisites"].strip())
     summary = object_property("summary")
     next_steps = object_property("next_steps", standard_text["next_steps"].strip())
+    about_this_example = object_property("about_this_example", standard_text["about_this_example"].strip())
 
     def __init__(self, skewer_file, kubeconfigs=[]):
         self.skewer_file = skewer_file

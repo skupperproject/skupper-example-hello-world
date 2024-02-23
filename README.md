@@ -47,6 +47,7 @@ services without exposing the backend to the public internet.
 
 <img src="images/entities.svg" width="640"/>
 
+
 ## Prerequisites
 
 * The `kubectl` command-line tool, version 1.15 or later
@@ -210,6 +211,10 @@ any time to check your progress.
 
 ## Step 5: Link your sites
 
+A Skupper _link_ is a channel for communication between two sites.
+Links serve as a transport for application connections and
+requests.
+
 Creating a link requires use of two `skupper` commands in
 conjunction, `skupper token create` and `skupper link create`.
 
@@ -364,6 +369,7 @@ namespace where the backend is running and routes the response back to
 the frontend.
 
 <img src="images/sequence.svg" width="640"/>
+
 
 ## Next steps
 

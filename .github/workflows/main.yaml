@@ -35,11 +35,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      - uses: manusa/actions-setup-minikube@v2.10.0
-        with:
-          minikube version: "v1.32.0"
-          kubernetes version: "v1.29.0"
-          github token: ${{secrets.GITHUB_TOKEN}}
+      - uses: medyagh/setup-minikube@latest
       - run: curl https://skupper.io/install.sh | bash -s -- --version ${{matrix.skupper-version}}
       - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: ./plano test

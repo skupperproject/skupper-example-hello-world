@@ -17,7 +17,7 @@
 # under the License.
 #
 
-install_the_skupper_command_line_tool:
+general/install_the_skupper_command_line_tool:
   title: Install the Skupper command-line tool
   preamble: |
     This example uses the Skupper command-line tool to deploy Skupper.
@@ -39,6 +39,90 @@ install_the_skupper_command_line_tool:
 
     [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
     [install-docs]: https://skupper.io/install/
+general/link_your_sites:
+  title: Link your sites
+  preamble: |
+    A Skupper _link_ is a channel for communication between two sites.
+    Links serve as a transport for application connections and
+    requests.
+
+    Creating a link requires use of two `skupper` commands in
+    conjunction, `skupper token create` and `skupper link create`.
+
+    The `skupper token create` command generates a secret token that
+    signifies permission to create a link.  The token also carries the
+    link details.  Then, in a remote site, The `skupper link
+    create` command uses the token to create a link to the site
+    that generated it.
+
+    **Note:** The link token is truly a *secret*.  Anyone who has the
+    token can link to your site.  Make sure that only those you trust
+    have access to it.
+
+    First, use `skupper token create` in site @site0@ to generate the
+    token.  Then, use `skupper link create` in site @site1@ to link
+    the sites.
+  commands:
+    "0":
+      - run: skupper token create ~/secret.token
+        output: Token written to ~/secret.token
+    "1":
+      - run: skupper link create ~/secret.token
+        output: |
+          Site configured to link to <endpoint> (name=link1)
+          Check the status of the link using 'skupper link status'.
+      - run: skupper link status --wait 60
+        apply: test
+  postamble: |
+    If your terminal sessions are on different machines, you may need
+    to use `scp` or a similar tool to transfer the token securely.  By
+    default, tokens expire after a single use or 15 minutes after
+    creation.
+general/access_the_frontend:
+  title: Access the frontend
+  preamble: |
+    In order to use and test the application, we need external access
+    to the frontend.
+
+    Use `kubectl expose` with `--type LoadBalancer` to open network
+    access to the frontend service.
+
+    Once the frontend is exposed, use `kubectl get service/frontend`
+    to look up the external IP of the frontend service.  If the
+    external IP is `<pending>`, try again after a moment.
+
+    Once you have the external IP, use `curl` or a similar tool to
+    request the `/api/health` endpoint at that address.
+
+    **Note:** The `<external-ip>` field in the following commands is a
+    placeholder.  The actual value is an IP address.
+  commands:
+    "0":
+      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
+        output: service/frontend exposed
+      - await_resource: service/frontend
+      - run: kubectl get service/frontend
+        apply: readme
+        output: |
+          NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+          frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
+      - run: curl http://<external-ip>:8080/api/health
+        apply: readme
+        output: OK
+      - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
+  postamble: |
+    If everything is in order, you can now access the web interface by
+    navigating to `http://<external-ip>:8080/` in your browser.
+general/cleaning_up:
+  name: cleaning_up
+  title: Cleaning up
+  numbered: false
+  preamble: |
+    To remove Skupper and the other resources from this exercise, use
+    the following commands.
+  commands:
+    "*":
+      - run: skupper delete
 kubernetes/set_up_your_namespaces:
   title: Set up your namespaces
   platform: kubernetes
@@ -121,57 +205,26 @@ kubernetes/create_your_sites:
 
     [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
   commands:
-    "0":
-      - run: skupper init
-        output: |
-          Waiting for LoadBalancer IP or hostname...
-          Waiting for status...
-          Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
-      - run: skupper status
-        output: |
-          Skupper is enabled for namespace "west". It is not connected to any other sites. It has no exposed services.
     "*":
       - run: skupper init
         output: |
           Waiting for LoadBalancer IP or hostname...
           Waiting for status...
-          Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
+          Skupper is now installed in namespace '@namespace@'.  Use 'skupper status' to get more information.
       - run: skupper status
         output: |
-          Skupper is enabled for namespace "east". It is not connected to any other sites. It has no exposed services.
+          Skupper is enabled for namespace "@namespace@". It is not connected to any other sites. It has no exposed services.
   postamble: |
     As you move through the steps below, you can use `skupper status` at
     any time to check your progress.
-podman/set_up_your_podman_network:
-  title: Set up your Podman network
-  platform: podman
-  preamble: |
-    Open a new terminal window and set the `SKUPPER_PLATFORM`
-    environment variable to `podman`.  This sets the Skupper platform
-    to Podman for this terminal session.
-
-    Use `podman network create` to create the Podman network that
-    Skupper will use.
-
-    Use `systemctl` to enable the Podman API service.
-  commands:
-    "*":
-      - run: export SKUPPER_PLATFORM=podman
-      - run: podman network create skupper
-        apply: readme
-      - run: if ! podman network exists skupper; then podman network create skupper; fi
-        apply: test
-      - run: systemctl --user enable --now podman.socket
-  postamble: |
-    If the `systemctl` command doesn't work, you can try the `podman
-    system service` command instead:
-
-    ~~~
-    podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
-    ~~~
-link_your_sites:
+kubernetes/link_your_sites:
   title: Link your sites
+  platform: kubernetes
   preamble: |
+    A Skupper _link_ is a channel for communication between two sites.
+    Links serve as a transport for application connections and
+    requests.
+
     Creating a link requires use of two `skupper` commands in
     conjunction, `skupper token create` and `skupper link create`.
 
@@ -204,16 +257,33 @@ link_your_sites:
     to use `scp` or a similar tool to transfer the token securely.  By
     default, tokens expire after a single use or 15 minutes after
     creation.
-cleaning_up:
-  name: cleaning_up
-  title: Cleaning up
-  numbered: false
+podman/set_up_your_podman_network:
+  title: Set up your Podman network
+  platform: podman
   preamble: |
-    To remove Skupper and the other resources from this exercise, use
-    the following commands.
+    Open a new terminal window and set the `SKUPPER_PLATFORM`
+    environment variable to `podman`.  This sets the Skupper platform
+    to Podman for this terminal session.
+
+    Use `podman network create` to create the Podman network that
+    Skupper will use.
+
+    Use `systemctl` to enable the Podman API service.
   commands:
     "*":
-      - run: skupper delete
+      - run: export SKUPPER_PLATFORM=podman
+      - run: podman network create skupper
+        apply: readme
+      - run: if ! podman network exists skupper; then podman network create skupper; fi
+        apply: test
+      - run: systemctl --user enable --now podman.socket
+  postamble: |
+    If the `systemctl` command doesn't work, you can try the `podman
+    system service` command instead:
+
+    ~~~
+    podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
+    ~~~
 hello_world/deploy_the_frontend_and_backend:
   title: Deploy the frontend and backend
   preamble: |

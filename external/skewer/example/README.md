@@ -17,7 +17,7 @@ across cloud providers, data centers, and edge sites.
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
 * [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
-* [Step 3: Deploy the frontent and backend](#step-3-deploy-the-frontent-and-backend)
+* [Step 3: Deploy the frontend and backend](#step-3-deploy-the-frontend-and-backend)
 * [Step 4: Create your sites](#step-4-create-your-sites)
 * [Step 5: Link your sites](#step-5-link-your-sites)
 * [Step 6: Fail on demand](#step-6-fail-on-demand)
@@ -32,9 +32,11 @@ across cloud providers, data centers, and edge sites.
 
 An overview
 
+
 ## Prerequisites
 
 Some prerequisites
+
 
 ## Step 1: Install the Skupper command-line tool
 
@@ -108,7 +110,7 @@ kubectl create namespace east
 kubectl config set-context --current --namespace east
 ~~~
 
-## Step 3: Deploy the frontent and backend
+## Step 3: Deploy the frontend and backend
 
 This example runs the frontend and the backend in separate
 Kubernetes namespaces, on different clusters.
@@ -187,6 +189,10 @@ As you move through the steps below, you can use `skupper status` at
 any time to check your progress.
 
 ## Step 5: Link your sites
+
+A Skupper _link_ is a channel for communication between two sites.
+Links serve as a transport for application connections and
+requests.
 
 Creating a link requires use of two `skupper` commands in
 conjunction, `skupper token create` and `skupper link create`.
@@ -317,6 +323,9 @@ navigating to `http://<external-ip>:8080/` in your browser.
 To remove Skupper and the other resources from this exercise, use
 the following commands:
 
+
+And more!
+
 _**West:**_
 
 ~~~ shell
@@ -334,11 +343,17 @@ kubectl delete deployment/backend
 
 ## Summary
 
-A summary
+
+
+More summary
+
 
 ## Next steps
 
-Some next steps
+Check out the other [examples][examples] on the Skupper website.
+
+More steps
+
 
 ## About this example
 
