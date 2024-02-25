@@ -1,3 +1,5 @@
+<!-- NOTE: This file is generated from skewer.yaml.  Do not edit it directly. -->
+
 # Skupper Hello World
 
 [![main](https://github.com/skupperproject/skupper-example-hello-world/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-hello-world/actions/workflows/main.yaml)
@@ -46,7 +48,6 @@ frontend in another and maintain connectivity between the two
 services without exposing the backend to the public internet.
 
 <img src="images/entities.svg" width="640"/>
-
 
 ## Prerequisites
 
@@ -369,7 +370,6 @@ namespace where the backend is running and routes the response back to
 the frontend.
 
 <img src="images/sequence.svg" width="640"/>
-
 
 ## Next steps
 

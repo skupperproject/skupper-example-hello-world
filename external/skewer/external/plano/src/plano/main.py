@@ -535,13 +535,13 @@ def copy(from_path, to_path, symlinks=True, inside=True, quiet=False):
     else:
         make_parent_dir(to_path, quiet=True)
 
-    if is_dir(from_path):
+    if is_link(from_path) and symlinks:
+        make_link(to_path, read_link(from_path), quiet=True)
+    elif is_dir(from_path):
         for name in list_dir(from_path):
             copy(join(from_path, name), join(to_path, name), symlinks=symlinks, inside=False, quiet=True)
 
         _shutil.copystat(from_path, to_path)
-    elif is_link(from_path) and symlinks:
-        make_link(to_path, read_link(from_path), quiet=True)
     else:
         _shutil.copy2(from_path, to_path)
 

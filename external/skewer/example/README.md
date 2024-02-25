@@ -1,3 +1,5 @@
+<!-- NOTE: This file is generated from skewer.yaml.  Do not edit it directly. -->
+
 # Skupper Hello World
 
 [![main](https://github.com/skupperproject/skewer/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skewer/actions/workflows/main.yaml)
@@ -32,11 +34,9 @@ across cloud providers, data centers, and edge sites.
 
 An overview
 
-
 ## Prerequisites
 
 Some prerequisites
-
 
 ## Step 1: Install the Skupper command-line tool
 
@@ -249,7 +249,6 @@ _**West:**_
 
 ~~~ shell
 if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
-
 ~~~
 
 ## Step 7: Expose the backend
@@ -323,7 +322,6 @@ navigating to `http://<external-ip>:8080/` in your browser.
 To remove Skupper and the other resources from this exercise, use
 the following commands:
 
-
 And more!
 
 _**West:**_
@@ -343,17 +341,13 @@ kubectl delete deployment/backend
 
 ## Summary
 
-
-
 More summary
-
 
 ## Next steps
 
 Check out the other [examples][examples] on the Skupper website.
 
 More steps
-
 
 ## About this example
 

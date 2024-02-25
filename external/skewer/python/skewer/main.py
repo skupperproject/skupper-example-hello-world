@@ -312,6 +312,9 @@ def generate_readme(skewer_file, output_file):
         out.append(text)
         out.append("")
 
+    out.append("<!-- NOTE: This file is generated from skewer.yaml.  Do not edit it directly. -->")
+    out.append("")
+
     out.append(f"# {model.title}")
     out.append("")
 
@@ -427,23 +430,22 @@ def apply_standard_steps(model):
         del step.data["standard"]
 
         def apply_attribute(name, default=None):
-            value = standard_step_data.get(name, default)
+            standard_value = standard_step_data.get(name, default)
+            value = step.data.get(name, standard_value)
 
-            if name in step.data:
-                if name in ("title", "preamble", "postamble"):
-                    if value:
-                        step.data[name] = step.data[name].replace("@default@", value)
-                    else:
-                        step.data[name] = step.data[name].replace("@default@", "")
-            else:
-                if value and name in ("title", "preamble", "postamble"):
-                    for i, site in enumerate([x for _, x in model.sites]):
-                        value = value.replace(f"@site{i}@", site.title)
+            if is_string(value):
+                if standard_value is not None:
+                    value = value.replace("@default@", str(nvl(standard_value, "")).strip())
 
-                        if site.namespace:
-                            value = value.replace(f"@namespace{i}@", site.namespace)
+                for i, site in enumerate([x for _, x in model.sites]):
+                    value = value.replace(f"@site{i}@", site.title)
 
-                step.data[name] = value
+                    if site.namespace:
+                        value = value.replace(f"@namespace{i}@", site.namespace)
+
+                value = value.strip()
+
+            step.data[name] = value
 
         apply_attribute("name")
         apply_attribute("title")
@@ -521,13 +523,9 @@ def object_property(name, default=None):
     def get(obj):
         value = obj.data.get(name, default)
 
-        try:
-            if default is None:
-                value = value.replace("@default@", "")
-            else:
-                value = value.replace("@default@", default)
-        except AttributeError:
-            pass
+        if is_string(value):
+            value = value.replace("@default@", str(nvl(default, "")).strip())
+            value = value.strip()
 
         return value
 
@@ -550,10 +548,10 @@ class Model:
     subtitle = object_property("subtitle")
     workflow = object_property("workflow", "main.yaml")
     overview = object_property("overview")
-    prerequisites = object_property("prerequisites", standard_text["prerequisites"].strip())
+    prerequisites = object_property("prerequisites", standard_text["prerequisites"])
     summary = object_property("summary")
-    next_steps = object_property("next_steps", standard_text["next_steps"].strip())
-    about_this_example = object_property("about_this_example", standard_text["about_this_example"].strip())
+    next_steps = object_property("next_steps", standard_text["next_steps"])
+    about_this_example = object_property("about_this_example", standard_text["about_this_example"])
 
     def __init__(self, skewer_file, kubeconfigs=[]):
         self.skewer_file = skewer_file

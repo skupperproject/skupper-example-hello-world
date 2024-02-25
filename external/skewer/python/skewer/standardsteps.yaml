@@ -78,41 +78,6 @@ general/link_your_sites:
     to use `scp` or a similar tool to transfer the token securely.  By
     default, tokens expire after a single use or 15 minutes after
     creation.
-general/access_the_frontend:
-  title: Access the frontend
-  preamble: |
-    In order to use and test the application, we need external access
-    to the frontend.
-
-    Use `kubectl expose` with `--type LoadBalancer` to open network
-    access to the frontend service.
-
-    Once the frontend is exposed, use `kubectl get service/frontend`
-    to look up the external IP of the frontend service.  If the
-    external IP is `<pending>`, try again after a moment.
-
-    Once you have the external IP, use `curl` or a similar tool to
-    request the `/api/health` endpoint at that address.
-
-    **Note:** The `<external-ip>` field in the following commands is a
-    placeholder.  The actual value is an IP address.
-  commands:
-    "0":
-      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-        output: service/frontend exposed
-      - await_resource: service/frontend
-      - run: kubectl get service/frontend
-        apply: readme
-        output: |
-          NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-          frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-      - run: curl http://<external-ip>:8080/api/health
-        apply: readme
-        output: OK
-      - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
-  postamble: |
-    If everything is in order, you can now access the web interface by
-    navigating to `http://<external-ip>:8080/` in your browser.
 general/cleaning_up:
   name: cleaning_up
   title: Cleaning up
@@ -257,6 +222,51 @@ kubernetes/link_your_sites:
     to use `scp` or a similar tool to transfer the token securely.  By
     default, tokens expire after a single use or 15 minutes after
     creation.
+kubernetes/access_the_frontend:
+  title: Access the frontend
+  preamble: |
+    In order to use and test the application, we need external access
+    to the frontend.
+
+    Use `kubectl expose` with `--type LoadBalancer` to open network
+    access to the frontend service.
+
+    Once the frontend is exposed, use `kubectl get service/frontend`
+    to look up the external IP of the frontend service.  If the
+    external IP is `<pending>`, try again after a moment.
+
+    Once you have the external IP, use `curl` or a similar tool to
+    request the `/api/health` endpoint at that address.
+
+    **Note:** The `<external-ip>` field in the following commands is a
+    placeholder.  The actual value is an IP address.
+  commands:
+    "0":
+      - run: kubectl expose deployment/frontend --port 8080 --type LoadBalancer
+        output: service/frontend exposed
+      - await_resource: service/frontend
+      - run: kubectl get service/frontend
+        apply: readme
+        output: |
+          NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+          frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
+      - run: curl http://<external-ip>:8080/api/health
+        apply: readme
+        output: OK
+      - await_http_ok: [service/frontend, "http://{}:8080/api/health"]
+  postamble: |
+    If everything is in order, you can now access the web interface by
+    navigating to `http://<external-ip>:8080/` in your browser.
+kubernetes/cleaning_up:
+  name: cleaning_up
+  title: Cleaning up
+  numbered: false
+  preamble: |
+    To remove Skupper and the other resources from this exercise, use
+    the following commands.
+  commands:
+    "*":
+      - run: skupper delete
 podman/set_up_your_podman_network:
   title: Set up your Podman network
   platform: podman

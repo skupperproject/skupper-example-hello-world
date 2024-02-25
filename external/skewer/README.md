@@ -180,12 +180,13 @@ They are the following:
 ~~~
 general/install_the_skupper_command_line_tool
 general/link_your_sites
-general/access_the_frontend
 general/cleaning_up
 kubernetes/set_up_your_namespaces
 kubernetes/set_up_your_kubernetes_namespace  # One namespace only
 kubernetes/create_your_sites
 kubernetes/link_your_sites
+kubernetes/access_the_frontend
+kubernetes/cleaning_up
 podman/set_up_your_podman_network
 hello_world/deploy_the_frontend_and_backend
 hello_world/expose_the_backend
@@ -195,20 +196,20 @@ hello_world/cleaning_up
 
 The `general` steps are generic (or pretty generic) with respect to
 platform and application.  The `kubernetes` and `podman` steps are
-coupled to their platform.  The `hello_world` steps are coupled to the
-Skupper Hello World app.
+coupled to their platform.  The `hello_world` steps are specific to
+the Skupper Hello World application.
 
-**Note:** The `general/link_your_sites` and `general/cleaning_up`
-steps are less generic than the other `general` steps.  For example,
-`general/cleaning_up` doesn't delete any application workoads.  Check
-that the text and commands these steps produce are doing what you need
-for your example.  If not, you need to provide a custom step.
+**Note:** The `link_your_sites` and `cleaning_up` steps are less
+generic than the other `general` steps.  For example, `cleaning_up`
+doesn't delete any application workoads.  Check that the text and
+commands these steps produce are doing what you need for your example.
+If not, you need to provide a custom step.
 
 You can create custom steps based on the standard steps by overriding
 the `title`, `preamble`, `commands`, or `postamble` fields.
 
 ~~~ yaml
-- standard: general/cleaning_up
+- standard: kubernetes/cleaning_up
   commands:
     east:
      - run: skupper delete
@@ -229,7 +230,8 @@ placeholder:
     Note: You may also want to flirp your krupke.
 ~~~
 
-A typical mix of standard and custom steps might look like this:
+A typical mix of standard and custom steps for a Kubernetes-based
+example might look like this:
 
 ~~~ yaml
 steps:
@@ -240,7 +242,7 @@ steps:
   - standard: kubernetes/link_your_sites
   <your-custom-expose-step>
   <your-custom-access-step>
-  - standard: general/cleaning_up
+  - standard: kubernetes/cleaning_up
 ~~~
 
 The step commands are separated into named groups corresponding to the
