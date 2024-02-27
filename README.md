@@ -18,7 +18,7 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
-* [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
+* [Step 2: Set up your clusters](#step-2-set-up-your-clusters)
 * [Step 3: Deploy the frontend and backend](#step-3-deploy-the-frontend-and-backend)
 * [Step 4: Create your sites](#step-4-create-your-sites)
 * [Step 5: Link your sites](#step-5-link-your-sites)
@@ -82,12 +82,12 @@ Skupper][install-docs].
 [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
 [install-docs]: https://skupper.io/install/
 
-## Step 2: Set up your namespaces
+## Step 2: Set up your clusters
 
-Skupper is designed for use with multiple Kubernetes namespaces,
-usually on different clusters.  The `skupper` and `kubectl`
-commands use your [kubeconfig][kubeconfig] and current context to
-select the namespace where they operate.
+Skupper is designed for use with multiple Kubernetes clusters.
+The `skupper` and `kubectl` commands use your
+[kubeconfig][kubeconfig] and current context to select the cluster
+and namespace where they operate.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
@@ -137,9 +137,8 @@ kubectl config set-context --current --namespace east
 This example runs the frontend and the backend in separate
 Kubernetes namespaces, on different clusters.
 
-Use `kubectl create deployment` to deploy the frontend in
-namespace `west` and the backend in namespace
-`east`.
+Use `kubectl create deployment` to deploy the frontend in West
+and the backend in East.
 
 _**West:**_
 
@@ -229,9 +228,9 @@ that generated it.
 token can link to your site.  Make sure that only those you trust
 have access to it.
 
-First, use `skupper token create` in site West to generate the
-token.  Then, use `skupper link create` in site East to link
-the sites.
+First, use `skupper token create` in West to generate the
+token.  Then, use `skupper link create` in East to link the
+sites.
 
 _**West:**_
 
@@ -293,43 +292,17 @@ deployment backend exposed as backend
 In order to use and test the application, we need external access
 to the frontend.
 
-Use `kubectl expose` with `--type LoadBalancer` to open network
-access to the frontend service.
-
-Once the frontend is exposed, use `kubectl get service/frontend`
-to look up the external IP of the frontend service.  If the
-external IP is `<pending>`, try again after a moment.
-
-Once you have the external IP, use `curl` or a similar tool to
-request the `/api/health` endpoint at that address.
-
-**Note:** The `<external-ip>` field in the following commands is a
-placeholder.  The actual value is an IP address.
+Use `kubectl port-forward` to make the frontend available at
+`localhost:8080`.
 
 _**West:**_
 
 ~~~ shell
-kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-kubectl get service/frontend
-curl http://<external-ip>:8080/api/health
+kubectl port-forward deployment/frontend 8080:8080
 ~~~
 
-_Sample output:_
-
-~~~ console
-$ kubectl expose deployment/frontend --port 8080 --type LoadBalancer
-service/frontend exposed
-
-$ kubectl get service/frontend
-NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-
-$ curl http://<external-ip>:8080/api/health
-OK
-~~~
-
-If everything is in order, you can now access the web interface by
-navigating to `http://<external-ip>:8080/` in your browser.
+You can now access the web interface by navigating to
+[http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Cleaning up
 
