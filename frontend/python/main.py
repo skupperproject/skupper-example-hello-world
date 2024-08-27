@@ -101,7 +101,12 @@ async def send_greeting(name, text):
         try:
             response = await client.post(f"{backend_url}/api/hello", json=request_data)
         except HTTPError as e:
-            return request_data, None, str(e)
+            message = str(e)
+
+            if not message:
+                message = e.__class__.__name__
+
+            return request_data, None, message
 
     response_data = response.json()
 
@@ -123,5 +128,8 @@ if __name__ == "__main__":
 
     global backend_url
     backend_url = args.backend
+
+    if not backend_url.startswith("http://") and not backend_url.startswith("https://"):
+        backend_url = "http://" + backend_url
 
     uvicorn.run(star, host=args.host, port=args.port)
