@@ -37,7 +37,7 @@ def test():
     # The backend must be running on port 8081
     check_port(8081)
 
-    with start(f"podman run --net host {image_tag} python python/main.py --host localhost --port 8080 --backend http://localhost:8081"):
+    with start(f"podman run --net host {image_tag} --host localhost --port 8080 --backend http://localhost:8081"):
         await_port(8080)
 
         print(http_get("http://localhost:8081/api/health"))
