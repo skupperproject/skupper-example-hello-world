@@ -20,17 +20,20 @@
 from plano import *
 from plano.github import *
 
-image_tag = "quay.io/skupper/hello-world-frontend"
+image_tag = "quay.io/dhashimo/hello-world-frontend"
+
 
 @command
 def build(no_cache=False):
     no_cache_arg = "--no-cache" if no_cache else ""
 
-    run(f"podman build {no_cache_arg} --format docker -t {image_tag} .")
+    run(f"podman build {no_cache_arg} --format docker --platform linux/amd64,linux/arm64 --manifest {image_tag} .")
+
 
 @command
 def run_():
     run(f"podman run --net host {image_tag} --host localhost --port 8080 --backend http://localhost:8081")
+
 
 @command
 def test():
@@ -50,14 +53,17 @@ def test():
         print(http_post_json("http://localhost:8080/api/hello", {"name": "Obtuse Ocelot", "text": "Bon jour"}))
         print()
 
+
 @command
 def debug():
     run(f"podman run -it --net host --entrypoint /bin/sh {image_tag}")
 
+
 @command
 def push():
     run("podman login quay.io")
-    run(f"podman push {image_tag}")
+    run(f"podman manifest push {image_tag}")
+
 
 @command
 def update_gesso():
