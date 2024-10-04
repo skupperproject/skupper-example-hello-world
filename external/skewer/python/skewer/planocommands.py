@@ -87,5 +87,5 @@ def update_skewer():
 
     This results in local changes to review and commit.
     """
-    update_external_from_github("external/skewer", "skupperproject", "skewer")
+    update_external_from_github("external/skewer", "skupperproject", "skewer", "v2")
     copy("external/skewer/config/.github/workflows/main.yaml", ".github/workflows/main.yaml")

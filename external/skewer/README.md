@@ -15,6 +15,7 @@ and produces two outputs: a `README.md` file and a test routine.
 * [Skewer YAML](#skewer-yaml)
 * [Standard steps](#standard-steps)
 * [Demo mode](#demo-mode)
+* [Troubleshooting](#troubleshooting)
 
 ## An example example
 
@@ -329,3 +330,24 @@ up and exiting, it pauses so you can inspect things.
 It is enabled by setting the environment variable `SKEWER_DEMO` to any
 value when you call `./plano run` or one of its variants.  You can
 also use `./plano demo`, which sets the variable for you.
+
+## Troubleshooting
+
+### Subnet is already used
+
+Error:
+
+~~~ console
+plano: notice: Starting Minikube
+plano: notice: Running command 'minikube start -p skewer --auto-update-drivers false'
+* Creating podman container (CPUs=2, Memory=16000MB) ...- E0229 05:44:29.821273   12224 network_create.go:113] error while trying to create podman network skewer 192.168.49.0/24: create podman network skewer 192.168.49.0/24 with gateway 192.168.49.1 and MTU of 0: sudo -n podman network create --driver=bridge --subnet=192.168.49.0/24 --gateway=192.168.49.1 --label=created_by.minikube.sigs.k8s.io=true --label=name.minikube.sigs.k8s.io=skewer skewer: exit status 125
+
+Error: subnet 192.168.49.0/24 is already used on the host or by another config
+~~~
+
+Remove the existing Podman network.  Note that it might belong to
+another user on the host.
+
+~~~ shell
+sudo podman network rm minikube
+~~~

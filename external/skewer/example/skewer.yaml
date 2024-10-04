@@ -18,9 +18,10 @@ sites:
     env:
       KUBECONFIG: ~/.kube/config-east
 steps:
-  - standard: general/install_the_skupper_command_line_tool
   - standard: kubernetes/set_up_your_clusters
   - standard: hello_world/deploy_the_frontend_and_backend
+  - standard: kubernetes/install_skupper_on_your_clusters
+  - standard: general/install_the_skupper_command_line_tool
   - standard: kubernetes/create_your_sites
   - standard: kubernetes/link_your_sites
   - title: Fail on demand
@@ -34,11 +35,11 @@ steps:
           expect_failure: true
   - standard: hello_world/expose_the_backend
   - standard: hello_world/access_the_frontend
-  - standard: hello_world/cleaning_up
-    preamble: |
-      @default@
+  # - standard: hello_world/cleaning_up
+  #   preamble: |
+  #     @default@
 
-      And more!
+  #     And more!
 summary: |
   @default@
 

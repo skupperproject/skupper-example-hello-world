@@ -210,10 +210,8 @@ def pause_for_demo(model):
 
     if first_site.platform == "kubernetes":
         with first_site:
-            if resource_exists("service/frontend"):
-                if get_resource_json("service/frontend", ".spec.type") == "LoadBalancer":
-                    frontend_host = await_ingress("service/frontend")
-                    frontend_url = f"http://{frontend_host}:8080/"
+            if resource_exists("deployment/frontend"):
+                frontend_url = f"http://localhost:8080/"
 
             if resource_exists("secret/skupper-console-users"):
                 console_host = await_ingress("service/skupper")
@@ -345,14 +343,14 @@ def generate_readme(skewer_file, output_file):
     out.append("")
 
     append_toc_entry("Overview", model.overview)
-    append_toc_entry("Prerequisites")
+    append_toc_entry("Prerequisites", model.prerequisites)
 
     for step in model.steps:
         append_toc_entry(generate_step_heading(step))
 
-    append_toc_entry("Summary")
-    append_toc_entry("Next steps")
-    append_toc_entry("About this example")
+    append_toc_entry("Summary", model.summary)
+    append_toc_entry("Next steps", model.next_steps)
+    append_toc_entry("About this example", model.about_this_example)
 
     out.append("")
 
@@ -627,7 +625,7 @@ class Site:
         check_required_attributes(self, "platform")
         check_unknown_attributes(self)
 
-        if self.platform not in ("kubernetes", "podman"):
+        if self.platform not in ("kubernetes", "podman", None):
             fail(f"{self} attribute 'platform' has an illegal value: {self.platform}")
 
         if self.platform == "kubernetes":
@@ -743,7 +741,10 @@ class Minikube:
                 kube_sites = [x for _, x in model.sites if x.platform == "kubernetes"]
 
                 for site in kube_sites:
-                    kubeconfig = site.env["KUBECONFIG"].replace("~", self.work_dir)
+                    kubeconfig = site.env["KUBECONFIG"]
+                    kubeconfig = kubeconfig.replace("~", self.work_dir)
+                    kubeconfig = expand(kubeconfig)
+
                     site.env["KUBECONFIG"] = kubeconfig
 
                     self.kubeconfigs.append(kubeconfig)
