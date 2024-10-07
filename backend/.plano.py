@@ -19,7 +19,7 @@
 
 from plano import *
 
-image_tag = "quay.io/dhashimo/hello-world-backend"
+image_tag = "quay.io/skupper/hello-world-backend"
 
 
 @command
