@@ -54,7 +54,7 @@ variable to locate it.
 
 A single kubeconfig supports only one active context per user.
 Since you will be using multiple contexts at once in this
-exercise, you need to create distinct kubeconfigs.
+exercise, you need to create multiple kubeconfigs.
 
 For each namespace, open a new terminal window.  In each terminal,
 set the `KUBECONFIG` environment variable to a different path and
@@ -174,7 +174,7 @@ _**West:**_
 
 ~~~ shell
 skupper site create west --enable-link-access
-kubectl wait --for=condition=Ready site/west  # Required with preview 1 - to be removed!
+kubectl wait --for condition=Ready site/west  # Required with preview 1 - to be removed!
 ~~~
 
 _Sample output:_
@@ -184,7 +184,7 @@ $ skupper site create west --enable-link-access
 Waiting for status...
 Site "west" is configured. Check the status to see when it is ready
 
-$ kubectl wait --for=condition=Ready site/west  # Required with preview 1 - to be removed!
+$ kubectl wait --for condition=Ready site/west  # Required with preview 1 - to be removed!
 site.skupper.io/west condition met
 ~~~
 
@@ -192,7 +192,7 @@ _**East:**_
 
 ~~~ shell
 skupper site create east
-kubectl wait --for=condition=Ready site/east  # Required with preview 1 - to be removed!
+kubectl wait --for condition=Ready site/east  # Required with preview 1 - to be removed!
 ~~~
 
 _Sample output:_
@@ -202,7 +202,7 @@ $ skupper site create east
 Waiting for status...
 Site "east" is configured. Check the status to see when it is ready
 
-$ kubectl wait --for=condition=Ready site/east  # Required with preview 1 - to be removed!
+$ kubectl wait --for condition=Ready site/east  # Required with preview 1 - to be removed!
 site.skupper.io/east condition met
 ~~~
 
@@ -272,7 +272,7 @@ You can now safely delete /run/user/1000/skewer/token.yaml
 If your terminal sessions are on different machines, you may need
 to use `scp` or a similar tool to transfer the token securely.  By
 default, tokens expire after a single use or 15 minutes after
-creation.
+being issued.
 
 ## Step 7: Fail on demand
 

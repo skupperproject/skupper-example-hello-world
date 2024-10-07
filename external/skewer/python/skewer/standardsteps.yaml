@@ -39,45 +39,44 @@ general/install_the_skupper_command_line_tool:
 
     [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
     [install-docs]: https://skupper.io/install/
-# general/link_your_sites:
-#   title: Link your sites
-#   preamble: |
-#     A Skupper _link_ is a channel for communication between two sites.
-#     Links serve as a transport for application connections and
-#     requests.
+general/link_your_sites:
+  title: Link your sites
+  preamble: |
+    A Skupper _link_ is a channel for communication between two sites.
+    Links serve as a transport for application connections and
+    requests.
 
-#     Creating a link requires use of two `skupper` commands in
-#     conjunction, `skupper token create` and `skupper link create`.
+    Creating a link requires use of two `skupper` commands in
+    conjunction, `skupper token issue` and `skupper token redeem`.
 
-#     The `skupper token create` command generates a secret token that
-#     signifies permission to create a link.  The token also carries the
-#     link details.  Then, in a remote site, The `skupper link
-#     create` command uses the token to create a link to the site
-#     that generated it.
+    The `skupper token issue` command generates a secret token that
+    signifies permission to create a link.  The token also carries the
+    link details.  Then, in a remote site, The `skupper token redeem`
+    command uses the token to create a link to the site that generated
+    it.
 
-#     **Note:** The link token is truly a *secret*.  Anyone who has the
-#     token can link to your site.  Make sure that only those you trust
-#     have access to it.
+    **Note:** The link token is truly a *secret*.  Anyone who has the
+    token can link to your site.  Make sure that only those you trust
+    have access to it.
 
-#     First, use `skupper token create` in @site0@ to generate the
-#     token.  Then, use `skupper link create` in @site1@ to link the
-#     sites.
-#   commands:
-#     "0":
-#       - run: skupper token create ~/secret.token
-#         output: Token written to ~/secret.token
-#     "1":
-#       - run: skupper link create ~/secret.token
-#         output: |
-#           Site configured to link to <endpoint> (name=link1)
-#           Check the status of the link using 'skupper link status'.
-#       - run: skupper link status --wait 60
-#         apply: test
-#   postamble: |
-#     If your terminal sessions are on different machines, you may need
-#     to use `scp` or a similar tool to transfer the token securely.  By
-#     default, tokens expire after a single use or 15 minutes after
-#     creation.
+    First, use `skupper token issue` in @site0@ to generate the token.
+    Then, use `skupper token redeem` in @site1@ to link the sites.
+  commands:
+    "0":
+      - run: skupper token issue ~/secret.token
+        output: Token written to ~/secret.token
+    "1":
+      - run: skupper link create ~/secret.token
+        output: |
+          Site configured to link to <endpoint> (name=link1)
+          Check the status of the link using 'skupper link status'.
+      - run: skupper link status --wait 60
+        apply: test
+  postamble: |
+    If your terminal sessions are on different machines, you may need
+    to use `scp` or a similar tool to transfer the token securely.  By
+    default, tokens expire after a single use or 15 minutes after
+    being issued.
 general/cleaning_up:
   name: cleaning_up
   title: Cleaning up
@@ -105,7 +104,7 @@ kubernetes/set_up_your_clusters:
 
     A single kubeconfig supports only one active context per user.
     Since you will be using multiple contexts at once in this
-    exercise, you need to create distinct kubeconfigs.
+    exercise, you need to create multiple kubeconfigs.
 
     For each namespace, open a new terminal window.  In each terminal,
     set the `KUBECONFIG` environment variable to a different path and
@@ -191,7 +190,7 @@ kubernetes/create_your_sites:
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
       - run: |
-          kubectl wait --for=condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
+          kubectl wait --for condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
         output: |
           site.skupper.io/@namespace@ condition met
     "*":
@@ -200,7 +199,7 @@ kubernetes/create_your_sites:
           Waiting for status...
           Site "@namespace@" is configured. Check the status to see when it is ready
       - run: |
-          kubectl wait --for=condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
+          kubectl wait --for condition=Ready site/@namespace@  # Required with preview 1 - to be removed!
         output: |
           site.skupper.io/@namespace@ condition met
   postamble: |
@@ -231,12 +230,12 @@ kubernetes/link_your_sites:
     Then, use `skupper token redeem` in @site1@ to link the sites.
   commands:
     "0":
-      - run: skupper token issue ~/token.yaml
+      - run: skupper token issue ~/secret.token
         output: |
           Waiting for token status ...
 
           Grant "west-cad4f72d-2917-49b9-ab66-cdaca4d6cf9c" is ready
-          Token file /run/user/1000/skewer/token.yaml created
+          Token file /run/user/1000/skewer/secret.token created
 
           Transfer this file to a remote site. At the remote site,
           create a link to this site using the "skupper token redeem" command:
@@ -245,16 +244,16 @@ kubernetes/link_your_sites:
 
           The token expires after 1 use(s) or after 15m0s.
     "1":
-      - run: skupper token redeem ~/token.yaml
+      - run: skupper token redeem ~/secret.token
         output: |
           Waiting for token status ...
           Token "west-cad4f72d-2917-49b9-ab66-cdaca4d6cf9c" has been redeemed
-          You can now safely delete /run/user/1000/skewer/token.yaml
+          You can now safely delete /run/user/1000/skewer/secret.token
   postamble: |
     If your terminal sessions are on different machines, you may need
     to use `scp` or a similar tool to transfer the token securely.  By
     default, tokens expire after a single use or 15 minutes after
-    creation.
+    being issued.
 kubernetes/access_the_frontend:
   title: Access the frontend
   preamble: |
@@ -311,7 +310,7 @@ podman/set_up_your_podman_environment:
     system service` command instead:
 
     ~~~
-    podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
+    podman system service --time 0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
     ~~~
 hello_world/deploy_the_frontend_and_backend:
   title: Deploy the frontend and backend
