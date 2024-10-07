@@ -26,6 +26,9 @@ image_tag = "quay.io/dhashimo/hello-world-backend"
 def build(no_cache=False):
     no_cache_arg = "--no-cache" if no_cache else ""
 
+    # podman build with --manifest creates or adds to an existing manifest.  We want brand new
+    run(f"podman manifest rm {image_tag}", check=False)
+    run(f"podman rmi {image_tag}", check=False)
     run(f"podman build {no_cache_arg} --format docker --platform linux/amd64,linux/arm64 --manifest {image_tag} .")
 
 
