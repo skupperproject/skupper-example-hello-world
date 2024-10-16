@@ -21,21 +21,28 @@ from plano import *
 
 image_tag = "quay.io/skupper/hello-world-backend"
 
+
 @command
 def build(no_cache=False):
     no_cache_arg = "--no-cache" if no_cache else ""
 
-    run(f"podman build {no_cache_arg} --format docker -t {image_tag} .")
+    # podman build with --manifest creates or adds to an existing manifest.  We want brand new
+    run(f"podman manifest rm {image_tag}", check=False)
+    run(f"podman rmi {image_tag}", check=False)
+    run(f"podman build {no_cache_arg} --format docker --platform linux/amd64,linux/arm64 --manifest {image_tag} .")
+
 
 @command
 def run_():
     run(f"podman run --net host {image_tag} --host localhost --port 8081")
 
+
 @command
 def debug():
     run(f"podman run -it --net host --entrypoint /bin/sh {image_tag}")
 
+
 @command
 def push():
     run("podman login quay.io")
-    run(f"podman push {image_tag}")
+    run(f"podman manifest push {image_tag}")
