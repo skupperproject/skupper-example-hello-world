@@ -52,7 +52,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8080)
+    parser.add_argument("--ssl-keyfile", default="")
+    parser.add_argument("--ssl-certfile", default="")
+    parser.add_argument("--ssl-ca-certs", default="")
+    parser.add_argument("--ssl-cert-reqs", type=int, default=0)
 
     args = parser.parse_args()
 
-    uvicorn.run(star, host=args.host, port=args.port)
+    uvicorn.run(star, host=args.host, port=args.port, ssl_keyfile=args.ssl_keyfile, ssl_certfile=args.ssl_certfile, ssl_ca_certs=args.ssl_ca_certs, ssl_cert_reqs=args.ssl_cert_reqs)

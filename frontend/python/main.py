@@ -97,7 +97,7 @@ async def send_greeting(name, text):
         "text": text,
     }
 
-    async with AsyncClient() as client:
+    async with AsyncClient(verify=verify, cert=cert) as client:
         try:
             response = await client.post(f"{backend_url}/api/hello", json=request_data)
         except HTTPError as e:
@@ -118,10 +118,23 @@ if __name__ == "__main__":
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8080)
     parser.add_argument("--backend", metavar="URL", default="http://backend:8080")
+    parser.add_argument("--ssl-keyfile", default="")
+    parser.add_argument("--ssl-certfile", default="")
+    parser.add_argument("--ssl-ca-certs", default="")
 
     args = parser.parse_args()
 
     global backend_url
     backend_url = args.backend
+
+    global cert
+    if args.ssl_certfile and args.ssl_keyfile:
+        cert = (args.ssl_certfile, args.ssl_keyfile)
+
+    global verify
+    if args.ssl_ca_certs:
+        verify = args.ssl_ca_certs
+    else:
+        verify = True
 
     uvicorn.run(star, host=args.host, port=args.port)
