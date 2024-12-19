@@ -54,6 +54,12 @@ def render(verbose=False, quiet=False):
         print(f"file:{get_real_path('README.html')}")
 
 @command
+def list_standard_steps():
+    data = read_yaml("python/skewer/standardsteps.yaml")
+    for key in data:
+        print(key)
+
+@command
 def clean():
     remove(find(".", "__pycache__"))
     remove("README.html")

@@ -18,28 +18,28 @@ sites:
     env:
       KUBECONFIG: ~/.kube/config-east
 steps:
-  - standard: kubernetes/set_up_your_clusters
-  - standard: hello_world/deploy_the_frontend_and_backend
-  - standard: kubernetes/install_skupper_on_your_clusters
-  - standard: general/install_the_skupper_command_line_tool
-  - standard: kubernetes/create_your_sites
-  - standard: kubernetes/link_your_sites
+  - standard: platform/set_up_your_kubernetes_clusters
+  - standard: hello_world/deploy_the_frontend_and_backend/kubernetes_cli
+  - standard: platform/install_the_skupper_command_line_tool
+  - standard: platform/install_skupper_on_your_kubernetes_clusters
+  - standard: skupper/create_your_sites/kubernetes_cli
+  - standard: skupper/link_your_sites/kubernetes_cli
   - title: Fail on demand
     commands:
       west:
         - run: "if [ -n \"${SKEWER_FAIL}\" ]; then expr 1 / 0; fi"
-  - title: Fail expectedly
+  - title: Fail as expected
     commands:
       west:
         - run: "expr 1 / 0"
           expect_failure: true
-  - standard: hello_world/expose_the_backend
-  - standard: hello_world/access_the_frontend
-  # - standard: hello_world/cleaning_up
-  #   preamble: |
-  #     @default@
+  - standard: hello_world/expose_the_backend_service/kubernetes_cli
+  - standard: hello_world/access_the_frontend_service/kubernetes_cli
+  - standard: hello_world/cleaning_up/kubernetes_cli
+    preamble: |
+      @default@
 
-  #     And more!
+      And more!
 summary: |
   @default@
 

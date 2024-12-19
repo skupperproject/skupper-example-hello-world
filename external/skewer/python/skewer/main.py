@@ -28,6 +28,13 @@ __all__ = [
 standard_text = read_yaml(join(get_parent_dir(__file__), "standardtext.yaml"))
 standard_steps = read_yaml(join(get_parent_dir(__file__), "standardsteps.yaml"))
 
+standard_steps_by_old_name = dict()
+
+for name, data in standard_steps.items():
+    if "old_name" in data:
+        data["new_name"] = name
+        standard_steps_by_old_name[data["old_name"]] = data
+
 def check_environment():
     check_program("base64")
     check_program("curl")
@@ -266,15 +273,14 @@ def print_debug_output(model):
                 run("kubectl get events", check=False)
 
             run("skupper version", check=False)
-            run("skupper status", check=False)
+            run("skupper site status", check=False)
             run("skupper link status", check=False)
-            run("skupper service status", check=False)
-            run("skupper network status", check=False)
-            run("skupper debug events", check=False)
+            run("skupper listener status", check=False)
+            run("skupper connector status", check=False)
 
             if site.platform == "kubernetes":
                 run("kubectl logs deployment/skupper-router", check=False)
-                run("kubectl logs deployment/skupper-service-controller", check=False)
+                # run("kubectl logs deployment/skupper-service-controller", check=False)
 
     print("-- End of debug output")
 
@@ -435,7 +441,13 @@ def apply_standard_steps(model):
         try:
             standard_step_data = standard_steps[standard_step_name]
         except KeyError:
-            fail(f"Standard step '{standard_step_name}' not found")
+            try:
+                standard_step_data = standard_steps_by_old_name[standard_step_name]
+                new_name = standard_step_data["new_name"]
+
+                warning(f"Step '{standard_step_name}' has a new name: '{new_name}'")
+            except KeyError:
+                fail(f"Standard step '{standard_step_name}' not found")
 
         del step.data["standard"]
 
