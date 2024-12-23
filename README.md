@@ -2,7 +2,7 @@
 
 # Skupper Hello World
 
-[![main](https://github.com/skupperproject/skupper-example-hello-world/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-hello-world/actions/workflows/main.yaml)
+[![main](https://github.com/c-kruse/skupper-example-hello-world/actions/workflows/main.yaml/badge.svg)](https://github.com/c-kruse/skupper-example-hello-world/actions/workflows/main.yaml)
 
 #### A minimal HTTP application deployed across Kubernetes clusters using Skupper
 
@@ -25,6 +25,8 @@ across cloud providers, data centers, and edge sites.
 * [Step 6: Link your sites](#step-6-link-your-sites)
 * [Step 7: Expose the backend service](#step-7-expose-the-backend-service)
 * [Step 8: Access the frontend service](#step-8-access-the-frontend-service)
+* [Step 9: Install the Skupper Network Observer](#step-9-install-the-skupper-network-observer)
+* [Step 10: Accessing the Skupper Network Observer](#step-10-accessing-the-skupper-network-observer)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
 * [Next steps](#next-steps)
@@ -351,6 +353,41 @@ kubectl port-forward deployment/frontend 8080:8080
 
 You can now access the web interface by navigating to
 [http://localhost:8080](http://localhost:8080) in your browser.
+
+## Step 9: Install the Skupper Network Observer
+
+The Skupper Network Observer is an application that can be ran alongside a
+Skupper _site_. It collects application-network-wide telemetry and exposes
+it through the Skupper Console web application.
+
+Install the Skupper Network Observer in West
+
+_**West:**_
+
+~~~ shell
+kubectl apply -f https://gist.githubusercontent.com/c-kruse/b3410682956d37c73ef3f65ad00f3036/raw/b611f1b8ca02d8f3b18863a2482df130a0495f4c/manifest.yaml
+~~~
+
+## Step 10: Accessing the Skupper Network Observer
+
+In order to access the Console web application, we need external access
+to the skupper-network-observer service.
+
+Use `kubectl port-forward` to make the frontend available at
+`localhost:8443`.
+
+_**West:**_
+
+~~~ shell
+kubectl port-forward service/skupper-network-observer 8443:443
+~~~
+
+You can now access the web interface by navigating to
+[https://localhost:8443](https://localhost:8443) in your browser.
+
+The default username and password is "skupper". Authentication and other
+aspects of the deployment can be customized with the skupper
+network-observer Helm chart.
 
 ## Cleaning up
 

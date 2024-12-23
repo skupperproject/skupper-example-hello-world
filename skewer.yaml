@@ -40,6 +40,40 @@ steps:
   - standard: skupper/link_your_sites/kubernetes_cli
   - standard: hello_world/expose_the_backend_service/kubernetes_cli
   - standard: hello_world/access_the_frontend_service/kubernetes_cli
+  - title: Install the Skupper Network Observer
+    preamble: |
+      The Skupper Network Observer is an application that can be ran alongside a
+      Skupper _site_. It collects application-network-wide telemetry and exposes
+      it through the Skupper Console web application.
+
+      Install the Skupper Network Observer in West
+    commands:
+      west:
+        - run: "kubectl apply -f https://gist.githubusercontent.com/c-kruse/b3410682956d37c73ef3f65ad00f3036/raw/b611f1b8ca02d8f3b18863a2482df130a0495f4c/manifest.yaml"
+  - title: Accessing the Skupper Network Observer
+    preamble: |
+      In order to access the Console web application, we need external access
+      to the skupper-network-observer service.
+
+      Use `kubectl port-forward` to make the frontend available at
+      `localhost:8443`.
+    commands:
+      west:
+        - await_resource: deployment/skupper-network-observer
+        - run: kubectl port-forward service/skupper-network-observer 8443:443
+          apply: readme
+        - run: kubectl port-forward service/skupper-network-observer 8443:443 > /dev/null &
+          apply: test
+        - await_port: 8443
+        - run: curl -k https://localhost:8443/
+          apply: test
+    postamble: |
+      You can now access the web interface by navigating to
+      [https://localhost:8443](https://localhost:8443) in your browser.
+
+      The default username and password is "skupper". Authentication and other
+      aspects of the deployment can be customized with the skupper
+      network-observer Helm chart.
   - standard: hello_world/cleaning_up/kubernetes_cli
 summary: |
   This example locates the frontend and backend services in different
