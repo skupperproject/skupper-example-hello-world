@@ -312,9 +312,9 @@ def generate_readme(skewer_file, output_file):
         if not condition:
             return
 
-        fragment = string_replace(heading, r"[ -]", "_")
-        fragment = string_replace(fragment, r"[\W]", "")
-        fragment = string_replace(fragment, "_", "-")
+        fragment = string_replace_re(heading, r"[ -]", "_")
+        fragment = string_replace_re(fragment, r"[\W]", "")
+        fragment = fragment.replace("_", "-")
         fragment = fragment.lower()
 
         out.append(f"* [{heading}](#{fragment})")
@@ -529,13 +529,13 @@ def get_github_owner_repo():
     result = parse_url(url)
 
     if result.scheme == "" and result.path.startswith("git@github.com:"):
-        path = remove_prefix(result.path, "git@github.com:")
-        path = remove_suffix(path, ".git")
+        path = result.path.removeprefix("git@github.com:")
+        path = path.removesuffix(".git")
 
         return path.split("/", 1)
 
     if result.scheme in ("http", "https") and result.netloc == "github.com":
-        path = remove_prefix(result.path, "/")
+        path = result.path.removeprefix("/")
 
         return path.split("/", 1)
 

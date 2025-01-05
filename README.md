@@ -17,14 +17,13 @@ across cloud providers, data centers, and edge sites.
 
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
-* [Step 1: Set up your Kubernetes clusters](#step-1-set-up-your-kubernetes-clusters)
-* [Step 2: Deploy the frontend and backend](#step-2-deploy-the-frontend-and-backend)
-* [Step 3: Install the Skupper command-line tool](#step-3-install-the-skupper-command-line-tool)
-* [Step 4: Install Skupper on your Kubernetes clusters](#step-4-install-skupper-on-your-kubernetes-clusters)
-* [Step 5: Create your sites](#step-5-create-your-sites)
-* [Step 6: Link your sites](#step-6-link-your-sites)
-* [Step 7: Expose the backend service](#step-7-expose-the-backend-service)
-* [Step 8: Access the frontend service](#step-8-access-the-frontend-service)
+* [Step 1: Access your Kubernetes clusters](#step-1-access-your-kubernetes-clusters)
+* [Step 2: Install Skupper on your Kubernetes clusters](#step-2-install-skupper-on-your-kubernetes-clusters)
+* [Step 3: Deploy the frontend and backend](#step-3-deploy-the-frontend-and-backend)
+* [Step 4: Create your sites](#step-4-create-your-sites)
+* [Step 5: Link your sites](#step-5-link-your-sites)
+* [Step 6: Expose the backend service](#step-6-expose-the-backend-service)
+* [Step 7: Access the frontend service](#step-7-access-the-frontend-service)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
 * [Next steps](#next-steps)
@@ -52,16 +51,29 @@ services without exposing the backend to the public internet.
 
 ## Prerequisites
 
-* The `kubectl` command-line tool, version 1.15 or later
-  ([installation guide][install-kubectl])
-
 * Access to at least one Kubernetes cluster, from [any provider you
-  choose][kube-providers]
+  choose][kube-providers].
 
-[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+* The `kubectl` command-line tool, version 1.15 or later
+  ([installation guide][install-kubectl]).
+
+* The `skupper` command-line tool, version 2.0 or later.  On Linux
+  or Mac, you can use the install script (inspect it
+  [here][cli-install-script]) to download and extract the command:
+
+  ~~~ shell
+  curl https://skupper.io/install.sh | sh -s -- --version 2.0.0-preview-2
+  ~~~
+
+  See [Installing the Skupper CLI][cli-install-docs] for more
+  information.
+
 [kube-providers]: https://skupper.io/start/kubernetes.html
+[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+[cli-install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
+[cli-install-docs]: https://skupper.io/install/
 
-## Step 1: Set up your Kubernetes clusters
+## Step 1: Access your Kubernetes clusters
 
 Skupper is designed for use with multiple Kubernetes clusters.
 The `skupper` and `kubectl` commands use your
@@ -70,89 +82,31 @@ and namespace where they operate.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
-Your kubeconfig is stored in a file in your home directory.  The
-`skupper` and `kubectl` commands use the `KUBECONFIG` environment
-variable to locate it.  A single kubeconfig supports only one
-active context per user.  Since you will be using multiple
-contexts at once in this exercise, you need to create multiple
-kubeconfigs.
+This example uses multiple cluster contexts at once. The
+`KUBECONFIG` environment variable tells `skupper` and `kubectl`
+which kubeconfig to use.
 
-For each namespace, open a new terminal window.  In each terminal,
+For each cluster, open a new terminal window.  In each terminal,
 set the `KUBECONFIG` environment variable to a different path and
-log in to your cluster.  Then create the namespace you wish to use
-and set the namespace on your current context.
-
-**Note:** The login procedure varies by provider.  See the
-documentation for yours:
-
-* [Minikube](https://skupper.io/start/minikube.html#cluster-access)
-* [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html#cluster-access)
-* [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html#cluster-access)
-* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#cluster-access)
-* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#cluster-access)
-* [OpenShift](https://skupper.io/start/openshift.html#cluster-access)
+log in to your cluster.
 
 _**West:**_
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-west
-# Enter your provider-specific login command
-kubectl create namespace west
-kubectl config set-context --current --namespace west
+<provider-specific login command>
 ~~~
 
 _**East:**_
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-east
-# Enter your provider-specific login command
-kubectl create namespace east
-kubectl config set-context --current --namespace east
+<provider-specific login command>
 ~~~
 
-## Step 2: Deploy the frontend and backend
+**Note:** The login procedure varies by provider.
 
-This example runs the frontend and the backend in separate
-Kubernetes namespaces, on different clusters.
-
-Use `kubectl create deployment` to deploy the frontend in West
-and the backend in East.
-
-_**West:**_
-
-~~~ shell
-kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
-~~~
-
-_**East:**_
-
-~~~ shell
-kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
-~~~
-
-## Step 3: Install the Skupper command-line tool
-
-This example uses the Skupper command-line tool to create Skupper
-resources.  You need to install the `skupper` command only once
-for each development environment.
-
-On Linux or Mac, you can use the install script (inspect it
-[here][install-script]) to download and extract the command:
-
-~~~ shell
-curl https://skupper.io/install.sh | sh -s -- --version 2.0.0-preview-2
-~~~
-
-The script installs the command under your home directory.  It
-prompts you to add the command to your path if necessary.
-
-For Windows and other installation options, see [Installing
-Skupper][install-docs].
-
-[install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
-[install-docs]: https://skupper.io/install/
-
-## Step 4: Install Skupper on your Kubernetes clusters
+## Step 2: Install Skupper on your Kubernetes clusters
 
 Using Skupper on Kubernetes requires the installation of the
 Skupper custom resource definitions (CRDs) and the Skupper
@@ -164,16 +118,44 @@ installation YAML to install the CRDs and controller.
 _**West:**_
 
 ~~~ shell
-kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
+kubectl apply -f https://skupper.io/v2/install.yaml
 ~~~
 
 _**East:**_
 
 ~~~ shell
-kubectl apply -f https://github.com/skupperproject/skupper/releases/download/2.0.0-preview-2/skupper-setup-cluster-scope.yaml
+kubectl apply -f https://skupper.io/v2/install.yaml
 ~~~
 
-## Step 5: Create your sites
+## Step 3: Deploy the frontend and backend
+
+This example runs the frontend and the backend in separate
+Kubernetes namespaces, on different clusters.
+
+For each cluster, use `kubectl create namespace` and `kubectl
+config set-context` to create the namespace you wish to use and
+set the namespace on your current context.
+
+Then, use `kubectl create deployment` to deploy the frontend in
+West and the backend in East.
+
+_**West:**_
+
+~~~ shell
+kubectl create namespace west
+kubectl config set-context --current --namespace west
+kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+~~~
+
+_**East:**_
+
+~~~ shell
+kubectl create namespace east
+kubectl config set-context --current --namespace east
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+~~~
+
+## Step 4: Create your sites
 
 A Skupper _site_ is a location where your application workloads
 are running.  Sites are linked together to form a network for your
@@ -221,7 +203,7 @@ Site "east" is configured. Check the status to see when it is ready
 You can use `skupper site status` at any time to check the status
 of your site.
 
-## Step 6: Link your sites
+## Step 5: Link your sites
 
 A Skupper _link_ is a channel for communication between two sites.
 Links serve as a transport for application connections and
@@ -284,7 +266,7 @@ to use `scp` or a similar tool to transfer the token securely.  By
 default, tokens expire after a single use or 15 minutes after
 being issued.
 
-## Step 7: Expose the backend service
+## Step 6: Expose the backend service
 
 We now have our sites linked to form a Skupper network, but no
 services are exposed on it.
@@ -335,7 +317,7 @@ set the default routing key and pod selector.  You can use the
 
 <!-- You can also use `--workload` -- more convenient! -->
 
-## Step 8: Access the frontend service
+## Step 7: Access the frontend service
 
 In order to use and test the application, we need external access
 to the frontend.

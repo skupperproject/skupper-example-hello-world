@@ -2,8 +2,6 @@ title: Skupper Hello World
 subtitle: A minimal HTTP application deployed across Kubernetes clusters using Skupper
 overview: |
   An overview
-prerequisites: |
-  Some prerequisites
 sites:
   west:
     title: West
@@ -18,10 +16,9 @@ sites:
     env:
       KUBECONFIG: ~/.kube/config-east
 steps:
-  - standard: platform/set_up_your_kubernetes_clusters
-  - standard: hello_world/deploy_the_frontend_and_backend/kubernetes_cli
-  - standard: platform/install_the_skupper_command_line_tool
+  - standard: platform/access_your_kubernetes_clusters
   - standard: platform/install_skupper_on_your_kubernetes_clusters
+  - standard: hello_world/deploy_the_frontend_and_backend/kubernetes_cli
   - standard: skupper/create_your_sites/kubernetes_cli
   - standard: skupper/link_your_sites/kubernetes_cli
   - title: Fail on demand

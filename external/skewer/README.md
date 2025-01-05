@@ -196,7 +196,7 @@ You can also use a named step from the library of [standard
 steps](#standard-steps):
 
 ~~~ yaml
-- standard: kubernetes/set_up_your_clusters
+- standard: kubernetes/access_your_kubernetes_clusters
 ~~~
 
 A **command**:
@@ -257,11 +257,10 @@ They fall in three groups.
 Steps for setting up platforms:
 
 ~~~
-platform/set_up_your_kubernetes_clusters
-platform/set_up_your_kubernetes_cluster
+platform/access_your_kubernetes_clusters
+platform/access_your_kubernetes_cluster
 platform/set_up_your_podman_environments
 platform/set_up_your_podman_environment
-platform/install_the_skupper_command_line_tool
 platform/install_skupper_on_your_kubernetes_clusters
 platform/install_skupper_on_your_kubernetes_cluster
 platform/install_skupper_in_your_podman_environments
@@ -272,31 +271,33 @@ Steps for primary Skupper operations:
 
 ~~~
 skupper/create_your_sites/kubernetes_cli
-skupper/create_your_sites/kubernetes_yaml
 skupper/create_your_sites/podman_cli
-skupper/create_your_sites/podman_yaml
 skupper/link_your_sites/kubernetes_cli
-skupper/link_your_sites/kubernetes_yaml
 skupper/link_your_sites/podman_cli
-skupper/link_your_sites/podman_yaml
 skupper/cleaning_up/kubernetes_cli
-skupper/cleaning_up/kubernetes_yaml
 skupper/cleaning_up/podman_cli
-skupper/cleaning_up/podman_yaml
 ~~~
+
+<!-- skupper/create_your_sites/kubernetes_yaml -->
+<!-- skupper/create_your_sites/podman_yaml -->
+<!-- skupper/link_your_sites/kubernetes_yaml -->
+<!-- skupper/link_your_sites/podman_yaml -->
+<!-- skupper/cleaning_up/kubernetes_yaml -->
+<!-- skupper/cleaning_up/podman_yaml -->
 
 Steps specific to the Hello World application:
 
 ~~~
 hello_world/deploy_the_frontend_and_backend/kubernetes_cli
-hello_world/deploy_the_frontend_and_backend/kubernetes_yaml
 hello_world/expose_the_backend_service/kubernetes_cli
-hello_world/expose_the_backend_service/kubernetes_yaml
 hello_world/access_the_frontend_service/kubernetes_cli
-hello_world/access_the_frontend_service/kubernetes_yaml
 hello_world/cleaning_up/kubernetes_cli
-hello_world/cleaning_up/kubernetes_yaml
 ~~~
+
+<!-- hello_world/deploy_the_frontend_and_backend/kubernetes_yaml -->
+<!-- hello_world/expose_the_backend_service/kubernetes_yaml -->
+<!-- hello_world/access_the_frontend_service/kubernetes_yaml -->
+<!-- hello_world/cleaning_up/kubernetes_yaml -->
 
 Some of the steps have a suffix indicating their target platform and
 interface: `kubernetes_cli`, `kubernetes_yaml`, `podman_cli`, and

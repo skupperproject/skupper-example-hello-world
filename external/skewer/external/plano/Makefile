@@ -58,7 +58,7 @@ docs:
 coverage: build
 	python -m venv build/venv
 	. build/venv/bin/activate && pip install --force-reinstall dist/ssorj_plano-*-py3-none-any.whl
-	. build/venv/bin/activate && PYTHONPATH=build/venv/lib/python3.11/site-packages coverage run \
+	. build/venv/bin/activate && PYTHONPATH=build/venv/lib/python3.12/site-packages coverage run \
 		--include build/venv/lib/python\*/site-packages/plano/\*,build/venv/bin/\* \
 		build/venv/bin/plano-self-test
 	coverage report

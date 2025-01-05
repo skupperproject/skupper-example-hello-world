@@ -25,14 +25,27 @@ example_suite: |
     [website]: https://skupper.io/
     [examples]: https://skupper.io/examples/index.html
 prerequisites: |
-    * The `kubectl` command-line tool, version 1.15 or later
-      ([installation guide][install-kubectl])
-
     * Access to at least one Kubernetes cluster, from [any provider you
-      choose][kube-providers]
+      choose][kube-providers].
 
-    [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+    * The `kubectl` command-line tool, version 1.15 or later
+      ([installation guide][install-kubectl]).
+
+    * The `skupper` command-line tool, version 2.0 or later.  On Linux
+      or Mac, you can use the install script (inspect it
+      [here][cli-install-script]) to download and extract the command:
+
+      ~~~ shell
+      curl https://skupper.io/install.sh | sh -s -- --version 2.0.0-preview-2
+      ~~~
+
+      See [Installing the Skupper CLI][cli-install-docs] for more
+      information.
+
     [kube-providers]: https://skupper.io/start/kubernetes.html
+    [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+    [cli-install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
+    [cli-install-docs]: https://skupper.io/install/
 next_steps: |
     Check out the other [examples][examples] on the Skupper website.
 about_this_example: |

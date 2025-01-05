@@ -507,7 +507,7 @@ def io_operations():
         assert is_file(file_c), file_c
 
         file_d = write("d", "front@middle@@middle@back")
-        path = string_replace_file(file_d, "@middle@", "M", count=1)
+        path = string_replace_in_file(file_d, "@middle@", "M", count=1)
         result = read(path)
         assert result == "frontM@middle@back", result
 
@@ -865,29 +865,23 @@ def process_operations():
 
 @test
 def string_operations():
-    result = string_replace("ab", "a", "b")
+    result = string_replace_re("ab", "a", "b")
     assert result == "bb", result
 
-    result = string_replace("aba", "a", "b", count=1)
+    result = string_replace_re("aba", "a", "b", count=1)
     assert result == "bba", result
 
-    result = remove_prefix(None, "xxx")
-    assert result == "", result
+    result = string_matches_re("abc", "b")
+    assert result
 
-    result = remove_prefix("anterior", "ant")
-    assert result == "erior", result
+    result = string_matches_re("abc", "^b")
+    assert not result
 
-    result = remove_prefix("anterior", "ext")
-    assert result == "anterior", result
+    result = string_matches_glob("abc", "*b*")
+    assert result
 
-    result = remove_suffix(None, "xxx")
-    assert result == "", result
-
-    result = remove_suffix("exterior", "ior")
-    assert result == "exter", result
-
-    result = remove_suffix("exterior", "nal")
-    assert result == "exterior"
+    result = string_matches_glob("abc", "b*")
+    assert not result
 
     result = shorten("abc", 2)
     assert result == "ab", result
@@ -944,6 +938,40 @@ def string_operations():
 
     result = parse_url("http://example.net/index.html")
     assert result.hostname == "example.net"
+
+    append = StringBuilder()
+
+    result = append.join()
+    assert result == ""
+
+    append("alpha")
+    append("beta")
+    result = str(append)
+    assert result == "alpha\nbeta"
+
+    append.clear()
+    append("abc")
+    append("123")
+    result = append.join()
+    assert result == "abc\n123"
+
+    append.clear()
+    append()
+    append()
+    result = append.join()
+    assert result == "\n"
+
+    append.clear()
+    append("xyz")
+    result = append.join()
+    assert result == "xyz"
+
+    append.clear()
+    append("789")
+
+    with temp_file() as f:
+        result = read(append.write(f))
+        assert result == "789"
 
 @test
 def temp_operations():
