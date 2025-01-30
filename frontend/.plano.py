@@ -30,7 +30,7 @@ def build(no_cache=False):
     # podman build with --manifest creates or adds to an existing manifest.  We want brand new
     run(f"podman manifest rm {image_tag}", check=False)
     run(f"podman rmi {image_tag}", check=False)
-    run(f"podman build {no_cache_arg} --format docker --platform linux/amd64,linux/arm64 --manifest {image_tag} .")
+    run(f"podman build {no_cache_arg} --format docker --platform linux/amd64,linux/arm64,linux/s390x --manifest {image_tag} .")
 
 
 @command
