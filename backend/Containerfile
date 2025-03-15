@@ -19,11 +19,11 @@
 
 ARG TARGETPLATFORM
 
-FROM --platform=$TARGETPLATFORM python:alpine AS build
+FROM --platform=$TARGETPLATFORM mirror.gcr.io/library/python:alpine AS build
 
 RUN pip install --no-cache-dir starlette uvicorn
 
-FROM --platform=$TARGETPLATFORM python:alpine AS run
+FROM --platform=$TARGETPLATFORM mirror.gcr.io/library/python:alpine AS run
 
 RUN adduser -S fritz -G root
 USER fritz
