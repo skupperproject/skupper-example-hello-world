@@ -37,8 +37,8 @@ Change directory to the root of your example project:
 Add the Skewer code as a subdirectory:
 
     mkdir -p external
-    curl -sfL https://github.com/skupperproject/skewer/archive/main.tar.gz | tar -C external -xz
-    mv external/skewer-main external/skewer
+    curl -sfL https://github.com/skupperproject/skewer/archive/v2.tar.gz | tar -C external -xz
+    mv external/skewer-2 external/skewer
 
 Symlink the Skewer and Plano libraries into your `python` directory:
 
@@ -259,6 +259,8 @@ Steps for setting up platforms:
 ~~~
 platform/access_your_kubernetes_clusters
 platform/access_your_kubernetes_cluster
+platform/create_your_kubernetes_namespaces
+platform/create_your_kubernetes_namespace
 platform/set_up_your_podman_environments
 platform/set_up_your_podman_environment
 platform/install_skupper_on_your_kubernetes_clusters
@@ -339,10 +341,11 @@ example might look like this:
 
 ~~~ yaml
 steps:
-  - standard: platform/set_up_your_kubernetes_clusters
+  - standard: platform/access_your_kubernetes_clusters
+  - standard: platform/create_your_kubernetes_namespaces
   - <your-custom-deploy-step>
-  - standard: platform/install_the_skupper_command_line_tool
   - standard: platform/install_skupper_on_your_kubernetes_clusters
+  - standard: platform/install_the_skupper_command_line_tool
   - standard: skupper/create_your_sites/kubernetes_cli
   - standard: skupper/link_your_sites/kubernetes_cli
   - <your-custom-expose-step>

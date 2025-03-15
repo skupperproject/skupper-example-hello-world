@@ -17,8 +17,10 @@ sites:
       KUBECONFIG: ~/.kube/config-east
 steps:
   - standard: platform/access_your_kubernetes_clusters
-  - standard: platform/install_skupper_on_your_kubernetes_clusters
+  - standard: platform/create_your_kubernetes_namespaces
   - standard: hello_world/deploy_the_frontend_and_backend/kubernetes_cli
+  - standard: platform/install_skupper_on_your_kubernetes_clusters
+  - standard: platform/install_the_skupper_command_line_tool
   - standard: skupper/create_your_sites/kubernetes_cli
   - standard: skupper/link_your_sites/kubernetes_cli
   - title: Fail on demand

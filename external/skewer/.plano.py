@@ -55,7 +55,11 @@ def render(verbose=False, quiet=False):
 
 @command
 def list_standard_steps():
+    """
+    List the standard steps
+    """
     data = read_yaml("python/skewer/standardsteps.yaml")
+
     for key in data:
         print(key)
 

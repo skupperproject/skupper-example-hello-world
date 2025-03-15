@@ -205,7 +205,11 @@ def run_step(model, step, work_dir, check=True):
                         continue
 
                     if check and proc.exit_code > 0:
-                        raise PlanoProcessError(proc)
+                        err = PlanoProcessError(proc)
+
+                        error(err)
+
+                        fail(f"A command failed in {step}: {err}")
 
 def pause_for_demo(model):
     notice("Pausing for demo time")
