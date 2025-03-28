@@ -8,8 +8,6 @@ jobs:
   test:
     strategy:
       fail-fast: false
-      matrix:
-        skupper-version: [2.0.0]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +15,7 @@ jobs:
         with:
           python-version: "3.x"
       - uses: medyagh/setup-minikube@latest
-      - run: curl https://skupper.io/install.sh | bash -s -- --version ${{matrix.skupper-version}}
+      - run: curl https://skupper.io/v2/install.sh | sh
       - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - run: ./plano test
         env:

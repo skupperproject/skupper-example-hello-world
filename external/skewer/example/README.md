@@ -83,7 +83,7 @@ export KUBECONFIG=~/.kube/config-east
 
 ## Step 2: Create your Kubernetes namespaces
 
-The example application has differents components deployed to
+The example application has different components deployed to
 different Kubernetes namespaces.  To set up our example, we need
 to create the namespaces.
 
@@ -156,7 +156,7 @@ On Linux or Mac, you can use the install script (inspect it
 [here][install-script]) to download and extract the command:
 
 ~~~ shell
-curl https://skupper.io/install.sh | sh -s -- --version 2.0.0
+curl https://skupper.io/v2/install.sh | sh
 ~~~
 
 The script installs the command under your home directory.  It
