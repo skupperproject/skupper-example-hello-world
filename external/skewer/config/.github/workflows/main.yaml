@@ -34,7 +34,7 @@ jobs:
         with:
           python-version: "3.x"
       - uses: medyagh/setup-minikube@latest
-      - run: curl https://skupper.io/v2/install.sh
+      - run: curl https://skupper.io/v2/install.sh | sh
       - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: ./plano test
         env:
