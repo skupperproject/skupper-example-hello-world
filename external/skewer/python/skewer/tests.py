@@ -20,13 +20,7 @@
 from plano import *
 from skewer import *
 
-@test
-def plano_commands():
-    with working_dir("example"):
-        run("./plano")
-        run("./plano generate")
-        run("./plano render")
-        run("./plano clean")
+example_dirs = ("examples/cli",)
 
 @test
 def config_files():
@@ -36,27 +30,35 @@ def config_files():
 
     parse_yaml(read("config/.github/workflows/main.yaml"))
 
-@test
-def generate_readme_():
-    with working_dir("example"):
+def plano_commands(example):
+    with working_dir(f"examples/{example}"):
+        run("./plano")
+        run("./plano generate")
+        run("./plano render")
+        run("./plano clean")
+
+def generate_readme_(example):
+    with working_dir(f"examples/{example}"):
         generate_readme("skewer.yaml", "README.md")
         check_file("README.md")
 
-@test
-def run_steps_():
-    with working_dir("example"):
+def run_steps_(example):
+    with working_dir(f"examples/{example}"):
         with Minikube("skewer.yaml") as mk:
             run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, work_dir=mk.work_dir, debug=True)
 
-@test
-def run_steps_demo():
-    with working_dir("example"):
-        with Minikube("skewer.yaml") as mk:
-            run_steps("skewer.yaml", kubeconfigs=mk.kubeconfigs, work_dir=mk.work_dir, debug=True)
+for example in list_dir("examples"):
+    add_test(f"plano-commands-{example}", plano_commands, example)
+
+for example in list_dir("examples"):
+    add_test(f"generate-readme-{example}", generate_readme_, example)
+
+for example in list_dir("examples"):
+    add_test(f"run-steps-{example}", run_steps_, example)
 
 @test
 def run_steps_debug():
-    with working_dir("example"):
+    with working_dir(f"examples/cli"):
         with expect_error():
             with working_env(SKEWER_FAIL=1):
                 with Minikube("skewer.yaml") as mk:

@@ -747,6 +747,29 @@ class Minikube:
         run("minikube start -p skewer --auto-update-drivers false")
 
         try:
+            # # Attempt to preload images from the local Podman instance
+            # if which("podman"):
+            #     images = (
+            #         # XXX Need to parse the versions out of skupper version output
+            #         ("quay.io/skupper/skupper-router:3.2.0", "skupper-router.tar"),
+            #         ("quay.io/skupper/kube-adaptor:2.0.0", "skupper-kube-adaptor.tar"),
+            #         ("quay.io/skupper/controller:2.0.0", "skupper-controller.tar"),
+            #         ("quay.io/skupper/hello-world-frontend:latest", "hello-world-frontend.tar"),
+            #         ("quay.io/skupper/hello-world-backend:latest", "hello-world-backend.tar"),
+            #     )
+
+            #     for image in images:
+            #         if run(f"podman image exists {image[0]}", check=False).exit_code != 0:
+            #             continue
+
+            #         # The default docker-archive output format requires this
+            #         remove(image[1])
+
+            #         run(f"podman save {image[0]} -o {image[1]} --quiet")
+            #         run(f"minikube -p skewer image load {image[1]}")
+
+            #     run("minikube -p skewer ssh -- docker image ls")
+
             tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
             self.tunnel = start("minikube tunnel -p skewer", output=tunnel_output_file)
 

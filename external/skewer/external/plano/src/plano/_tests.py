@@ -1252,35 +1252,20 @@ def plano_command():
 
     PlanoCommand(_sys.modules[__name__]).main([])
 
-    PlanoCommand().main(["-m", "plano.test"])
-
-    with expect_system_exit():
-        PlanoCommand().main(["-m", "nosuchmodule"])
-
     with working_dir():
         write(".plano.py", "garbage")
 
         with expect_system_exit():
             PlanoCommand().main([])
 
-    with expect_system_exit():
-        PlanoCommand().main(["-f", "no-such-file"])
-
     def run_command(*args):
-        PlanoCommand().main(["-f", test_project_dir] + list(args))
+        PlanoCommand().main(list(args))
 
     with test_project():
         run_command()
-        run_command("--help")
 
         with expect_system_exit():
             run_command("no-such-command")
-
-        with expect_system_exit():
-            run_command("no-such-command", "--help")
-
-        with expect_system_exit():
-            run_command("--help", "no-such-command")
 
         run_command("extended-command", "a", "b", "--omega", "z")
         run_command("extended-command", "a", "b", "--omega", "z", "--verbose")

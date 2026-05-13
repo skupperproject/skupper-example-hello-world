@@ -102,14 +102,16 @@ platform/set_up_your_podman_environments:
     `podman`.  This sets the Skupper platform to Podman for this
     terminal session.
 
-    Use `systemctl` to enable the Podman API service.
+    The `skupper system install` enables the Podman API
+    service (using systemctl) if that service is not already running.
+    The `skupper system install` command also creates the
+    Skupper controller container for the current user.
   commands:
     "*":
       - run: export SKUPPER_PLATFORM=podman
-      - run: systemctl --user enable --now podman.socket
-      - run: "skupper system teardown || :"
+      - run: skupper system install
   postamble: |
-    If the `systemctl` command doesn't work, you can try the `podman
+    If `skupper system install` fails, it is typically due to a systemctl issue. You can try the `podman
     system service` command instead:
 
     ~~~
@@ -124,14 +126,16 @@ platform/set_up_your_podman_environment:
     environment variable to `podman`.  This sets the Skupper platform
     to Podman for this terminal session.
 
-    Use `systemctl` to enable the Podman API service.
+    The `skupper system install` enables the Podman API
+    service (using systemctl) if that service is not already running.
+    The `skupper system install` command also creates the
+    Skupper controller container for the current user.
   commands:
     "*":
       - run: export SKUPPER_PLATFORM=podman
-      - run: systemctl --user enable --now podman.socket
-      - run: "skupper system teardown || :"
+      - run: skupper system install
   postamble: |
-    If the `systemctl` command does not work, you can try the `podman
+    If `skupper system install` fails, it is typically due to a systemctl issue. You can try the `podman
     system service` command instead:
 
     ~~~
@@ -164,7 +168,7 @@ platform/install_the_skupper_command_line_tool:
     Skupper][install-docs].
 
     [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
-    [install-docs]: https://skupper.io/install/
+    [install-docs]: https://skupper.io/#installation
 platform/install_skupper_on_your_kubernetes_clusters:
   old_name: kubernetes/install_skupper_on_your_clusters
   title: Install Skupper on your Kubernetes clusters
@@ -179,6 +183,9 @@ platform/install_skupper_on_your_kubernetes_clusters:
   commands:
     "*":
       - run: kubectl apply -f https://skupper.io/v2/install.yaml
+        apply: readme
+      - run: curl https://skupper.io/v2/install.yaml | sed s/Always/IfNotPresent/g | kubectl apply -f -
+        apply: test
 platform/install_skupper_on_your_kubernetes_cluster:
   old_name: kubernetes/install_skupper_on_your_cluster
   title: Install Skupper on your Kubernetes cluster
@@ -193,6 +200,9 @@ platform/install_skupper_on_your_kubernetes_cluster:
   commands:
     "*":
       - run: kubectl apply -f https://skupper.io/v2/install.yaml
+        apply: readme
+      - run: curl https://skupper.io/v2/install.yaml | sed s/Always/IfNotPresent/g | kubectl apply -f -
+        apply: test
 skupper/create_your_sites/kubernetes_cli:
   old_name: kubernetes/create_your_sites
   title: Create your sites
@@ -200,6 +210,48 @@ skupper/create_your_sites/kubernetes_cli:
     A Skupper _site_ is a location where your application workloads
     are running.  Sites are linked together to form a network for your
     application.
+
+    For each namespace, use `skupper site create` with a site name of
+    your choice.  This creates the site resource and deploys the
+    Skupper router to the namespace.
+
+    **Note:** If you are using Minikube, you need to [start minikube
+    tunnel][minikube-tunnel] before you run `skupper site create`.
+
+    <!-- XXX Explain enabling link acesss on one of the sites -->
+
+    [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
+  commands:
+    "0":
+      - run: skupper site create @namespace@ --enable-link-access
+        output: |
+          Waiting for status...
+          Site "@namespace@" is configured. Check the status to see when it is ready
+    "*":
+      - run: skupper site create @namespace@
+        output: |
+          Waiting for status...
+          Site "@namespace@" is configured. Check the status to see when it is ready
+  postamble: |
+    You can use `skupper site status` at any time to check the status
+    of your site.
+skupper/create_your_sites/kubernetes_yaml:
+  title: Create your sites
+  preamble: |
+    A Skupper _site_ is a location where your application workloads
+    are running.  Sites are linked together to form a network for your
+    application.
+
+    Use the `kubectl apply` command to
+
+      Use the kubectl apply command to declaratively create sites in the kubernetes
+      namespaces. This deploys the Skupper router. Then use kubectl get site to see
+      the outcome.
+
+      **Note:** If you are using Minikube, you need to [start minikube
+      tunnel][minikube-tunnel] before you configure skupper.
+
+      [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
     For each namespace, use `skupper site create` with a site name of
     your choice.  This creates the site resource and deploys the
@@ -301,8 +353,14 @@ hello_world/deploy_the_frontend_and_backend/kubernetes_cli:
   commands:
     "0":
       - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
+        apply: readme
+      - run: kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend --dry-run=client -o json | jq '.spec.template.spec.containers |= map(.imagePullPolicy = "IfNotPresent")' | kubectl apply -f -
+        apply: test
     "1":
       - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
+        apply: readme
+      - run: kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3 --dry-run=client -o json | jq '.spec.template.spec.containers |= map(.imagePullPolicy = "IfNotPresent")' | kubectl apply -f -
+        apply: test
 hello_world/expose_the_backend_service/kubernetes_cli:
   old_name: hello_world/expose_the_backend
   title: Expose the backend service

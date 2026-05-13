@@ -86,12 +86,6 @@ class PlanoCommand(BaseCommand):
         assert self.module is None or _inspect.ismodule(self.module), self.module
 
         self.pre_parser = BaseArgumentParser(description=description, add_help=False)
-        self.pre_parser.add_argument("-h", "--help", action="store_true",
-                                     help="Show this help message and exit")
-
-        if self.module is None:
-            self.pre_parser.add_argument("-f", "--file", help="Load commands from FILE (default '.plano.py')")
-            self.pre_parser.add_argument("-m", "--module", help="Load commands from MODULE")
 
         self.parser = _argparse.ArgumentParser(parents=(self.pre_parser,),
                                                description=description, epilog=epilog,
@@ -109,10 +103,7 @@ class PlanoCommand(BaseCommand):
         pre_args, _ = self.pre_parser.parse_known_args(args)
 
         if self.module is None:
-            if pre_args.module is None:
-                self.module = self._load_file(pre_args.file)
-            else:
-                self.module = self._load_module(pre_args.module)
+            self.module = self._load_file(None)
 
         if self.module is not None:
             self._bind_commands(self.module)
@@ -147,8 +138,6 @@ class PlanoCommand(BaseCommand):
         return "notice", None
 
     def init(self, args):
-        self.help = args.help
-
         self.selected_command = None
         self.command_args = list()
         self.command_kwargs = dict()
@@ -178,7 +167,7 @@ class PlanoCommand(BaseCommand):
                 self.command_kwargs["passthrough_args"] = self.passthrough_args
 
     def run(self):
-        if self.help or self.module is None or self.selected_command is None:
+        if self.module is None or self.selected_command is None:
             self.parser.print_help()
             return
 
@@ -188,12 +177,6 @@ class PlanoCommand(BaseCommand):
         if not self.quiet:
             cprint("OK", color="green", file=_sys.stderr, end="")
             cprint(" ({})".format(format_duration(timer.elapsed_time)), color="magenta", file=_sys.stderr)
-
-    def _load_module(self, name):
-        try:
-            return _importlib.import_module(name)
-        except ImportError:
-            exit("Module '{}' not found", name)
 
     def _load_file(self, path):
         if path is not None and is_dir(path):

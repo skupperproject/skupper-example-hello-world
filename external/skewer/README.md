@@ -382,3 +382,10 @@ another user on the host.
 ~~~ shell
 sudo podman network rm minikube
 ~~~
+
+## Notes on speeding up Minikube
+
+~~~ console
+minikube config set cpus 4
+minikube config set memory 8192
+~~~
